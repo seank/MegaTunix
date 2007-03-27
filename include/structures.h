@@ -25,6 +25,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+/* Type definitions */
+typedef struct _Ve_View_3D Ve_View_3D;
 
 /*! 
  \brief Serial_Params holds all variables related to the state of the serial
@@ -554,11 +556,11 @@ struct BindGroup
 
 
 /*!
- \brief the Ve_View_3D structure contains all the field to create and 
+ \brief the _Ve_View_3D structure contains all the field to create and 
  manipulate a 3D view of a MegaSquirt VE/Spark table, and should work in
  theory for any sized table
  */
-struct Ve_View_3D
+struct _Ve_View_3D
 {
 	gint beginX;
 	gint beginY;
