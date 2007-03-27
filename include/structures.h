@@ -655,6 +655,8 @@ struct _Ve_View_3D
 	gint z_page;
 	gchar *table_name;
 	gint table_num;
+	gboolean tracking_focus;
+	GtkWidget *tracking_button;
 };
 
 
