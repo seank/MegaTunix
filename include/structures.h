@@ -212,7 +212,7 @@ struct _Rt_Slider
 	gint count;		/*! used to making sure things update */
 	gint rate;		/*! used to making sure things update */
 	gint last_upd;		/*! used to making sure things update */
-	SliderType class;	/*! Slider type... */
+	WidgetType class;	/*! Slider type... */
 };
 
 
