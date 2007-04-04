@@ -708,6 +708,7 @@ struct _Logview_Data
 	gint spread;		/*! Pixel spread between trace info blocks */
 	gint tselect;		/*! Trace that is currently selected */
 	PangoFontDescription *font_desc; /*! Font used for text... */
+	gint info_width;	/*! Width of left info area */
 };
 
 /*!
