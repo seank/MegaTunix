@@ -321,3 +321,10 @@ gfloat direct_lookup_data(gchar *table, gint offset)
 	return lookuptable[offset];
 }
 
+
+gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
+{
+	printf("lookuptables configurator\n");
+	return TRUE;
+
+}
