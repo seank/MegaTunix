@@ -368,6 +368,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		return FALSE;
 	}
 
+	firmware->profile_filename = g_strdup(filename);
 
 	cfg_read_string(cfgfile,"interrogation_profile","name",&firmware->name);
 	cfg_read_string(cfgfile,"parameters","TextVerVia",&firmware->TextVerVia);
@@ -978,6 +979,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup_printf(__FILE__": determine_ecu()\n\tDetected Firmware: %s\n",firmware->name));
 	thread_update_logbar("interr_view","warning",g_strdup_printf("Detected Firmware: %s\n",firmware->name),FALSE,FALSE);
+	thread_update_logbar("interr_view","info",g_strdup_printf("Loading Settings from: \"%s\"\n",firmware->profile_filename),FALSE,FALSE);
 
 	return TRUE;
 
