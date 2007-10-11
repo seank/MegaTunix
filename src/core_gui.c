@@ -49,6 +49,7 @@ GtkTooltips *tip = NULL;
  */
 int setup_gui()
 {
+	gchar *fname = NULL;
 	gchar *filename = NULL;
 	GtkWidget *window = NULL;
 	GtkWidget *top_vbox = NULL;
@@ -59,14 +60,18 @@ int setup_gui()
 	gint h = 0;
 	extern GObject *global_data;
 
-	filename = get_file(g_build_filename(GUI_DATA_DIR,"main.glade",NULL),NULL);
+	fname = g_build_filename(GUI_DATA_DIR,"main.glade",NULL);
+	filename = get_file(g_strdup(fname),NULL);
 	if (!filename)
 	{
-		printf("Can't locate primary glade file!!!!\n");
+		printf("ERROR!  Could locate %s\n",fname);
+		g_free(fname);
+		printf("MegaTunix does NOT seem to be installed correctly, make sure\n\"make install\" has been run by root from the top level source directory...\n");
 		exit(-1);
 	}
 	else
 		xml = glade_xml_new(filename, "mtx_top_vbox",NULL);
+	g_free(fname);
 	g_free(filename);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);

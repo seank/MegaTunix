@@ -12,6 +12,7 @@
  */
 
 
+#include <args.h>
 #include <binreloc.h>
 #include <comms_gui.h>
 #include <config.h>
@@ -67,6 +68,8 @@ gint main(gint argc, gchar ** argv)
 	gl_ability = gdk_gl_init_check(&argc, &argv);
 
 	gtk_set_locale();
+
+	handle_args(argc,argv);
 
 	/* Allocate memory  */
 	serial_params = g_malloc0(sizeof(Serial_Params));
