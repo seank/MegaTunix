@@ -54,7 +54,7 @@ GAsyncQueue *dispatch_queue;
  */
 gint main(gint argc, gchar ** argv)
 {
-	extern gchar * serial_port_name;
+	extern gchar * default_serial_port;
 	if(!g_thread_supported())
 		g_thread_init(NULL);
 
@@ -95,8 +95,6 @@ gint main(gint argc, gchar ** argv)
 			NULL); //GError Pointer
 
 	dispatcher_id = gtk_timeout_add(10,(GtkFunction)dispatcher,NULL);
-
-	io_cmd(IO_OPEN_SERIAL,g_strdup(serial_port_name));
 
 	/* Kickoff fast interrogation */
 	gtk_timeout_add(250,(GtkFunction)early_interrogation,NULL);

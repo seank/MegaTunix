@@ -39,8 +39,8 @@
 Serial_Params *serial_params;
 gboolean connected = FALSE;
 gboolean port_open = FALSE;
-GStaticMutex comms_mutex = G_STATIC_MUTEX_INIT;
 GStaticMutex serio_mutex = G_STATIC_MUTEX_INIT;
+GAsyncQueue *serial_repair_queue = NULL;
 gchar *win32_ports[]={"COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",NULL};
 gchar *unix_ports[]={"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3","/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3", NULL};
 extern gint dbg_lvl;
@@ -61,7 +61,6 @@ gboolean open_serial(gchar * port_name)
 	gchar * err_text = NULL;
 
 	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&comms_mutex);
 	//printf("Opening serial port %s\n",port_name);
 	device = g_strdup(port_name);
 	/* Open Read/Write and NOT as the controlling TTY */
@@ -105,7 +104,6 @@ gboolean open_serial(gchar * port_name)
 
 	g_free(device);
 	//printf("open_serial returning\n");
-	g_static_mutex_unlock(&comms_mutex);
 	g_static_mutex_unlock(&serio_mutex);
 	return port_open;
 }
@@ -122,7 +120,6 @@ gboolean open_serial(gchar * port_name)
 void flush_serial(gint fd, gint type)
 {
 	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&comms_mutex);
 #ifdef __WIN32__
 	if (fd)
 		win32_flush_serial(fd, type);
@@ -131,7 +128,6 @@ void flush_serial(gint fd, gint type)
 		tcflush(serial_params->fd, type);
 #endif	
 	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&comms_mutex);
 }
 
 
@@ -144,7 +140,6 @@ void flush_serial(gint fd, gint type)
 /*
 void toggle_serial_control_lines()
 {
-	g_static_mutex_lock(&comms_mutex);
 #ifdef __WIN32__
 	win32_toggle_serial_control_lines();
 #else
@@ -162,7 +157,6 @@ void toggle_serial_control_lines()
 	//Set back
 	tcsetattr(serial_params->fd,TCSAFLUSH,&oldtio);
 #endif
-	g_static_mutex_unlock(&comms_mutex);
 }
 */
 
@@ -171,27 +165,23 @@ void toggle_serial_control_lines()
  calls to initialize the serial port to the proper speed, bits, flow, parity
  etc..
  */
-void setup_serial_params()
+void setup_serial_params(gint baudrate)
 {
 	guint baud = 0;
 	if (serial_params->open == FALSE)
 		return;
 	//printf("setup_serial_params entered\n");
 	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&comms_mutex);
 #ifdef __WIN32__
-	win32_setup_serial_params();
+	win32_setup_serial_params(baudrate);
 #else
-	extern gint baudrate;
 	/* Save serial port status */
 	tcgetattr(serial_params->fd,&serial_params->oldtio);
 
 	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&comms_mutex);
 	flush_serial(serial_params->fd, TCIOFLUSH);
 
 	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&comms_mutex);
 
 	/* Sets up serial port for the modes we want to use. 
 	 * NOTE: Original serial tio params are stored and restored 
@@ -254,7 +244,6 @@ void setup_serial_params()
 
 #endif
 	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&comms_mutex);
 	return;
 }
 
@@ -266,17 +255,14 @@ void setup_serial_params()
 void close_serial()
 {
 	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&comms_mutex);
 	if (!serial_params)
 	{
 		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&comms_mutex);
 		return;
 	}
 	if (serial_params->open == FALSE)
 	{
 		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&comms_mutex);
 		return;
 	}
 
@@ -298,7 +284,6 @@ void close_serial()
 		dbg_func(g_strdup(__FILE__": close_serial()\n\tCOM Port Closed\n"));
 	thread_update_logbar("comms_view",NULL,g_strdup_printf("COM Port Closed\n"),TRUE,FALSE);
 	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&comms_mutex);
 	return;
 }
 
@@ -315,9 +300,8 @@ void *serial_repair_thread(gpointer data)
 	 *
 	 * Thus we need to handle all possible conditions cleanly
 	 */
-	static gboolean serial_is_open = TRUE; // Assume never opened 
-	static gboolean port_open = FALSE; // port opened, but not configgured
-	static gboolean connected = FALSE; // port opened, comm test passed
+	gboolean abort = FALSE;
+	static gboolean serial_is_open = FALSE; // Assume never opened 
 	gchar ** vector = NULL;
 	gint i = 0;
 #ifdef __WIN32__
@@ -326,6 +310,8 @@ void *serial_repair_thread(gpointer data)
 	vector = unix_ports;
 #endif
 
+	if (!serial_repair_queue)
+		serial_repair_queue = g_async_queue_new();
 	/* IF serial_is_open is true, then the port was ALREADY opened 
 	 * previously but some error occurred that sent us down here. Thus
 	 * first do a cimple comms test, if that succeeds, then just cleanup 
@@ -334,30 +320,50 @@ void *serial_repair_thread(gpointer data)
 	if (serial_is_open == TRUE)
 	{
 		i = 0;
-		while (i < 20)
+		while (i <= 5)
 		{
 			if (comms_test())
 			{
-				printf("comms test success\n");
 				g_thread_exit(0);
-				return NULL;
 			}
-			else
-				printf("comms test failure,  i = %i\n",i);
-			//g_usleep (20000);
 			i++;
 		}
-		printf("comms test failure\n");
-		//close_serial();
-		//serial_is_open = FALSE;
+		close_serial();
+		serial_is_open = FALSE;
 		/* Fall through */
-
 	}
-	if (serial_is_open == FALSE) 	// App just started, no connection yet
+	// App just started, no connection yet
+	while ((!serial_is_open) && (!abort)) 	
 	{
 		for (i=0;i<g_strv_length(vector);i++)
 		{
-			printf("Should test %s\n",vector[i]);
+			/* Messagequeue used to exit immediately */
+			if (g_async_queue_try_pop(serial_repair_queue))
+				g_thread_exit(0);
+			if (open_serial(vector[i]))
+			{
+				setup_serial_params(9600);
+				if (!comms_test())
+				{
+					setup_serial_params(115200);
+					if (!comms_test())
+					{  
+						close_serial();
+						continue;
+					}
+					else
+					{	/* We have a winner !!  Abort loop */
+						serial_is_open = TRUE;
+						break;
+					}
+
+				}
+				else
+				{	/* We have a winner !!  Abort loop */
+					serial_is_open = TRUE;
+					break;
+				}
+			}
 		}
 	}
 

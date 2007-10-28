@@ -77,17 +77,6 @@ void io_cmd(Io_Command cmd, gpointer data)
 	 */
 	switch (cmd)
 	{
-		case IO_OPEN_SERIAL:
-			message = initialize_io_message();
-			message->payload = data;
-			message->command = OPEN_SERIAL;
-			g_async_queue_push(io_queue,(gpointer)message);
-			break;
-		case IO_CLOSE_SERIAL:
-			message = initialize_io_message();
-			message->command = CLOSE_SERIAL;
-			g_async_queue_push(io_queue,(gpointer)message);
-			break;
 		case IO_REALTIME_READ:
 			message = initialize_io_message();
 			message->cmd = cmd;
@@ -177,8 +166,6 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->out_len = 1;
 			message->handler = GET_ERROR;
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_RUN_COMMS_TEST;
-			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_FORCE_UPDATE;
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_FORCE_PAGE_CHANGE;
@@ -227,21 +214,6 @@ void io_cmd(Io_Command cmd, gpointer data)
 				g_array_append_val(message->funcs,tmp);
 			}
 			tmp = UPD_READ_VE_CONST;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_push(io_queue,(gpointer)message);
-			break;
-		case IO_COMMS_TEST:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = COMMS_TEST;
-			message->page = 0;
-			message->truepgnum = 0;
-			message->need_page_change = FALSE;
-			message->out_str = g_strdup("Q");
-			message->out_len = 1;
-			message->handler = C_TEST;
-			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-			tmp = UPD_COMMS_STATUS;
 			g_array_append_val(message->funcs,tmp);
 			g_async_queue_push(io_queue,(gpointer)message);
 			break;
@@ -382,7 +354,6 @@ void *thread_dispatcher(gpointer data)
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *dispatch_queue;
 	extern gboolean port_open;
-	extern gchar * serial_port_name;
 	extern volatile gboolean leaving;
 	GTimeVal cur;
 	Io_Message *message = NULL;	
@@ -408,58 +379,14 @@ void *thread_dispatcher(gpointer data)
 			continue;
 
 		//if ((!offline) && (!connected) && (failurecount > 20))
-		if ((!connected) && (port_open) && (!offline))
+		if ((((!connected) && (port_open) && (!offline))) || (!port_open))
 		{
 			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
-			printf("thread created, now trying to join\n");
 			g_thread_join(repair_thread);
-			printf("serial repair ended\n");
-//			queue_function(g_strdup("conn_warning"));
-//			io_cmd(IO_CLOSE_SERIAL,NULL);
-//			io_cmd(IO_OPEN_SERIAL,g_strdup(serial_port_name));
-//			failurecount = 0;
 		}
-		/*
-		if ((!connected) && (port_open) && (!offline))
-		{
-			if (dbg_lvl & THREADS)
-				dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Not connected but link up and not offline, forcing automatic comms test\n"));
-			comms_test();
-		}
-		*/
-
 
 		switch ((CmdType)message->command)
 		{
-			case OPEN_SERIAL:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Open Serial case entered\n"));
-				if (port_open)
-				{
-					if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tOpen Serial called but port is already OPEN, ERROR!\n"));
-				}
-				else
-					if (open_serial((gchar *)message->payload))
-						setup_serial_params();
-					else
-						queue_function(g_strdup("conn_warning"));
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Open Serial case leaving\n"));
-				break;
-			case CLOSE_SERIAL:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Close Serial case entered\n"));
-				if (!port_open)
-				{
-					if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tClose Serial called but port is already closed, ERROR!\n"));
-				}
-				else
-					close_serial();
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Close Serial case leaving\n"));
-				break;
 			case INTERROGATION:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case entered\n"));
@@ -488,6 +415,7 @@ void *thread_dispatcher(gpointer data)
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case leaving\n"));
 				break;
+				/*
 			case COMMS_TEST:
 				if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tcomms_test requested \n"));
@@ -500,6 +428,7 @@ void *thread_dispatcher(gpointer data)
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tcomms_test case leaving\n"));
 				break;
+				*/
 			case READ_CMD:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tread_cmd case entered\n"));

@@ -123,7 +123,7 @@ void finalize_core_gui(GladeXML * xml)
 	gchar * tmpbuf = NULL;
 	extern gint temp_units;
 	extern gboolean tips_in_use;
-	extern gchar * serial_port_name;
+	extern gchar * default_serial_port;
 	extern gint baudrate;
 	extern GObject *global_data;
 	extern Serial_Params *serial_params;
@@ -264,8 +264,8 @@ void finalize_core_gui(GladeXML * xml)
 	/* COMMS Tab commport entry */
 	widget = glade_xml_get_widget(xml,"commport_entry");
 	register_widget("comms_serial_port_entry",widget);
-	if (serial_port_name)
-		gtk_entry_set_text(GTK_ENTRY(widget),serial_port_name);
+	if (default_serial_port)
+		gtk_entry_set_text(GTK_ENTRY(widget),default_serial_port);
 
 	/* COMMS Baud radio buttons */
 	widget = glade_xml_get_widget(xml,"9600-baud-rbutton");
@@ -288,10 +288,6 @@ void finalize_core_gui(GladeXML * xml)
 		gtk_toggle_button_set_inconsistent(GTK_TOGGLE_BUTTON(widget),FALSE);
 	}
 
-
-	/* COMMS Tab Test ECU Comms button */
-	widget = glade_xml_get_widget(xml,"test_comms_button");
-	g_object_set_data(G_OBJECT(widget),"handler",GINT_TO_POINTER(CHECK_ECU_COMMS));
 
 	/* COMMS Tab Read delay subtable */
 	ebox = glade_xml_get_widget(xml,"read_delay_ebox");

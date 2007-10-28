@@ -32,9 +32,8 @@ gint minor_ver;
 gint micro_ver;
 gint preferred_delimiter;
 gint baudrate;
-gchar * serial_port_name = NULL;
+gchar * default_serial_port = NULL;
 extern gint dbg_lvl;
-extern GStaticMutex comms_mutex;
 extern gint mem_view_style[];
 extern gint ms_reset_count;
 extern gint ms_goodread_count;
@@ -89,9 +88,9 @@ void init(void)
 
 	/* initialize all global variables to known states */
 #ifdef __WIN32__
-	serial_port_name = g_strdup("COM1");
+	default_serial_port = g_strdup("COM1");
 #else
-	serial_port_name = g_strdup("/dev/ttyS0");
+	default_serial_port = g_strdup("/dev/ttyS0");
 #endif
 	serial_params->fd = 0; /* serial port file-descriptor */
 
@@ -174,7 +173,7 @@ gboolean read_config(void)
 		if (cfg_read_int(cfgfile, "Window", "main_y_origin", &tmpi))
 			g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(tmpi));
 		cfg_read_string(cfgfile, "Serial", "port_name", 
-				&serial_port_name);
+				&default_serial_port);
 		cfg_read_int(cfgfile, "Serial", "read_wait", 
 				&serial_params->read_wait);
 		cfg_read_int(cfgfile, "Serial", "baudrate", 
@@ -474,15 +473,16 @@ void mem_dealloc()
 {
 	gint i = 0;
 	extern Firmware_Details *firmware;
+	extern GStaticMutex serio_mutex;
 
-	g_static_mutex_lock(&comms_mutex);
+	g_static_mutex_lock(&serio_mutex);
 	if (serial_params->port_name)
 		g_free(serial_params->port_name);
 	serial_params->port_name = NULL;
 	if (serial_params)
 		g_free(serial_params);
 	serial_params = NULL;
-	g_static_mutex_unlock(&comms_mutex);
+	g_static_mutex_unlock(&serio_mutex);
 
 	/* Firmware datastructure.... */
 	if (firmware)

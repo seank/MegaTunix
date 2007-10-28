@@ -33,7 +33,6 @@ gint ms_goodread_count;
 gint ms_ve_goodread_count;
 gint just_starting;
 extern gint dbg_lvl;
-extern GStaticMutex comms_mutex;
 extern GStaticMutex serio_mutex;
 
 
@@ -80,7 +79,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			total_wanted = 1024;
 			zerocount = 0;
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while (total_read < total_wanted )
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -101,7 +99,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 				if (zerocount > 1)  /* 2 bad reads, abort */
 					break;
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			flush_serial(serial_params->fd, TCIOFLUSH);
 			break;
@@ -116,7 +113,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			zerocount = 0;
 
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -146,7 +142,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 					break;
 				}
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			if (bad_read)
 			{
@@ -168,7 +163,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			total_wanted=1024;
 			zerocount=0;
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -194,7 +188,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 				if (zerocount > 1)  // 2 bad reads, abort
 					break;
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			dump_output(total_read,buf);
 			flush_serial(serial_params->fd, TCIOFLUSH);
@@ -229,7 +222,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			zerocount = 0;
 
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -259,7 +251,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 					break;
 				}
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			if (bad_read)
 			{
@@ -307,7 +298,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			zerocount = 0;
 
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -337,7 +327,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 					break;
 				}
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			/* the number of bytes expected for raw data read */
 			if (bad_read)
@@ -366,7 +355,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			zerocount = 0;
 
 			g_static_mutex_lock(&serio_mutex);
-			g_static_mutex_lock(&comms_mutex);
 			while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
 			{
 				if (dbg_lvl & IO_PROCESS)
@@ -395,7 +383,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 					break;
 				}
 			}
-			g_static_mutex_unlock(&comms_mutex);
 			g_static_mutex_unlock(&serio_mutex);
 			/* the number of bytes expected for raw data read */
 			if (bad_read)
