@@ -38,9 +38,11 @@
 
 Serial_Params *serial_params;
 gboolean connected = FALSE;
-gboolean link_up = FALSE;
+gboolean port_open = FALSE;
 GStaticMutex comms_mutex = G_STATIC_MUTEX_INIT;
 GStaticMutex serio_mutex = G_STATIC_MUTEX_INIT;
+gchar *win32_ports[]={"COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",NULL};
+gchar *unix_ports[]={"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3","/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3", NULL};
 extern gint dbg_lvl;
 
 /*!
@@ -75,7 +77,7 @@ gboolean open_serial(gchar * port_name)
 		/* NO Errors occurred opening the port */
 		serial_params->port_name = g_strdup(port_name); 
 		serial_params->open = TRUE;
-		link_up = TRUE;
+		port_open = TRUE;
 		serial_params->fd = fd;
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
 			dbg_func(g_strdup_printf(__FILE__" open_serial()\n\t%s Opened Successfully\n",device));
@@ -86,7 +88,7 @@ gboolean open_serial(gchar * port_name)
 	{
 		/* FAILURE */
 		/* An Error occurred opening the port */
-		link_up = FALSE;
+		port_open = FALSE;
 		if (serial_params->port_name)
 			g_free(serial_params->port_name);
 		serial_params->port_name = NULL;
@@ -105,7 +107,7 @@ gboolean open_serial(gchar * port_name)
 	//printf("open_serial returning\n");
 	g_static_mutex_unlock(&comms_mutex);
 	g_static_mutex_unlock(&serio_mutex);
-	return link_up;
+	return port_open;
 }
 	
 
@@ -289,7 +291,7 @@ void close_serial()
 		g_free(serial_params->port_name);
 	serial_params->port_name = NULL;
 	connected = FALSE;
-	link_up = FALSE;
+	port_open = FALSE;
 
 	/* An Closing the comm port */
 	if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
@@ -300,3 +302,65 @@ void close_serial()
 	return;
 }
 
+
+void *serial_repair_thread(gpointer data)
+{
+	/* We got sent here because of one of the following occurred:
+	 * Serial port isn't opened yet (app just fired up)
+	 * Serial I/O errors (missing data, or failures reading/writing)
+	 *  - This includes things like pulling hte RS232 cable out of the ECU
+	 * Serial port disappeared (i.e. device hot unplugged)
+	 *  - This includes unplugging the USB side of a USB->Serial adapter
+	 *    or going out of bluetooth range, for a BT serial device
+	 *
+	 * Thus we need to handle all possible conditions cleanly
+	 */
+	static gboolean serial_is_open = TRUE; // Assume never opened 
+	static gboolean port_open = FALSE; // port opened, but not configgured
+	static gboolean connected = FALSE; // port opened, comm test passed
+	gchar ** vector = NULL;
+	gint i = 0;
+#ifdef __WIN32__
+	vector = win32_ports;
+#else
+	vector = unix_ports;
+#endif
+
+	/* IF serial_is_open is true, then the port was ALREADY opened 
+	 * previously but some error occurred that sent us down here. Thus
+	 * first do a cimple comms test, if that succeeds, then just cleanup 
+	 * and return,  if not, close the port and essentially start over.
+	 */
+	if (serial_is_open == TRUE)
+	{
+		i = 0;
+		while (i < 20)
+		{
+			if (comms_test())
+			{
+				printf("comms test success\n");
+				g_thread_exit(0);
+				return NULL;
+			}
+			else
+				printf("comms test failure,  i = %i\n",i);
+			//g_usleep (20000);
+			i++;
+		}
+		printf("comms test failure\n");
+		//close_serial();
+		//serial_is_open = FALSE;
+		/* Fall through */
+
+	}
+	if (serial_is_open == FALSE) 	// App just started, no connection yet
+	{
+		for (i=0;i<g_strv_length(vector);i++)
+		{
+			printf("Should test %s\n",vector[i]);
+		}
+	}
+
+	g_thread_exit(0);
+	return NULL;
+}

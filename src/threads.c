@@ -40,6 +40,7 @@
 extern gboolean connected;			/* valid connection with MS */
 extern gboolean offline;			/* ofline mode with MS */
 extern gboolean interrogated;			/* valid connection with MS */
+GThread * repair_thread = NULL;
 extern gint dbg_lvl;
 gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test","Get ECU Error", "NULL Handler"};
 
@@ -380,7 +381,7 @@ void *thread_dispatcher(gpointer data)
 {
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *dispatch_queue;
-	extern gboolean link_up;
+	extern gboolean port_open;
 	extern gchar * serial_port_name;
 	extern volatile gboolean leaving;
 	GTimeVal cur;
@@ -401,24 +402,31 @@ void *thread_dispatcher(gpointer data)
 			{}
 			g_thread_exit(0);
 		}
-		if ((!link_up) && (!offline))
+		if ((!port_open) && (!offline))
 			failurecount++;
 		if (!message) /* NULL message */
 			continue;
 
-		if ((!offline) && (failurecount > 20))
+		//if ((!offline) && (!connected) && (failurecount > 20))
+		if ((!connected) && (port_open) && (!offline))
 		{
-			queue_function(g_strdup("conn_warning"));
-			io_cmd(IO_CLOSE_SERIAL,NULL);
-			io_cmd(IO_OPEN_SERIAL,g_strdup(serial_port_name));
-			failurecount = 0;
+			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
+			printf("thread created, now trying to join\n");
+			g_thread_join(repair_thread);
+			printf("serial repair ended\n");
+//			queue_function(g_strdup("conn_warning"));
+//			io_cmd(IO_CLOSE_SERIAL,NULL);
+//			io_cmd(IO_OPEN_SERIAL,g_strdup(serial_port_name));
+//			failurecount = 0;
 		}
-		if ((!connected) && (link_up) && (!offline))
+		/*
+		if ((!connected) && (port_open) && (!offline))
 		{
 			if (dbg_lvl & THREADS)
 				dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Not connected but link up and not offline, forcing automatic comms test\n"));
 			comms_test();
 		}
+		*/
 
 
 		switch ((CmdType)message->command)
@@ -426,7 +434,7 @@ void *thread_dispatcher(gpointer data)
 			case OPEN_SERIAL:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Open Serial case entered\n"));
-				if (link_up)
+				if (port_open)
 				{
 					if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
 						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tOpen Serial called but port is already OPEN, ERROR!\n"));
@@ -442,7 +450,7 @@ void *thread_dispatcher(gpointer data)
 			case CLOSE_SERIAL:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\t Close Serial case entered\n"));
-				if (!link_up)
+				if (!port_open)
 				{
 					if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
 						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tClose Serial called but port is already closed, ERROR!\n"));
@@ -455,7 +463,7 @@ void *thread_dispatcher(gpointer data)
 			case INTERROGATION:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case entered\n"));
-				if (!link_up)
+				if (!port_open)
 				{
 					if (dbg_lvl & (THREADS|CRITICAL))
 						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tLINK DOWN, Interrogate_ecu requested, aborting call\n"));
@@ -495,7 +503,7 @@ void *thread_dispatcher(gpointer data)
 			case READ_CMD:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tread_cmd case entered\n"));
-				if (!link_up)
+				if (!port_open)
 				{
 					if (dbg_lvl & (THREADS|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, read_command requested, call aborted \n"));
@@ -511,7 +519,7 @@ void *thread_dispatcher(gpointer data)
 			case WRITE_CMD:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\twrite_cmd case entered\n"));
-				if ((!link_up) && (!offline))
+				if ((!port_open) && (!offline))
 				{
 					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, write_command requested, call aborted \n"));
@@ -532,7 +540,7 @@ void *thread_dispatcher(gpointer data)
 			case BURN_CMD:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tburn_cmd case entered\n"));
-				if (!link_up)
+				if (!port_open)
 				{
 					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, burn_command requested, call aborted \n"));

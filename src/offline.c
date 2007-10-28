@@ -61,6 +61,7 @@ void set_offline_mode(void)
 
 	/* Disable interrogation button */
 
+	offline = TRUE;
 	filename = present_firmware_choices();
 	if (!filename)
 	{
@@ -75,7 +76,6 @@ void set_offline_mode(void)
 		return;
 
 	}
-	offline = TRUE;
 
 	widget = g_hash_table_lookup(dynamic_widgets,"interrogate_button");
 	if (GTK_IS_WIDGET(widget))
@@ -178,8 +178,6 @@ gchar * present_firmware_choices()
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				"Load",
 				GTK_RESPONSE_OK,
-				"Abort",
-				GTK_RESPONSE_CANCEL,
 				NULL);
 
 	vbox = gtk_vbox_new(TRUE,5);

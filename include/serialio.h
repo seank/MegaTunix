@@ -23,6 +23,7 @@ void close_serial(void);
 void setup_serial_params(void);
 void toggle_serial_control_lines(void );
 void flush_serial(gint,gint);
+void *serial_repair_thread(gpointer );
 /* Prototypes */
 
 #endif

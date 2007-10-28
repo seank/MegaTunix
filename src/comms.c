@@ -62,7 +62,7 @@ void update_comms_status(void)
  \see update_comms_status
  */
 
-void comms_test()
+gint comms_test()
 {
 	gboolean result = FALSE;
 	gchar * err_text = NULL;
@@ -79,7 +79,7 @@ void comms_test()
 	{
 		if (dbg_lvl & SERIAL_RD)
 			dbg_func(g_strdup(__FILE__": comms_test()\n\t no Serial Params, leaving comms_test()...\n"));
-		return;
+		return FALSE;
 	}
 
 	if (dbg_lvl & SERIAL_RD)
@@ -96,18 +96,19 @@ void comms_test()
 		connected = FALSE;
 		g_static_mutex_unlock(&comm_test_mutex);
 		g_static_mutex_unlock(&serio_mutex);
-		return;
+		return connected;
 	}
 
 	/* If serial not open */
 	if (!serial_params->open)
 	{
+		connected = FALSE;
 		if (dbg_lvl & (SERIAL_RD|CRITICAL))
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tSerial Port is NOT opened can NOT check ecu comms...\n"));
 		thread_update_logbar("comms_view","warning",g_strdup("Serial Port is NOT opened can NOT check ecu comms...\n"),TRUE,FALSE);
 		g_static_mutex_unlock(&comm_test_mutex);
 		g_static_mutex_unlock(&serio_mutex);
-		return;
+		return connected;
 	}
 
 	/* Try toggling the control lines */
@@ -134,7 +135,7 @@ void comms_test()
 		connected = FALSE;
 		failurecount++;
 		g_static_mutex_unlock(&comm_test_mutex);
-		return;
+		return connected;
 	}
 	g_static_mutex_unlock(&comms_mutex);
 	g_static_mutex_unlock(&serio_mutex);
@@ -157,7 +158,7 @@ void comms_test()
 			connected = FALSE;
 			failurecount++;
 			g_static_mutex_unlock(&comm_test_mutex);
-			return;
+			return connected;
 		}
 		g_static_mutex_unlock(&comms_mutex);
 		g_static_mutex_unlock(&serio_mutex);
@@ -186,7 +187,7 @@ void comms_test()
 	/* Flush the toilet again.... */
 	flush_serial(serial_params->fd, TCIOFLUSH);
 	g_static_mutex_unlock(&comm_test_mutex);
-	return;
+	return connected;
 }
 
 
