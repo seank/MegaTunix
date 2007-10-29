@@ -67,8 +67,6 @@ gint comms_test()
 	gchar * err_text = NULL;
 	extern Serial_Params *serial_params;
 	extern gboolean connected;
-	extern gboolean offline;
-	extern gint failurecount;
 
 	if (dbg_lvl & SERIAL_RD)
 		dbg_func(g_strdup(__FILE__": comms_test()\n\t Entered...\n"));
@@ -122,126 +120,6 @@ gint comms_test()
 	}
 	return connected;
 }
-
-/*gint comms_test()
-{
-	gboolean result = FALSE;
-	gchar * err_text = NULL;
-	extern Serial_Params *serial_params;
-	extern gboolean connected;
-	extern gboolean offline;
-	extern gint failurecount;
-	static GStaticMutex comm_test_mutex = G_STATIC_MUTEX_INIT;
-
-	//printf("comms_test\n");
-	if (dbg_lvl & SERIAL_RD)
-		dbg_func(g_strdup(__FILE__": comms_test()\n\t Entered...\n"));
-	if (!serial_params)
-	{
-		if (dbg_lvl & SERIAL_RD)
-			dbg_func(g_strdup(__FILE__": comms_test()\n\t no Serial Params, leaving comms_test()...\n"));
-		return FALSE;
-	}
-
-	if (dbg_lvl & SERIAL_RD)
-		dbg_func(g_strdup(__FILE__": comms_test()\n\t Before locking serio_mutex\n"));
-	g_static_mutex_lock(&serio_mutex);
-	if (dbg_lvl & SERIAL_RD)
-		dbg_func(g_strdup(__FILE__": comms_test()\n\t After locking serio_mutex\n"));
-	g_static_mutex_lock(&comm_test_mutex);
-	if (dbg_lvl & SERIAL_RD)
-		dbg_func(g_strdup(__FILE__": comms_test()\n\t After locking comm_text_mutex\n"));
-	if (offline)
-	{
-		queue_function(g_strdup("kill_conn_warning"));
-		connected = FALSE;
-		g_static_mutex_unlock(&comm_test_mutex);
-		g_static_mutex_unlock(&serio_mutex);
-		return connected;
-	}
-
-	// If serial not open 
-	if (!serial_params->open)
-	{
-		connected = FALSE;
-		if (dbg_lvl & (SERIAL_RD|CRITICAL))
-			dbg_func(g_strdup(__FILE__": comms_test()\n\tSerial Port is NOT opened can NOT check ecu comms...\n"));
-		thread_update_logbar("comms_view","warning",g_strdup("Serial Port is NOT opened can NOT check ecu comms...\n"),TRUE,FALSE);
-		g_static_mutex_unlock(&comm_test_mutex);
-		g_static_mutex_unlock(&serio_mutex);
-		return connected;
-	}
-
-	// Flush the toilet.... 
-	g_static_mutex_unlock(&serio_mutex);
-	flush_serial(serial_params->fd, TCIOFLUSH);	
-	g_static_mutex_lock(&serio_mutex);
-
-	if (dbg_lvl & SERIAL_RD)
-		dbg_func(g_strdup(__FILE__": comms_test()\n\tRequesting ECU Clock (\"C\" cmd)\n"));
-	if (write(serial_params->fd,"C",1) != 1)
-	{
-		err_text = (gchar *)g_strerror(errno);
-		if (dbg_lvl & (SERIAL_RD|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": comms_test()\n\tError writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text));
-		thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text),TRUE,FALSE);
-		//printf(__FILE__": comms_test()\n\tError writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text);
-		g_static_mutex_unlock(&serio_mutex);
-		flush_serial(serial_params->fd, TCIOFLUSH);
-		connected = FALSE;
-		failurecount++;
-		g_static_mutex_unlock(&comm_test_mutex);
-		return connected;
-	}
-	g_static_mutex_unlock(&serio_mutex);
-	result = handle_ecu_data(C_TEST,NULL);
-	if (!result) // Failure,  Attempt MS-II method
-	{
-		g_static_mutex_lock(&serio_mutex);
-		//if (write(serial_params->fd,"C",1) != 1)
-		if (write(serial_params->fd,"c",1) != 1)
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_RD|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": comms_test()\n\tError writing \"c\" (MS-II clock test) to the ecu, ERROR \"%s\" in comms_test()\n",err_text));
-			thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"c\" (MS-II clock test) to the ecu, ERROR \"%s\" in comms_test()\n",err_text),TRUE,FALSE);
-			//printf(__FILE__": comms_test()\n\tError writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text);
-			g_static_mutex_unlock(&serio_mutex);
-			flush_serial(serial_params->fd, TCIOFLUSH);
-			connected = FALSE;
-			failurecount++;
-			g_static_mutex_unlock(&comm_test_mutex);
-			return connected;
-		}
-		g_static_mutex_unlock(&serio_mutex);
-		result = handle_ecu_data(C_TEST,NULL);
-	}
-	if (result)	// Success
-	{
-		connected = TRUE;
-		if (dbg_lvl & SERIAL_RD)
-			dbg_func(g_strdup(__FILE__": comms_test()\n\tECU Comms Test Successfull\n"));
-		queue_function(g_strdup("kill_conn_warning"));
-		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("ECU Connected..."));
-		thread_update_logbar("comms_view",NULL,g_strdup_printf("ECU Comms Test Successfull\n"),TRUE,FALSE);
-
-	}
-	else
-	{
-		// An I/O Error occurred with the MegaSquirt ECU 
-		connected = FALSE;
-		queue_function(g_strdup("conn_warning"));
-		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("COMMS ISSUES: Check COMMS tab"));
-		if (dbg_lvl & (SERIAL_RD|IO_PROCESS))
-			dbg_func(g_strdup(__FILE__": comms_test()\n\tI/O with ECU Timeout\n"));
-		thread_update_logbar("comms_view","warning",g_strdup_printf("I/O with ECU Timeout\n"),TRUE,FALSE);
-	}
-	// Flush the toilet again.... 
-	flush_serial(serial_params->fd, TCIOFLUSH);
-	g_static_mutex_unlock(&comm_test_mutex);
-	return connected;
-}
-*/
 
 
 /*!

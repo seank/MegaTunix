@@ -40,7 +40,6 @@
 extern gboolean connected;			/* valid connection with MS */
 extern gboolean offline;			/* ofline mode with MS */
 extern gboolean interrogated;			/* valid connection with MS */
-GThread * repair_thread = NULL;
 extern gint dbg_lvl;
 gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test","Get ECU Error", "NULL Handler"};
 
@@ -351,6 +350,7 @@ void io_cmd(Io_Command cmd, gpointer data)
  */
 void *thread_dispatcher(gpointer data)
 {
+	GThread * repair_thread = NULL;
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *dispatch_queue;
 	extern gboolean port_open;

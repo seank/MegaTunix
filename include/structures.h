@@ -58,6 +58,7 @@ typedef struct _Logview_Data Logview_Data;
 typedef struct _TTMon_Data TTMon_Data;
 typedef struct _MultiExpr MultiExpr;
 typedef struct _MultiSource MultiSource;
+typedef struct _CmdLineArgs CmdLineArgs;
 
 /*! 
  \brief _Serial_Params holds all variables related to the state of the serial
@@ -771,6 +772,26 @@ struct _MultiSource
 	void * evaluator;	/* evaluator pointer */
 	gchar * suffix;		/* textual suffix for this evaluator*/
 	gint precision;		/* Precision for floating point */
+};
+
+
+/*!
+ * \brief _Args struct is a container to hold the command line argument
+ * related variables, used to make mtx quiet, suppress portions of the gui
+ * and autolog to files.
+ */
+struct _CmdLineArgs
+{
+	gboolean debug;		/* Debug to console */
+	gboolean version;	/* Show Version */
+	gboolean be_quiet;	/* No error popups */
+	gboolean autolog_dump;	/* Automatically dump full logs periodically */
+	gboolean hide_rtvars;	/* Hide Runtime Variable Window */
+	gboolean hide_status;	/* Hide Status Window */
+	gboolean hide_maingui;	/* Hide Main Gui (Dash only mode */
+	gint autolog_minutes;	/* How many minutes to log per file */
+	gchar * autolog_dump_dir;/* What dir to put logs into */
+	gchar *autolog_basename;/* Autolog base filename */
 };
 
 #endif

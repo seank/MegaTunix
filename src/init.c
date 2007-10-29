@@ -33,6 +33,7 @@ gint micro_ver;
 gint preferred_delimiter;
 gint baudrate;
 gchar * default_serial_port = NULL;
+gchar *potential_ports = NULL;
 extern gint dbg_lvl;
 extern gint mem_view_style[];
 extern gint ms_reset_count;
@@ -55,6 +56,7 @@ extern Serial_Params *serial_params;
 gint **ms_data = NULL;
 gint **ms_data_last = NULL;
 gint **ms_data_backup = NULL;
+CmdLineArgs *args = NULL;
 GList ***ve_widgets = NULL;
 GList **tab_gauges = NULL;
 GHashTable **interdep_vars = NULL;
@@ -89,8 +91,10 @@ void init(void)
 	/* initialize all global variables to known states */
 #ifdef __WIN32__
 	default_serial_port = g_strdup("COM1");
+	potential_ports = g_strdup("COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9");
 #else
 	default_serial_port = g_strdup("/dev/ttyS0");
+	potential_ports = g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3");
 #endif
 	serial_params->fd = 0; /* serial port file-descriptor */
 
@@ -107,6 +111,16 @@ void init(void)
 	temp_units = FAHRENHEIT;/* Use SAE units by default */
 	lv_zoom = 1;		/* Logviewer scroll speed */
 	preferred_delimiter = TAB;
+
+	args = g_new0(CmdLineArgs, 1);
+	args->be_quiet = FALSE;
+	args->autolog_dump = FALSE;
+	args->hide_rtvars = FALSE;
+	args->hide_status = FALSE;
+	args->hide_maingui = FALSE;
+	args->autolog_minutes = 5;
+	args->autolog_dump_dir = NULL;
+	args->autolog_basename = NULL;
 }
 
 
@@ -174,6 +188,8 @@ gboolean read_config(void)
 			g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(tmpi));
 		cfg_read_string(cfgfile, "Serial", "port_name", 
 				&default_serial_port);
+		cfg_read_string(cfgfile, "Serial", "potential_ports", 
+				&potential_ports);
 		cfg_read_int(cfgfile, "Serial", "read_wait", 
 				&serial_params->read_wait);
 		cfg_read_int(cfgfile, "Serial", "baudrate", 
@@ -333,6 +349,8 @@ void save_config(void)
 	if (serial_params->port_name)
 		cfg_write_string(cfgfile, "Serial", "port_name", 
 				serial_params->port_name);
+	cfg_write_string(cfgfile, "Serial", "potential_ports", 
+				potential_ports);
 	cfg_write_int(cfgfile, "Serial", "read_wait", 
 			serial_params->read_wait);
 	cfg_write_int(cfgfile, "Serial", "baudrate", baudrate);

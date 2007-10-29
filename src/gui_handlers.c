@@ -96,7 +96,6 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	extern GAsyncQueue *dispatch_queue;
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
-	extern GThread *repair_thread;
 	gboolean tmp = TRUE;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;

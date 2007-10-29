@@ -54,7 +54,6 @@ GAsyncQueue *dispatch_queue;
  */
 gint main(gint argc, gchar ** argv)
 {
-	extern gchar * default_serial_port;
 	if(!g_thread_supported())
 		g_thread_init(NULL);
 
@@ -69,13 +68,13 @@ gint main(gint argc, gchar ** argv)
 
 	gtk_set_locale();
 
-	handle_args(argc,argv);
 
 	/* Allocate memory  */
 	serial_params = g_malloc0(sizeof(Serial_Params));
 	cmds = g_malloc0(sizeof(Io_Cmds));
 
 	init();			/* Initialize global vars */
+	handle_args(argc,argv);
 	open_debugfile();	/* Open debug log */
 	make_megasquirt_dirs();	/* Create config file dirs if missing */
 	/* Build table of strings to enum values */

@@ -62,7 +62,11 @@ void load_status(void)
 	GtkWidget * frame;
 	GtkWidget * table;
 	extern GObject *global_data;
+	extern CmdLineArgs *args;
 	GdkColor color;
+
+	if (args->hide_status)
+		return;
 
 	if (!firmware->status_map_file)
 	{

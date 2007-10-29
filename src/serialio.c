@@ -41,8 +41,6 @@ gboolean connected = FALSE;
 gboolean port_open = FALSE;
 GStaticMutex serio_mutex = G_STATIC_MUTEX_INIT;
 GAsyncQueue *serial_repair_queue = NULL;
-gchar *win32_ports[]={"COM1","COM2","COM3","COM4","COM5","COM6","COM7","COM8","COM9",NULL};
-gchar *unix_ports[]={"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3","/dev/ttyS0","/dev/ttyS1","/dev/ttyS2","/dev/ttyS3", NULL};
 extern gint dbg_lvl;
 
 /*!
@@ -302,13 +300,9 @@ void *serial_repair_thread(gpointer data)
 	 */
 	gboolean abort = FALSE;
 	static gboolean serial_is_open = FALSE; // Assume never opened 
+	extern gchar * potential_ports;
 	gchar ** vector = NULL;
 	gint i = 0;
-#ifdef __WIN32__
-	vector = win32_ports;
-#else
-	vector = unix_ports;
-#endif
 
 	if (!serial_repair_queue)
 		serial_repair_queue = g_async_queue_new();
@@ -332,6 +326,7 @@ void *serial_repair_thread(gpointer data)
 		serial_is_open = FALSE;
 		/* Fall through */
 	}
+	vector = g_strsplit(potential_ports,",",-1);
 	// App just started, no connection yet
 	while ((!serial_is_open) && (!abort)) 	
 	{
@@ -340,6 +335,8 @@ void *serial_repair_thread(gpointer data)
 			/* Messagequeue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
 				g_thread_exit(0);
+			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
+				continue;
 			if (open_serial(vector[i]))
 			{
 				setup_serial_params(9600);
@@ -367,6 +364,8 @@ void *serial_repair_thread(gpointer data)
 		}
 	}
 
+	if (vector)
+		g_strfreev(vector);
 	g_thread_exit(0);
 	return NULL;
 }

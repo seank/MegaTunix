@@ -54,12 +54,13 @@ void load_rt_text()
 	gint major = 0;
 	gint minor = 0;
 	extern GObject *global_data;
+	extern CmdLineArgs *args;
 	extern volatile gboolean leaving;
 	extern gboolean tabs_loaded;
 	extern gboolean rtvars_loaded;
 	extern Firmware_Details *firmware;
 
-	if ((!tabs_loaded) || (!firmware) || (leaving))
+	if ((!tabs_loaded) || (!firmware) || (leaving) || (args->hide_rtvars))
 		return;
 	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
 	{
