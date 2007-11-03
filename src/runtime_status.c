@@ -185,6 +185,7 @@ void load_status(void)
 			}
 
 			bind_keys(G_OBJECT(label),cfgfile,section,keys,key_types,num_keys);
+			g_strfreev(keys);
 			g_free(key_types);
 			/* Bind widgets to lists if thy have the bind_to_list flag set...
 			 *         */

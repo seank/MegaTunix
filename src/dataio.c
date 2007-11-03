@@ -55,6 +55,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 	guchar buf[2048];
 	guchar *ptr = buf;
 	gchar *err_text = NULL;
+	gchar *tmpbuf = NULL;
 	extern gint **ms_data;
 	extern gint **ms_data_last;
 	extern Serial_Params *serial_params;
@@ -201,14 +202,22 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			{
 				thread_update_logbar("error_status_view",NULL,g_strndup(((gchar *)buf)+1,total_read-1),FALSE,FALSE);
 				if (dbg_lvl & (IO_PROCESS|SERIAL_RD))
-					dbg_func(g_strdup_printf(__FILE__"\tECU  ERROR string: \"%s\"\n",g_strndup(((gchar *)buf)+1,total_read-1)));
+				{
+					tmpbuf = g_strndup(((gchar *)buf)+1,total_read-1);
+					dbg_func(g_strdup_printf(__FILE__"\tECU  ERROR string: \"%s\"\n",tmpbuf));
+					g_free(tmpbuf);
+				}
 
 			}
 			else
 			{
 				thread_update_logbar("error_status_view",NULL,g_strdup("The data that came back was jibberish, try rebooting again.\n"),FALSE,FALSE);
 				if (dbg_lvl & (IO_PROCESS|SERIAL_RD))
-					dbg_func(g_strdup_printf(__FILE__"\tECU  ERROR string: \"%s\"\n",g_strndup(((gchar *)buf)+1,total_read-1)));
+				{
+					tmpbuf = g_strndup(((gchar *)buf)+1,total_read-1);
+					dbg_func(g_strdup_printf(__FILE__"\tECU  ERROR string: \"%s\"\n",tmpbuf));
+					g_free(tmpbuf);
+				}
 			}
 			break;
 
@@ -420,6 +429,7 @@ jumpout:
 void dump_output(gint total_read, guchar *buf)
 {
 	guchar *p = NULL;
+	gchar * tmpbuf = NULL;
 	gint j = 0;
 
 	p = buf;
@@ -429,8 +439,10 @@ void dump_output(gint total_read, guchar *buf)
 		if (dbg_lvl & SERIAL_RD)
 		{
 			dbg_func(g_strdup_printf(__FILE__": dataio.c()\n\tDumping output, enable IO_PROCESS debug to see the cmd's that were sent\n"));
-			dbg_func(g_strdup_printf(__FILE__": dataio.c()\n\tDumping Output string: \"%s\"\n",g_strndup(((gchar *)buf),total_read)));
 			dbg_func(g_strdup_printf("Data is in HEX!!\n"));
+			tmpbuf = g_strndup(((gchar *)buf),total_read);
+			dbg_func(g_strdup_printf(__FILE__": dataio.c()\n\tDumping Output string: \"%s\"\n",tmpbuf));
+			g_free(tmpbuf);
 		}
 		for (j=0;j<total_read;j++)
 		{

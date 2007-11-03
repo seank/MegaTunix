@@ -104,7 +104,10 @@ trypop:
 		for (i=0;i<len;i++)
 		{
 			if (leaving)
+			{
+				dealloc_message(message);
 				return TRUE;
+			}
 
 			val = g_array_index(message->funcs,UpdateFunction, i);
 
@@ -217,7 +220,7 @@ trypop:
 					break;
 				case UPD_START_STATUSCOUNTS:
 					if ((connected) && (interrogated))
-						 statuscounts_id = gtk_timeout_add(100,(GtkFunction)update_errcounts,NULL);
+						statuscounts_id = gtk_timeout_add(100,(GtkFunction)update_errcounts,NULL);
 					break;
 				case UPD_START_REALTIME:
 					start_tickler(RTV_TICKLER);

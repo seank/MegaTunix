@@ -415,20 +415,6 @@ void *thread_dispatcher(gpointer data)
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case leaving\n"));
 				break;
-				/*
-			case COMMS_TEST:
-				if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS))
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tcomms_test requested \n"));
-				comms_test();
-				if (!connected)
-				{
-					if (dbg_lvl & (SERIAL_RD|SERIAL_WR|THREADS|CRITICAL))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tComms Test failed, NOT Connected!!\n"));
-				}
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tcomms_test case leaving\n"));
-				break;
-				*/
 			case READ_CMD:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tread_cmd case entered\n"));

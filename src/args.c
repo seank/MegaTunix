@@ -67,4 +67,5 @@ void handle_args(gint argc, gchar * argv[])
 		printf("autolog_dump_dir %s\n",args->autolog_dump_dir);
 		printf("autolog_basename %s\n",args->autolog_basename);
 	}
+	g_option_context_free(context);
 }

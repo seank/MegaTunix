@@ -73,9 +73,9 @@ gint main(gint argc, gchar ** argv)
 	serial_params = g_malloc0(sizeof(Serial_Params));
 	cmds = g_malloc0(sizeof(Io_Cmds));
 
+	open_debug();	/* Open debug log */
 	init();			/* Initialize global vars */
 	handle_args(argc,argv);
-	open_debugfile();	/* Open debug log */
 	make_megasquirt_dirs();	/* Create config file dirs if missing */
 	/* Build table of strings to enum values */
 	build_string_2_enum_table();

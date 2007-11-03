@@ -109,7 +109,8 @@ gboolean load_table(gchar *table_name, gchar *filename)
 			go = FALSE;
 		else
 		{
-			str = g_strchug(g_strdup(a_line->str));
+		//	str = g_strchug(g_strdup(a_line->str));
+			str = g_strchug(a_line->str);
 			if (g_str_has_prefix(str,"DB"))
 			{
 				str+=2; // move 2 places in	
@@ -119,7 +120,6 @@ gboolean load_table(gchar *table_name, gchar *filename)
 				g_free(tmp);
 				i++;
 			}
-			//g_free(str);
 		}
 		g_string_free(a_line,TRUE);
 	}

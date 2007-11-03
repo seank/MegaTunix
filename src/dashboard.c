@@ -103,6 +103,8 @@ void load_dashboard(gchar *filename, gpointer data)
 	/*Get the root element node */
 	root_element = xmlDocGetRootElement(doc);
 	load_elements(dash,root_element);
+	xmlFreeDoc(doc);
+	xmlCleanupParser();
 
 	link_dash_datasources(dash,data);
 
@@ -204,9 +206,7 @@ void load_elements(GtkWidget *dash, xmlNode *a_node)
 				load_gauge(dash,cur_node);
 		}
 		load_elements(dash,cur_node->children);
-
 	}
-
 }
 
 void load_geometry(GtkWidget *dash, xmlNode *node)
@@ -625,6 +625,7 @@ void initialize_dashboards()
 {
 	GtkWidget * label = NULL;
 	gchar * tmpbuf = NULL;
+	gchar * tmpstr = NULL;
 	extern GObject *global_data;
 	extern GHashTable *dynamic_widgets;
 
@@ -632,7 +633,9 @@ void initialize_dashboards()
 	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
 	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (g_ascii_strcasecmp(tmpbuf,"") != 0))
 	{
-		gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL));
+		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
+		gtk_label_set_text(GTK_LABEL(label),tmpstr);
+		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(1));
 	}
 
@@ -640,7 +643,9 @@ void initialize_dashboards()
 	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
 	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (g_ascii_strcasecmp(tmpbuf,"") != 0))
 	{
-		gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL));
+		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
+		gtk_label_set_text(GTK_LABEL(label),tmpstr);
+		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(2));
 	}
 }

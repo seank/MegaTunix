@@ -20,6 +20,7 @@
 #include <glib/gstdio.h>
 #include <init.h>
 #include <listmgmt.h>
+#include "../mtxmatheval/mtxmatheval.h"
 #include <structures.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -186,10 +187,31 @@ gboolean read_config(void)
 			g_object_set_data(global_data,"main_x_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_int(cfgfile, "Window", "main_y_origin", &tmpi))
 			g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(tmpi));
-		cfg_read_string(cfgfile, "Serial", "port_name", 
-				&default_serial_port);
-		cfg_read_string(cfgfile, "Serial", "potential_ports", 
-				&potential_ports);
+
+		if(cfg_read_string(cfgfile, "Serial", "port_name", &tmpbuf))
+		{
+			/* Handle the case where it's already defined,  
+			 * but we have a user override.  Prevents a memory
+			 * leak.
+			 */
+			if (default_serial_port)
+				g_free(default_serial_port);
+			default_serial_port = g_strdup(tmpbuf);
+			g_free(tmpbuf);
+		}
+				
+		if (cfg_read_string(cfgfile, "Serial", "potential_ports", &tmpbuf))
+		{
+			/* Handle the case where it's already defined,  
+			 * but we have a user override.  Prevents a memory
+			 * leak.
+			 */
+			if (potential_ports)
+				g_free(potential_ports);
+			potential_ports = g_strdup(tmpbuf);
+			g_free(tmpbuf);
+		}
+				
 		cfg_read_int(cfgfile, "Serial", "read_wait", 
 				&serial_params->read_wait);
 		cfg_read_int(cfgfile, "Serial", "baudrate", 
@@ -271,9 +293,12 @@ void save_config(void)
 			dash = g_object_get_data(G_OBJECT(widget),"dash");
 			orig_width = (gint) g_object_get_data(G_OBJECT(dash),"orig_width");
 		        orig_height = (gint) g_object_get_data(G_OBJECT(dash),"orig_height");
-			gdk_drawable_get_size(gtk_widget_get_toplevel(widget)->window, &tmp_width,&tmp_height);
-			ratio = (((gfloat)tmp_height/(gfloat)orig_height)+((gfloat)tmp_width/(gfloat)orig_width))/2.0;
-			cfg_write_float(cfgfile, "Dashboards", "dash_1_size_ratio", ratio);
+			if (GTK_WIDGET_VISIBLE(widget))
+			{
+				gdk_drawable_get_size(gtk_widget_get_toplevel(widget)->window, &tmp_width,&tmp_height);
+				ratio = (((gfloat)tmp_height/(gfloat)orig_height)+((gfloat)tmp_width/(gfloat)orig_width))/2.0;
+				cfg_write_float(cfgfile, "Dashboards", "dash_1_size_ratio", ratio);
+			}
 		}
 	}
 	else
@@ -296,9 +321,12 @@ void save_config(void)
 			dash = g_object_get_data(G_OBJECT(widget),"dash");
 			orig_width = (gint) g_object_get_data(G_OBJECT(dash),"orig_width");
 		        orig_height = (gint) g_object_get_data(G_OBJECT(dash),"orig_height");
-			gdk_drawable_get_size(gtk_widget_get_toplevel(widget)->window, &tmp_width,&tmp_height);
-			ratio = (((gfloat)tmp_height/(gfloat)orig_height)+((gfloat)tmp_width/(gfloat)orig_width))/2.0;
-			cfg_write_float(cfgfile, "Dashboards", "dash_2_size_ratio", ratio);
+			if (GTK_WIDGET_VISIBLE(widget))
+			{
+				gdk_drawable_get_size(gtk_widget_get_toplevel(widget)->window, &tmp_width,&tmp_height);
+				ratio = (((gfloat)tmp_height/(gfloat)orig_height)+((gfloat)tmp_width/(gfloat)orig_width))/2.0;
+				cfg_write_float(cfgfile, "Dashboards", "dash_2_size_ratio", ratio);
+			}
 		}
 	}
 	else
@@ -312,37 +340,48 @@ void save_config(void)
 
 	if (ready)
 	{
-		gdk_drawable_get_size(main_window->window, &tmp_width,&tmp_height);
-		cfg_write_int(cfgfile, "Window", "width", tmp_width);
-		cfg_write_int(cfgfile, "Window", "height", tmp_height);
-		gtk_window_get_position(GTK_WINDOW(main_window),&x,&y);
-		if (x > 0)
-			cfg_write_int(cfgfile, "Window", "main_x_origin", x);
-		if (y > 0)
-			cfg_write_int(cfgfile, "Window", "main_y_origin", y);
-		if (g_hash_table_lookup(dynamic_widgets,"status_window"))
+		if (GTK_WIDGET_VISIBLE(main_window))
 		{
-			gdk_drawable_get_size(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"status_window"))->window, &tmp_width,&tmp_height);
-
-			cfg_write_int(cfgfile, "Window", "status_width", tmp_width);
-			cfg_write_int(cfgfile, "Window", "status_height", tmp_height);
-			gtk_window_get_position(GTK_WINDOW(g_hash_table_lookup(dynamic_widgets,"status_window")),&x,&y);
+			gdk_drawable_get_size(main_window->window, &tmp_width,&tmp_height);
+			cfg_write_int(cfgfile, "Window", "width", tmp_width);
+			cfg_write_int(cfgfile, "Window", "height", tmp_height);
+			gtk_window_get_position(GTK_WINDOW(main_window),&x,&y);
 			if (x > 0)
-				cfg_write_int(cfgfile, "Window", "status_x_origin", x);
+				cfg_write_int(cfgfile, "Window", "main_x_origin", x);
 			if (y > 0)
-				cfg_write_int(cfgfile, "Window", "status_y_origin", y);
+				cfg_write_int(cfgfile, "Window", "main_y_origin", y);
 		}
-		if (g_hash_table_lookup(dynamic_widgets,"rtt_window"))
+		widget = g_hash_table_lookup(dynamic_widgets,"status_window");
+		if (widget)
 		{
-			gdk_drawable_get_size(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"rtt_window"))->window, &tmp_width,&tmp_height);
+			if ((GTK_IS_WIDGET(widget)) && (GTK_WIDGET_VISIBLE(widget)))
+			{
+				gdk_drawable_get_size(widget->window, &tmp_width,&tmp_height);
 
-			cfg_write_int(cfgfile, "Window", "rtt_width", tmp_width);
-			cfg_write_int(cfgfile, "Window", "rtt_height", tmp_height);
-			gtk_window_get_position(GTK_WINDOW(g_hash_table_lookup(dynamic_widgets,"rtt_window")),&x,&y);
-			if (x > 0)
-				cfg_write_int(cfgfile, "Window", "rtt_x_origin", x);
-			if (y > 0)
-				cfg_write_int(cfgfile, "Window", "rtt_y_origin", y);
+				cfg_write_int(cfgfile, "Window", "status_width", tmp_width);
+				cfg_write_int(cfgfile, "Window", "status_height", tmp_height);
+				gtk_window_get_position(GTK_WINDOW(widget),&x,&y);
+				if (x > 0)
+					cfg_write_int(cfgfile, "Window", "status_x_origin", x);
+				if (y > 0)
+					cfg_write_int(cfgfile, "Window", "status_y_origin", y);
+			}
+		}
+		widget = g_hash_table_lookup(dynamic_widgets,"rtt_window");
+		if (widget)
+		{
+			if ((GTK_IS_WIDGET(widget)) && (GTK_WIDGET_VISIBLE(widget)))
+			{
+				gdk_drawable_get_size(widget->window, &tmp_width,&tmp_height);
+
+				cfg_write_int(cfgfile, "Window", "rtt_width", tmp_width);
+				cfg_write_int(cfgfile, "Window", "rtt_height", tmp_height);
+				gtk_window_get_position(GTK_WINDOW(widget),&x,&y);
+				if (x > 0)
+					cfg_write_int(cfgfile, "Window", "rtt_x_origin", x);
+				if (y > 0)
+					cfg_write_int(cfgfile, "Window", "rtt_y_origin", y);
+			}
 		}
 	}
 	cfg_write_int(cfgfile, "DataLogger", "preferred_delimiter", preferred_delimiter);
@@ -502,6 +541,10 @@ void mem_dealloc()
 	serial_params = NULL;
 	g_static_mutex_unlock(&serio_mutex);
 
+	/* Defautl serial port stuff.. */
+	g_free(default_serial_port);
+	g_free(potential_ports);
+
 	/* Firmware datastructure.... */
 	if (firmware)
 	{
@@ -659,7 +702,7 @@ void dealloc_message(Io_Message * message)
         if (message->payload)
                 g_free(message->payload);
         g_free(message);
-
+	message = NULL;
 }
 
 
@@ -714,30 +757,70 @@ void dealloc_qfunction(QFunction * qfunc)
  */
 void dealloc_table_params(Table_Params * table_params)
 {
-	/*
-	if(table_params->x_suffix)
-		g_free(table_params->x_suffix);
-	if(table_params->y_suffix)
-		g_free(table_params->y_suffix);
-	if(table_params->z_suffix)
-		g_free(table_params->z_suffix);
+	if(table_params->table_name)
+		g_free(table_params->table_name);
+	if(table_params->x_source_key)
+		g_free(table_params->x_source_key);
+	if(table_params->y_source_key)
+		g_free(table_params->y_source_key);
+	if(table_params->z_source_key)
+		g_free(table_params->z_source_key);
+	if(table_params->x_multi_expr_keys)
+		g_free(table_params->x_multi_expr_keys);
+	if(table_params->y_multi_expr_keys)
+		g_free(table_params->y_multi_expr_keys);
+	if(table_params->z_multi_expr_keys)
+		g_free(table_params->z_multi_expr_keys);
+	if(table_params->x_suffixes)
+		g_free(table_params->x_suffixes);
+	if(table_params->y_suffixes)
+		g_free(table_params->y_suffixes);
+	if(table_params->z_suffixes)
+		g_free(table_params->z_suffixes);
+	if(table_params->x_conv_exprs)
+		g_free(table_params->x_conv_exprs);
+	if(table_params->y_conv_exprs)
+		g_free(table_params->y_conv_exprs);
+	if(table_params->z_conv_exprs)
+		g_free(table_params->z_conv_exprs);
+	if(table_params->x_precisions)
+		g_free(table_params->x_precisions);
+	if(table_params->y_precisions)
+		g_free(table_params->y_precisions);
+	if(table_params->z_precisions)
+		g_free(table_params->z_precisions);
+	if (table_params->x_multi_hash)
+		g_hash_table_destroy(table_params->x_multi_hash);
+	if (table_params->y_multi_hash)
+		g_hash_table_destroy(table_params->y_multi_hash);
+	if (table_params->z_multi_hash)
+		g_hash_table_destroy(table_params->z_multi_hash);
 	if(table_params->x_conv_expr)
 		g_free(table_params->x_conv_expr);
 	if(table_params->y_conv_expr)
 		g_free(table_params->y_conv_expr);
 	if(table_params->z_conv_expr)
 		g_free(table_params->z_conv_expr);
-	if(table_params->table_name)
-		g_free(table_params->table_name);
-	*/
-	table_params->x_suffix = NULL;
-	table_params->y_suffix = NULL;
-	table_params->z_suffix = NULL;
-	table_params->x_conv_expr = NULL;
-	table_params->y_conv_expr = NULL;
-	table_params->z_conv_expr = NULL;
-	table_params->table_name = NULL;
+	if(table_params->x_source)
+		g_free(table_params->x_source);
+	if(table_params->y_source)
+		g_free(table_params->y_source);
+	if(table_params->z_source)
+		g_free(table_params->z_source);
+	if(table_params->x_suffix)
+		g_free(table_params->x_suffix);
+	if(table_params->y_suffix)
+		g_free(table_params->y_suffix);
+	if(table_params->z_suffix)
+		g_free(table_params->z_suffix);
+	if(table_params->x_eval)
+		evaluator_destroy(table_params->x_eval);
+	if(table_params->y_eval)
+		evaluator_destroy(table_params->y_eval);
+	if(table_params->z_eval)
+		evaluator_destroy(table_params->z_eval);
 
+	g_free(table_params);
 	return;
 }
 

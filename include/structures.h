@@ -302,8 +302,9 @@ struct _Table_Params
 	gint x_page;		/*! what page the rpm (X axis) resides in */
 	gint x_base;		/*! where rpm table starts (X axis) */
 	gint x_bincount;	/*! how many RPM bins (X axis) */
+	gchar *table_name;	/*! Name for the 3D Table editor title */
 	gboolean x_multi_source;/*! uses multiple keyed sources? */
-	gchar *x_source_key;	/*! this is hte key to sources_hash to 
+	gchar *x_source_key;	/*! this is the key to sources_hash to 
 				 *  get the search key for x_multi_hash
 				 */
 	gchar *x_multi_expr_keys;/*! keys to x_multi_hash */
@@ -354,7 +355,6 @@ struct _Table_Params
 	gchar *z_conv_expr;	/*! z conversion expression */
 	void *z_eval;		/*! evaluator for z variable */
 	gint z_precision;	/*! how many decimal places */
-	gchar *table_name;	/*! Name for the 3D Table editor title */
 };
 
 

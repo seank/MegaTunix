@@ -205,7 +205,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	mem_dealloc();
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() mem deallocated, closing log and exiting\n"));
-	close_debugfile();
+	close_debug();
 	g_static_mutex_unlock(&mutex);
 	gtk_main_quit();
 	return;
