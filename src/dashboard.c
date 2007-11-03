@@ -18,6 +18,8 @@
 #include <enums.h>
 #include <getfiles.h>
 #include <gauge.h>
+#include <gdk/gdkkeysyms.h>
+#include <gui_handlers.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <rtv_processor.h>
@@ -27,8 +29,10 @@
 
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
 extern gint dbg_lvl;
+
+
 /*!
- \brief load_dashboard() loads hte specified dashboard configuration file
+ \brief load_dashboard() loads the specified dashboard configuration file
  and initializes the dash.
  \param  chooser, the fileshooser that triggered the signal
  \param data, user date
@@ -88,6 +92,8 @@ void load_dashboard(gchar *filename, gpointer data)
 			G_CALLBACK (dash_motion_event), NULL);
 	g_signal_connect (G_OBJECT (ebox), "button_press_event",
 			G_CALLBACK (dash_button_event), NULL);
+	g_signal_connect (G_OBJECT (window), "key_press_event",
+			G_CALLBACK (dash_key_event), NULL);
 
 
 	dash = gtk_fixed_new();
@@ -512,9 +518,52 @@ gboolean dash_motion_event(GtkWidget *widget, GdkEventMotion *event, gpointer da
 	return TRUE;
 }
 
+gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
+{
+	extern GtkWidget *main_window;
+	extern GtkWidget *rtt_window;
+	extern GtkWidget *status_window;
+	if (event->type == GDK_KEY_RELEASE)
+		return FALSE;
+
+	switch (event->keyval)
+	{
+		case GDK_q:
+		case GDK_Q:
+			if (GTK_WIDGET_VISIBLE(main_window))
+				leave(NULL,GINT_TO_POINTER(FALSE));
+			else
+				leave(NULL,GINT_TO_POINTER(TRUE));
+			break;
+		case GDK_M:
+		case GDK_m:
+			if (GTK_WIDGET_VISIBLE(main_window))
+				gtk_widget_hide (main_window);
+			else
+				gtk_widget_show_all(main_window);
+			break;
+		case GDK_R:
+		case GDK_r:
+			if (GTK_WIDGET_VISIBLE(rtt_window))
+				gtk_widget_hide (rtt_window);
+			else
+				gtk_widget_show_all(rtt_window);
+			break;
+		case GDK_S:
+		case GDK_s:
+			if (GTK_WIDGET_VISIBLE(status_window))
+				gtk_widget_hide (status_window);
+			else
+				gtk_widget_show_all(status_window);
+			break;
+	}
+	return TRUE;
+}
+
 
 gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+//	printf("button event\n");
 	gint edge = -1;
 
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))

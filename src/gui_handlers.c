@@ -82,7 +82,8 @@ volatile gboolean leaving = FALSE;
  \brief leave() is the main shutdown function for MegaTunix. It shuts down
  whatever runnign handlers are still going, deallocates memory and quits
  \param widget (GtkWidget *) unused
- \param data (gpointer) unused
+ \param data (gpointer) quiet or not quiet, leave mode .quiet doesn't prompt 
+ to save anything
  */
 EXPORT void leave(GtkWidget *widget, gpointer data)
 {
@@ -97,11 +98,14 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
 	gboolean tmp = TRUE;
+	gboolean be_quiet = (gboolean) data;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 	gint count = 0;
 
-	prompt_to_save();
+
+	if (!be_quiet)
+		prompt_to_save();
 
 	if (leaving)
 		return;

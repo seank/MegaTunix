@@ -115,7 +115,7 @@ void init(void)
 	args = g_new0(CmdLineArgs, 1);
 	args->be_quiet = FALSE;
 	args->autolog_dump = FALSE;
-	args->hide_rtvars = FALSE;
+	args->hide_rttext = FALSE;
 	args->hide_status = FALSE;
 	args->hide_maingui = FALSE;
 	args->autolog_minutes = 5;

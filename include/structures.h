@@ -786,7 +786,7 @@ struct _CmdLineArgs
 	gboolean version;	/* Show Version */
 	gboolean be_quiet;	/* No error popups */
 	gboolean autolog_dump;	/* Automatically dump full logs periodically */
-	gboolean hide_rtvars;	/* Hide Runtime Variable Window */
+	gboolean hide_rttext;	/* Hide Runtime Variable Window */
 	gboolean hide_status;	/* Hide Status Window */
 	gboolean hide_maingui;	/* Hide Main Gui (Dash only mode */
 	gint autolog_minutes;	/* How many minutes to log per file */

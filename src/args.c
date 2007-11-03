@@ -37,7 +37,7 @@ void handle_args(gint argc, gchar * argv[])
 		{"debug",'d',0,G_OPTION_ARG_NONE,&args->debug,"Dump some debugging info to console",NULL},
 		{"version",'v',0,G_OPTION_ARG_NONE,&args->version,"Print MegaTunix's Version number",NULL},
 		{"quiet",'q',0,G_OPTION_ARG_NONE,&args->be_quiet,"Suppress all GUI error notifications",NULL},
-		{"no-rtvars",'r',0,G_OPTION_ARG_NONE,&args->hide_rtvars,"Hide RealTime Vars window",NULL},
+		{"no-rttext",'r',0,G_OPTION_ARG_NONE,&args->hide_rttext,"Hide RealTime Vars Text window",NULL},
 		{"no-status",'s',0,G_OPTION_ARG_NONE,&args->hide_status,"Hide ECU Status window",NULL},
 		{"no-maingui",'m',0,G_OPTION_ARG_NONE,&args->hide_maingui,"Hide Main Gui window (i.e, dash only)",NULL},
 		{"autolog",'l',0,G_OPTION_ARG_NONE,&args->autolog_dump,"Automatically dump datalog to file every N minutes",NULL},
@@ -59,7 +59,7 @@ void handle_args(gint argc, gchar * argv[])
 		printf("debug option %i\n",args->debug);
 		printf("version option %i\n",args->version);
 		printf("quiet option %i\n",args->be_quiet);
-		printf("no rtvars option %i\n",args->hide_rtvars);
+		printf("no rttext option %i\n",args->hide_rttext);
 		printf("no status option %i\n",args->hide_status);
 		printf("no maingui option %i\n",args->hide_maingui);
 		printf("autolog_dump %i\n",args->autolog_dump);

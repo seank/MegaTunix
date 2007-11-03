@@ -79,6 +79,7 @@ int setup_gui()
 	g_signal_connect(G_OBJECT(window),"delete_event",
 			G_CALLBACK(leave),NULL);
 	main_window = window;
+	gtk_window_set_focus_on_map((GtkWindow *)window,FALSE);
 	top_vbox = glade_xml_get_widget(xml,"mtx_top_vbox");
 	gtk_container_add(GTK_CONTAINER(window),top_vbox);
 

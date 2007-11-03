@@ -28,6 +28,7 @@
 #include <widgetmgmt.h>
 
 GHashTable *rtt_hash = NULL;
+GtkWidget *rtt_window = NULL;
 extern gint dbg_lvl;
 
 /*!
@@ -60,7 +61,7 @@ void load_rt_text()
 	extern gboolean rtvars_loaded;
 	extern Firmware_Details *firmware;
 
-	if ((!tabs_loaded) || (!firmware) || (leaving) || (args->hide_rtvars))
+	if ((!tabs_loaded) || (!firmware) || (leaving))
 		return;
 	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
 	{
@@ -93,6 +94,7 @@ void load_rt_text()
 			return;
 		}
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_focus_on_map((GtkWindow *)window,FALSE);
 		gtk_window_set_title(GTK_WINDOW(window),"Runtime Vars");
 		x = (gint)g_object_get_data(global_data,"rtt_x_origin");
 		y = (gint)g_object_get_data(global_data,"rtt_y_origin");
@@ -138,7 +140,9 @@ void load_rt_text()
 			g_free(ctrl_name);
 			g_free(source);
 		}
-		gtk_widget_show_all(window);
+		rtt_window = window;
+		if (!args->hide_rttext)
+			gtk_widget_show_all(window);
 		cfg_free(cfgfile);
 		g_free(cfgfile);
 	}
