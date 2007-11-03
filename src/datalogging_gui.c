@@ -349,7 +349,7 @@ void run_datalog(void)
 		value = g_array_index(history, gfloat, current_index);
 		if ((gboolean)g_object_get_data(object,"is_float"))
 		{
-			printf("value %.3f\n",value);
+//			printf("value %.3f\n",value);
 			tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%.3f",value);
 			g_string_append(output,tmpbuf);
 		}

@@ -407,7 +407,7 @@ confirm_overwrite_callback (GtkFileChooser *chooser, gpointer data)
 		{
 			gtk_widget_destroy(dialog);
 			result = g_remove(filename);
-				return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
+			return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
 		}
 		else
 		{

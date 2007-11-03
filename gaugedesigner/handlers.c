@@ -75,7 +75,6 @@ EXPORT gboolean tick_groups_menu_handler(GtkWidget * widget, gpointer data)
 {
 	static gboolean created = FALSE;
 	gchar * filename = NULL;
-	extern GdkColor white;
 	GtkWidget *window = NULL;
 	GladeXML *xml = NULL;
 
@@ -117,7 +116,6 @@ EXPORT gboolean polygon_menu_handler(GtkWidget * widget, gpointer data)
 {
 	static gboolean created = FALSE;
 	gchar * filename = NULL;
-	extern GdkColor white;
 	GtkWidget *window = NULL;
 	GladeXML *xml = NULL;
 
