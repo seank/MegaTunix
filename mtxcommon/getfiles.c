@@ -35,9 +35,11 @@
  the list as a vector char array. (free with g_strfreev)
  \param pathstub (gchar *) partial path to search for files
  \param extension (gchar *) extension to search for 
+ \param class (FileClass) enumeration pointer to array or classes for each
+ file found
  \returns vector char array of filenames or NULL if none found
  */
-gchar ** get_files(gchar *input, gchar * extension)
+gchar ** get_files(gchar *input, gchar * extension, GArray **classes)
 {
 	gchar *pathstub = NULL;
 	gchar *path = NULL;
@@ -46,6 +48,7 @@ gchar ** get_files(gchar *input, gchar * extension)
 	gchar * filename = NULL;
 	gchar **vector = NULL;
 	gchar * tmpbuf = NULL;
+	FileClass tmp = PERSONAL;
 	GDir *dir = NULL;
 
 
@@ -55,6 +58,7 @@ gchar ** get_files(gchar *input, gchar * extension)
 		pathstub = g_strdup(input);
 	g_free(input);
 
+	/* Personal files first */
 	path = g_build_filename(HOME(), ".MegaTunix",pathstub,NULL);
 	dir = g_dir_open(path,0,NULL);
 	if (!dir)
@@ -80,6 +84,15 @@ gchar ** get_files(gchar *input, gchar * extension)
 			g_free(list);
 			list = tmpbuf;
 		}
+		tmp = PERSONAL;
+		if (!*classes)
+		{
+			*classes = g_array_new(FALSE,TRUE,sizeof(FileClass));
+			g_array_append_val(*classes,tmp);
+		}
+		else
+			g_array_append_val(*classes,tmp);
+	
 
 		filename = (gchar *)g_dir_read_name(dir);
 
@@ -119,6 +132,15 @@ syspath:
 			g_free(list);
 			list = tmpbuf;
 		}
+		tmp = SYSTEM;
+		if (!*classes)
+		{
+			*classes = g_array_new(FALSE,TRUE,sizeof(FileClass));
+			g_array_append_val(*classes,tmp);
+		}
+		else
+			g_array_append_val(*classes,tmp);
+
 
 		filename = (gchar *)g_dir_read_name(dir);
 	}

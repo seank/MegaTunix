@@ -355,6 +355,7 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 	GtkWidget * label = NULL;
 	GtkWidget * tree = NULL;
 	ConfigFile *cfgfile = NULL;
+	GArray *classes = NULL;
 	gint i = 0;
 	gchar * tmpbuf = NULL;
 	gchar ** vector = NULL;
@@ -388,7 +389,7 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 				G_TYPE_BOOLEAN); /* change */
 
 		combostore = gtk_list_store_new(1,G_TYPE_STRING);
-		vector = get_files(g_strdup(LOOKUPTABLES_DATA_DIR),g_strdup("inc"));
+		vector = get_files(g_strdup(LOOKUPTABLES_DATA_DIR),g_strdup("inc"),&classes);
 		for (i=0;i<g_strv_length(vector);i++)
 		{
 			tmpvector = g_strsplit(vector[i],PSEP,-1);

@@ -251,9 +251,10 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 	gboolean match = FALSE;
 	gchar * filename = NULL;
 	gchar ** filenames = NULL;
+	GArray *classes = NULL;
 	extern Io_Cmds *cmds;
 
-	filenames = get_files(g_strconcat(INTERROGATOR_DATA_DIR,PSEP,"Profiles",PSEP,NULL),g_strdup("prof"));	
+	filenames = get_files(g_strconcat(INTERROGATOR_DATA_DIR,PSEP,"Profiles",PSEP,NULL),g_strdup("prof"),&classes);	
 	if (!filenames)
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))

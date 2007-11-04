@@ -18,6 +18,13 @@
 
 typedef struct _MtxFileIO MtxFileIO;
 
+
+typedef enum
+{
+	PERSONAL=0x99a,
+	SYSTEM,
+}FileClass;
+
 struct _MtxFileIO
 {
 	GtkFileChooserAction action;	/* Action, save,open, etc.. */
@@ -41,7 +48,7 @@ GtkFileChooserConfirmation confirm_overwrite_callback (GtkFileChooser *, gpointe
 #endif
 
 /* Prototypes */
-gchar ** get_files(gchar *, gchar *);
+gchar ** get_files(gchar *, gchar *, GArray **);
 gchar * get_file(gchar *, gchar *);
 gchar * choose_file(MtxFileIO *);
 void free_mtxfileio(MtxFileIO *);

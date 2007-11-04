@@ -157,19 +157,24 @@ gchar * present_firmware_choices()
 	GtkWidget *dialog = NULL;
 	GtkWidget *vbox = NULL;
 	GtkWidget *hbox = NULL;
+	GtkWidget *ebox = NULL;
+	GtkWidget *sep = NULL;
 	GtkWidget *button = NULL;
 	GtkWidget *label = NULL;
 	gchar *tmpbuf = NULL;
+	GArray *classes = NULL;
 	GSList *group = NULL;
 	ConfigFile *cfgfile = NULL;
 	gint major = 0;
 	gint minor = 0;
 	gint i = 0;
 	gint result = 0;
+        GdkColor purple = { 10000, 61000, 57000, 65535};
+
 	extern gchar * offline_firmware_choice;
 
 
-	filenames = get_files(g_strconcat(INTERROGATOR_DATA_DIR,PSEP,"Profiles",PSEP,NULL),g_strdup("prof"));
+	filenames = get_files(g_strconcat(INTERROGATOR_DATA_DIR,PSEP,"Profiles",PSEP,NULL),g_strdup("prof"),&classes);
 	if (!filenames)
 	{
 		if (dbg_lvl & CRITICAL)
@@ -189,8 +194,61 @@ gchar * present_firmware_choices()
 	vbox = gtk_vbox_new(TRUE,5);
 	gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
 	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),vbox,TRUE,TRUE,0);
+	label = gtk_label_new("Custom (personal) Profiles");
+	gtk_box_pack_start(GTK_BOX(vbox),label,TRUE,TRUE,0);
 
 	group = NULL;
+	i = 0;
+	/* Cycle list for PERSONAL interogation files */
+	while (filenames[i]) 
+	{
+		cfgfile = cfg_open_file(filenames[i]);
+		if (!cfgfile)
+		{
+			if (dbg_lvl & CRITICAL)
+				dbg_func(g_strdup_printf(__FILE__": present_firmware_choices()\n\t Interrogation profile damaged!, was MegaTunix installed properly?\n\n"));
+			i++;
+			continue;
+		}
+		get_file_api(cfgfile,&major,&minor);
+		if ((major != INTERROGATE_MAJOR_API) || (minor != INTERROGATE_MINOR_API))
+		{
+			thread_update_logbar("interr_view","warning",g_strdup_printf("Interrogation profile API mismatch (%i.%i != %i.%i):\n\tFile %s will be skipped\n",major,minor,INTERROGATE_MAJOR_API,INTERROGATE_MINOR_API,cfgfile->filename),FALSE,FALSE);
+			i++;
+			continue;
+		}
+		cfg_read_string(cfgfile,"interrogation_profile","name",&tmpbuf);
+		cfg_free(cfgfile);
+		g_free(cfgfile);
+
+		if (g_array_index(classes,FileClass,i) == PERSONAL)
+		{
+			ebox = gtk_event_box_new();
+			gtk_box_pack_start(GTK_BOX(vbox),ebox,TRUE,TRUE,0);
+			hbox = gtk_hbox_new(FALSE,10);
+			gtk_container_add(GTK_CONTAINER(ebox),hbox);
+			label = gtk_label_new(g_strdup(tmpbuf));
+			g_free(tmpbuf);
+			gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,TRUE,0);
+			button = gtk_radio_button_new(group);
+			g_object_set_data(G_OBJECT(button),"filename",g_strdup(filenames[i]));
+			g_object_set_data(G_OBJECT(button),"handler",
+					GINT_TO_POINTER(OFFLINE_FIRMWARE_CHOICE));
+			g_signal_connect(button,
+					"toggled",
+					G_CALLBACK(toggle_button_handler),
+					NULL);
+			gtk_box_pack_end(GTK_BOX(hbox),button,FALSE,TRUE,0);
+			group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
+		}
+		i++;
+	}
+
+	sep = gtk_hseparator_new();
+	gtk_box_pack_start(GTK_BOX(vbox),sep,TRUE,TRUE,0);
+	label = gtk_label_new("System Wide Profiles");
+	gtk_box_pack_start(GTK_BOX(vbox),label,TRUE,TRUE,0);
+	/* Cycle list for System interogation files */
 	i = 0;
 	while (filenames[i]) 
 	{
@@ -213,23 +271,31 @@ gchar * present_firmware_choices()
 		cfg_free(cfgfile);
 		g_free(cfgfile);
 
-		hbox = gtk_hbox_new(FALSE,10);
-		gtk_box_pack_start(GTK_BOX(vbox),hbox,TRUE,TRUE,0);
-		label = gtk_label_new(g_strdup(tmpbuf));
-		g_free(tmpbuf);
-		gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,TRUE,0);
-		button = gtk_radio_button_new(group);
-		g_object_set_data(G_OBJECT(button),"filename",g_strdup(filenames[i]));
-		g_object_set_data(G_OBJECT(button),"handler",
-				GINT_TO_POINTER(OFFLINE_FIRMWARE_CHOICE));
-		g_signal_connect(button,
-				"toggled",
-				G_CALLBACK(toggle_button_handler),
-				NULL);
-		gtk_box_pack_end(GTK_BOX(hbox),button,FALSE,TRUE,0);
-		group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
+		if (g_array_index(classes,FileClass,i) == SYSTEM)
+		{
+			ebox = gtk_event_box_new();
+			gtk_box_pack_start(GTK_BOX(vbox),ebox,TRUE,TRUE,0);
+			hbox = gtk_hbox_new(FALSE,10);
+			gtk_container_add(GTK_CONTAINER(ebox),hbox);
+			label = gtk_label_new(g_strdup(tmpbuf));
+			g_free(tmpbuf);
+			gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,TRUE,0);
+			button = gtk_radio_button_new(group);
+			g_object_set_data(G_OBJECT(button),"filename",g_strdup(filenames[i]));
+			g_object_set_data(G_OBJECT(button),"handler",
+					GINT_TO_POINTER(OFFLINE_FIRMWARE_CHOICE));
+			g_signal_connect(button,
+					"toggled",
+					G_CALLBACK(toggle_button_handler),
+					NULL);
+			gtk_box_pack_end(GTK_BOX(hbox),button,FALSE,TRUE,0);
+			group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
+		}
 		i++;
 	}
+
+
+
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 	g_strfreev(filenames);
 	
