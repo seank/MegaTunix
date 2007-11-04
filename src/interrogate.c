@@ -274,6 +274,7 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 		i++;
 	}
 	g_strfreev(filenames);
+	g_array_free(classes,TRUE);
 	// Update the screen with the data... 
 	for (i=0;i<num_tests;i++)
 	{

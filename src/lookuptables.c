@@ -347,8 +347,10 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 	static GtkWidget * lookuptables_config_window = NULL;
 	extern Firmware_Details *firmware;
 	GtkListStore *store = NULL;
-	GtkListStore *combostore = NULL;
+	GtkTreeStore *combostore = NULL;
 	GtkTreeIter iter;
+	GtkTreeIter per_iter;
+	GtkTreeIter sys_iter;
 	GtkCellRenderer *renderer = NULL;
 	GtkTreeViewColumn *column = NULL;
 	GtkWidget * vbox = NULL;
@@ -388,18 +390,38 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 				G_TYPE_BOOLEAN,/* View/Edit */
 				G_TYPE_BOOLEAN); /* change */
 
-		combostore = gtk_list_store_new(1,G_TYPE_STRING);
+		combostore = gtk_tree_store_new(1,G_TYPE_STRING);/* lookuptable filename */
+				
+	//	gtk_tree_store_insert(combostore,&per_iter,NULL,0);
+	//	gtk_tree_store_insert(combostore,&sys_iter,NULL,1);
+		gtk_tree_store_append(combostore,&per_iter,NULL);
+		gtk_tree_store_append(combostore,&sys_iter,NULL);
+		gtk_tree_store_set(combostore,&per_iter,
+				0,"Personal", -1);
+		gtk_tree_store_set(combostore,&sys_iter,
+				0,"System", -1);
 		vector = get_files(g_strdup(LOOKUPTABLES_DATA_DIR),g_strdup("inc"),&classes);
 		for (i=0;i<g_strv_length(vector);i++)
 		{
 			tmpvector = g_strsplit(vector[i],PSEP,-1);
-			gtk_list_store_append(combostore,&iter);
-			gtk_list_store_set(combostore,&iter,
-					0,tmpvector[g_strv_length(tmpvector)-1],
-					-1);
+			if (g_array_index(classes,FileClass,i) == PERSONAL)
+			{
+				gtk_tree_store_append(combostore,&iter,&per_iter);
+				gtk_tree_store_set(combostore,&iter,
+						0,tmpvector[g_strv_length(tmpvector)-1],
+						-1);
+			}
+			if (g_array_index(classes,FileClass,i) == SYSTEM)
+			{
+				gtk_tree_store_append(combostore,&iter,&sys_iter);
+				gtk_tree_store_set(combostore,&iter,
+						0,tmpvector[g_strv_length(tmpvector)-1],
+						-1);
+			}
 			g_strfreev(tmpvector);
 		}
 		g_strfreev(vector);
+		g_array_free(classes,TRUE);
 
 		cfgfile = cfg_open_file(firmware->profile_filename);
 		if (!cfgfile)

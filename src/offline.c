@@ -169,7 +169,6 @@ gchar * present_firmware_choices()
 	gint minor = 0;
 	gint i = 0;
 	gint result = 0;
-        GdkColor purple = { 10000, 61000, 57000, 65535};
 
 	extern gchar * offline_firmware_choice;
 
@@ -298,6 +297,7 @@ gchar * present_firmware_choices()
 
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 	g_strfreev(filenames);
+	g_array_free(classes,TRUE);
 	
 	gtk_widget_show_all(dialog);
 
