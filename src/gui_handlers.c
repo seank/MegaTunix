@@ -127,7 +127,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	save_config();
 
 	if (statuscounts_id)
-		gtk_timeout_remove(statuscounts_id);
+		g_source_remove(statuscounts_id);
 	statuscounts_id = 0;
 
 	/* Stop timeout functions */
@@ -169,7 +169,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
 	if (dispatcher_id)
-		gtk_timeout_remove(dispatcher_id);
+		g_source_remove(dispatcher_id);
 	dispatcher_id = 0;
 
 	g_static_mutex_lock(&rtv_mutex);  // <-- this  makes us wait 
@@ -832,7 +832,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 	gboolean restart = FALSE;
 	extern gint realtime_id;
 	extern gboolean no_update;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	extern gboolean forced_update;
 	extern GHashTable *dynamic_widgets;
 
@@ -2361,7 +2361,7 @@ EXPORT gboolean prevent_close(GtkWidget *widget, gpointer data)
 void prompt_to_save(void)
 {
 	gint result = 0;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	GtkWidget *dialog = NULL;
 	extern GtkWidget *main_window;
 	GtkWidget *label = NULL;

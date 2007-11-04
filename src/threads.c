@@ -38,12 +38,11 @@
 
 
 extern gboolean connected;			/* valid connection with MS */
-extern gboolean offline;			/* ofline mode with MS */
+extern volatile gboolean offline;		/* ofline mode with MS */
 extern gboolean interrogated;			/* valid connection with MS */
 extern gint dbg_lvl;
 gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test","Get ECU Error", "NULL Handler"};
 
-gint failurecount = 0;
 
 /*!
  \brief io_cmd() is called from all over the gui to kick off a threaded I/O
@@ -91,7 +90,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_DATALOGGER;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_READ_TRIGMON_PAGE:
 			message = initialize_io_message();
@@ -106,7 +107,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
 			tmp = UPD_TRIGTOOTHMON;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_READ_TOOTHMON_PAGE:
 			message = initialize_io_message();
@@ -121,7 +124,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
 			tmp = UPD_TRIGTOOTHMON;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_CLEAN_REBOOT:
 			message = initialize_io_message();
@@ -131,7 +136,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_JUST_BOOT;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_REBOOT_GET_ERROR:
 			message = initialize_io_message();
@@ -143,7 +150,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_REBOOT_GET_ERROR;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_GET_BOOT_PROMPT:
 			message = initialize_io_message();
@@ -154,7 +163,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->out_len = 2;
 			message->handler = NULL_HANDLER;
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_BOOT_READ_ERROR:
 			message = initialize_io_message();
@@ -169,7 +180,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_FORCE_PAGE_CHANGE;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_JUST_BOOT:
 			message = initialize_io_message();
@@ -180,7 +193,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->out_len = 1;
 			message->handler = NULL_HANDLER;
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 
 		case IO_INTERROGATE_ECU:
@@ -214,7 +229,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			}
 			tmp = UPD_READ_VE_CONST;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_UPDATE_VE_CONST:
 			message = initialize_io_message();
@@ -229,7 +246,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			g_array_append_val(message->funcs,tmp);
 			tmp = UPD_REENABLE_GET_DATA_BUTTONS;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_LOAD_REALTIME_MAP:
 			message = initialize_io_message();
@@ -238,7 +257,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
 			tmp = UPD_LOAD_REALTIME_MAP;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_LOAD_GUI_TABS:
 			message = initialize_io_message();
@@ -247,7 +268,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
 			tmp = UPD_LOAD_GUI_TABS;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 
 		case IO_READ_VE_CONST:
@@ -275,7 +298,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 						message->out_len = cmds->ve_cmd_len;
 					}
 					message->handler = VE_BLOCK;
+					g_async_queue_ref(io_queue);
 					g_async_queue_push(io_queue,(gpointer)message);
+					g_async_queue_unref(io_queue);
 				}
 			}
 			message = initialize_io_message();
@@ -295,7 +320,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 				g_array_append_val(message->funcs,tmp);
 				just_starting = FALSE;
 			}
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_READ_RAW_MEMORY:
 			message = initialize_io_message();
@@ -309,7 +336,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
 			tmp = UPD_RAW_MEMORY;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_BURN_MS_FLASH:
 			message = initialize_io_message();
@@ -319,7 +348,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
 			tmp = UPD_SET_STORE_BLACK;
 			g_array_append_val(message->funcs,tmp);
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 		case IO_WRITE_DATA:
 			message = initialize_io_message();
@@ -335,7 +366,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 				tmp = UPD_WRITE_STATUS;
 				g_array_append_val(message->funcs,tmp);
 			}
+			g_async_queue_ref(io_queue);
 			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
 			break;
 	}
 }
@@ -373,13 +406,10 @@ void *thread_dispatcher(gpointer data)
 			{}
 			g_thread_exit(0);
 		}
-		if ((!port_open) && (!offline))
-			failurecount++;
 		if (!message) /* NULL message */
 			continue;
 
-		//if ((!offline) && (!connected) && (failurecount > 20))
-		if ((((!connected) && (port_open) && (!offline))) || (!port_open))
+		if ((!offline) && (((!connected) && (port_open)) || (!port_open)))
 		{
 			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
 			g_thread_join(repair_thread);
@@ -484,7 +514,9 @@ void *thread_dispatcher(gpointer data)
 		/* Send rest of message back up to main context for gui
 		 * updates via asyncqueue
 		 */
+		g_async_queue_ref(dispatch_queue);
 		g_async_queue_push(dispatch_queue,(gpointer)message);
+		g_async_queue_unref(dispatch_queue);
 	}
 }
 
@@ -606,7 +638,7 @@ void  thread_update_logbar(
  functions (ones that take no params)
  \param name name of function to lookup and run in the main gui context..
  */
-void queue_function(gchar * name)
+gboolean queue_function(gchar * name)
 {
 	Io_Message *message = NULL;
 	QFunction *qfunc = NULL;
@@ -626,7 +658,7 @@ void queue_function(gchar * name)
 	g_async_queue_ref(dispatch_queue);
 	g_async_queue_push(dispatch_queue,(gpointer)message);
 	g_async_queue_unref(dispatch_queue);
-	return;
+	return FALSE;
 }
 
 

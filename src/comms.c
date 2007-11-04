@@ -65,6 +65,7 @@ gint comms_test()
 {
 	gboolean result = FALSE;
 	gchar * err_text = NULL;
+	static gint errcount = 0;
 	extern Serial_Params *serial_params;
 	extern gboolean connected;
 
@@ -101,6 +102,7 @@ gint comms_test()
 	if (result)	// Success
 	{
 		connected = TRUE;
+		errcount=0;
 		if (dbg_lvl & SERIAL_RD)
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tECU Comms Test Successfull\n"));
 		queue_function(g_strdup("kill_conn_warning"));
@@ -112,7 +114,9 @@ gint comms_test()
 	{
 		// An I/O Error occurred with the MegaSquirt ECU 
 		connected = FALSE;
-		queue_function(g_strdup("conn_warning"));
+		errcount++;
+		if (errcount > 2 )
+			queue_function(g_strdup("conn_warning"));
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("COMMS ISSUES: Check COMMS tab"));
 		if (dbg_lvl & (SERIAL_RD|IO_PROCESS))
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tI/O with ECU Timeout\n"));
@@ -209,7 +213,7 @@ void writeto_ecu(Io_Message *message)
 	extern Firmware_Details *firmware;
 	extern Serial_Params *serial_params;
 	extern gint **ms_data;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
 	g_static_mutex_lock(&serio_mutex);
@@ -417,7 +421,7 @@ void burn_ecu_flash()
 	gchar * err_text = NULL;
 	extern Firmware_Details * firmware;
 	extern Serial_Params *serial_params;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	extern gboolean connected;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
@@ -478,7 +482,7 @@ void readfrom_ecu(Io_Message *message)
 	extern gboolean connected;
 	extern gchar *handler_types[];
 	gchar *err_text = NULL;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
 	if(serial_params->open == FALSE)

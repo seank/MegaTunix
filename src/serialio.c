@@ -301,8 +301,15 @@ void *serial_repair_thread(gpointer data)
 	gboolean abort = FALSE;
 	static gboolean serial_is_open = FALSE; // Assume never opened 
 	extern gchar * potential_ports;
+	extern volatile gboolean offline;
 	gchar ** vector = NULL;
 	gint i = 0;
+
+	if (offline)
+	{
+		g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));
+		g_thread_exit(0);
+	}
 
 	if (!serial_repair_queue)
 		serial_repair_queue = g_async_queue_new();
@@ -334,7 +341,10 @@ void *serial_repair_thread(gpointer data)
 		{
 			/* Messagequeue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
+			{
+				g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));
 				g_thread_exit(0);
+			}
 			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
 				continue;
 			if (open_serial(vector[i]))

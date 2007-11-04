@@ -37,7 +37,7 @@
 
 
 gchar * offline_firmware_choice = NULL;
-gboolean offline = FALSE;
+volatile gboolean offline = FALSE;
 extern gint dbg_lvl;
 
 
@@ -55,13 +55,19 @@ void set_offline_mode(void)
 	Detection_Test *test = NULL;
 	GArray *tests = NULL;
 	GHashTable *tests_hash = NULL;
+	gboolean tmp = TRUE;
 	extern Firmware_Details *firmware;
 	extern gboolean interrogated;
 	extern Io_Cmds *cmds;
+        extern GAsyncQueue *serial_repair_queue;
+
 
 	/* Disable interrogation button */
 
 	offline = TRUE;
+	/* Cause Serial Searcher thread to abort.... */
+	g_async_queue_push(serial_repair_queue,&tmp);
+
 	filename = present_firmware_choices();
 	if (!filename)
 	{
@@ -224,7 +230,7 @@ gchar * present_firmware_choices()
 		group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(button));
 		i++;
 	}
-	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),TRUE);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 	g_strfreev(filenames);
 	
 	gtk_widget_show_all(dialog);

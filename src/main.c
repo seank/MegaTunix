@@ -93,10 +93,10 @@ gint main(gint argc, gchar ** argv)
 			TRUE, // Joinable
 			NULL); //GError Pointer
 
-	dispatcher_id = gtk_timeout_add(10,(GtkFunction)dispatcher,NULL);
+	dispatcher_id = g_timeout_add(10,(GtkFunction)dispatcher,NULL);
 
 	/* Kickoff fast interrogation */
-	gtk_timeout_add(250,(GtkFunction)early_interrogation,NULL);
+	g_timeout_add(250,(GtkFunction)early_interrogation,NULL);
 
 	ready = TRUE;
 	gtk_main();

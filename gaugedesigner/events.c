@@ -1021,7 +1021,7 @@ EXPORT gboolean animate_gauge(GtkWidget *widget, gpointer data)
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), LBOUND, &lower);
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), UBOUND, &upper);
 	mtx_gauge_face_set_value(MTX_GAUGE_FACE (gauge),lower);
-	gtk_timeout_add(20,(GtkFunction)sweep_gauge, (gpointer)gauge);
+	g_timeout_add(20,(GtkFunction)sweep_gauge, (gpointer)gauge);
 	return TRUE;
 }
 

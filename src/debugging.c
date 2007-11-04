@@ -161,10 +161,10 @@ void populate_debugging(GtkWidget *parent)
 				(GtkAttachOptions) (0), 0, 0);
 		// If user set on turn on as well
 		if ((dbg_lvl & mask) >> shift)
-			gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),TRUE);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 		// if hardcoded on, turn on..
 		if (dbglevels[i].enabled)
-			gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),TRUE);
+			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 		j++;
 		if (j == 4)
 		{

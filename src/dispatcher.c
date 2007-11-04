@@ -49,7 +49,7 @@
 
 extern GAsyncQueue *dispatch_queue;
 extern gboolean connected;			/* valid connection with MS */
-extern gboolean offline;			/* Offline mode */
+extern volatile gboolean offline;			/* Offline mode */
 extern gboolean tabs_loaded;			/* Tabs loaded? */
 extern gboolean interrogated;			/* valid detection with MS */
 gint statuscounts_id = -1;
@@ -220,7 +220,7 @@ trypop:
 					break;
 				case UPD_START_STATUSCOUNTS:
 					if ((connected) && (interrogated))
-						statuscounts_id = gtk_timeout_add(100,(GtkFunction)update_errcounts,NULL);
+						statuscounts_id = g_timeout_add(100,(GtkFunction)update_errcounts,NULL);
 					break;
 				case UPD_START_REALTIME:
 					start_tickler(RTV_TICKLER);

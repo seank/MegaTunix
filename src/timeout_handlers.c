@@ -42,7 +42,7 @@ void start_tickler(TicklerType type)
 {
 	extern GObject *global_data;
 	extern Serial_Params *serial_params;
-	extern gboolean offline;
+	extern volatile gboolean offline;
 	switch (type)
 	{
 		case RTV_TICKLER:

@@ -74,9 +74,9 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	GdkGLConfig *gl_config;
 	gchar * tmpbuf = NULL;
 	Ve_View_3D *ve_view;
-	extern GtkTooltips *tip;
 	extern Firmware_Details *firmware;
 	extern gboolean gl_ability;
+	extern GtkTooltips *tip;
 	gint table_num =  -1;
 	extern gboolean forced_update;
 
