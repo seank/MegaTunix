@@ -382,7 +382,7 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 		ltc_created = TRUE;
 		ltc_visible = TRUE;
 		label = gtk_label_new("MegaTunix LookupTables");
-		gtk_box_pack_start (GTK_BOX(vbox),label,TRUE,TRUE,0);
+		gtk_box_pack_start (GTK_BOX(vbox),label,FALSE,TRUE,0);
 
 		store = gtk_list_store_new(N_COLS,	/* total cols */
 				G_TYPE_STRING, /* int name */
@@ -441,6 +441,7 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 		g_strfreev(vector);
 
 		tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(store));
+		gtk_tree_view_set_rules_hint(GTK_TREE_VIEW(tree),TRUE);
 		gtk_box_pack_start(GTK_BOX(vbox),tree,TRUE,TRUE,0);
 		renderer = gtk_cell_renderer_text_new();
 		column = gtk_tree_view_column_new_with_attributes("Internal Name",renderer,"text",INTERNAL_NAME_COL,NULL);
