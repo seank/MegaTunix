@@ -392,8 +392,6 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 
 		combostore = gtk_tree_store_new(1,G_TYPE_STRING);/* lookuptable filename */
 				
-	//	gtk_tree_store_insert(combostore,&per_iter,NULL,0);
-	//	gtk_tree_store_insert(combostore,&sys_iter,NULL,1);
 		gtk_tree_store_append(combostore,&per_iter,NULL);
 		gtk_tree_store_append(combostore,&sys_iter,NULL);
 		gtk_tree_store_set(combostore,&per_iter,
@@ -496,6 +494,10 @@ gboolean lookuptable_change(GtkCellRenderer *renderer, gchar *path, gchar * new_
 	if (g_strcasecmp(old,new_text) == 0) /* If no change, return */
 		return TRUE;
 	
+	if (g_strcasecmp(new_text,"Personal") == 0)
+		return TRUE;
+	if (g_strcasecmp(new_text,"System") == 0)
+		return TRUE;
 	if (realtime_id)
 	{
 		restart_tickler = TRUE;
