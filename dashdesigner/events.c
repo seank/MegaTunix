@@ -74,6 +74,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 	GtkWidget * swin = NULL;
 	GtkWidget * ebox = NULL;
 	GtkWidget * vbox = NULL;
+	GArray *classes = NULL;
 	gchar ** files = NULL;
 	gchar * path = NULL;
 	GDir *dir = NULL;
@@ -122,7 +123,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 #else
 	path = g_build_path(PSEP,DATA_DIR,GAUGES_DATA_DIR,NULL);
 #endif
-	files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,NULL),g_strdup("xml"));
+	files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,NULL),g_strdup("xml"),&classes);
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook),TRUE);
 	gtk_notebook_remove_page(GTK_NOTEBOOK(notebook),0);
 	gtk_widget_show_all(notebook);
@@ -156,13 +157,14 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 			gtk_container_add(GTK_CONTAINER(ebox),gauge);
 			mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),files[i]);
 			gtk_widget_set_usize(GTK_WIDGET(gauge),200,200);
-			if (g_strrstr(files[i],".MegaTunix"))
+			if (g_array_index(classes,FileClass,i) == PERSONAL)
 				gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&home_color);
 			else
 				gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&white);
 			gtk_widget_show(gauge);
 			i++;
 		}
+		g_array_free(classes,TRUE);
 		g_strfreev(files);
 	}
 	dir = g_dir_open(path,0,NULL);
@@ -174,7 +176,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 		{
 			g_hash_table_insert(list,g_strdup(d_name),GINT_TO_POINTER(1)); /* Store this dirname for next run thru */
 			/* check for files in */
-			files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,d_name,PSEP,NULL),g_strdup("xml"));
+			files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,d_name,PSEP,NULL),g_strdup("xml"),&classes);
 			if (files)
 			{
 				ebox = gtk_event_box_new();
@@ -208,7 +210,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 					gauge = mtx_gauge_face_new();
 					gtk_container_add(GTK_CONTAINER(ebox),gauge);
 					mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),files[i]);
-					if (g_strrstr(files[i],".MegaTunix"))
+					if (g_array_index(classes,FileClass,i) == PERSONAL)
 						gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&home_color);
 					else
 						gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&white);
@@ -218,6 +220,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 					if (gtk_events_pending())
 						gtk_main_iteration();
 				}
+				g_array_free(classes,TRUE);
 				g_strfreev(files);
 			}
 			gtk_widget_show_all(table);
@@ -250,7 +253,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 				continue;
 			}
 			/* check for files in */
-			files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,d_name,PSEP,NULL),g_strdup("xml"));
+			files = get_files(g_strconcat(GAUGES_DATA_DIR,PSEP,d_name,PSEP,NULL),g_strdup("xml"),&classes);
 			if (files)
 			{
 				ebox = gtk_event_box_new();
@@ -284,7 +287,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 					gauge = mtx_gauge_face_new();
 					gtk_container_add(GTK_CONTAINER(ebox),gauge);
 					mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),files[i]);
-					if (g_strrstr(files[i],".MegaTunix"))
+					if (g_array_index(classes,FileClass,i) == PERSONAL)
 						gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&home_color);
 					else
 						gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&white);
@@ -294,6 +297,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 					if (gtk_events_pending())
 						gtk_main_iteration();
 				}
+				g_array_free(classes,TRUE);
 				g_strfreev(files);
 			}
 			gtk_widget_show_all(table);
