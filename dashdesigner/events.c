@@ -165,6 +165,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 			i++;
 		}
 		g_array_free(classes,TRUE);
+		classes = NULL;
 		g_strfreev(files);
 	}
 	dir = g_dir_open(path,0,NULL);
@@ -221,6 +222,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 						gtk_main_iteration();
 				}
 				g_array_free(classes,TRUE);
+				classes = NULL;
 				g_strfreev(files);
 			}
 			gtk_widget_show_all(table);
@@ -298,6 +300,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 						gtk_main_iteration();
 				}
 				g_array_free(classes,TRUE);
+				classes = NULL;
 				g_strfreev(files);
 			}
 			gtk_widget_show_all(table);

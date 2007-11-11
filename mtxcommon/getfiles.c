@@ -402,11 +402,13 @@ confirm_overwrite_callback (GtkFileChooser *chooser, gpointer data)
 	GtkWidget *dialog = NULL;
 	char *filename;
 	gint result = -1;
+	gchar *msg = NULL;
+	gint handle = -1;
 
 	filename = gtk_file_chooser_get_filename (chooser);
 
 	/* If read only select again */
-	if (g_open(filename,O_RDWR,O_CREAT|O_APPEND) == -1)
+	if ((handle = g_open(filename,O_RDWR,O_CREAT|O_APPEND)) == -1)
 	{
 		dialog = gtk_message_dialog_new(NULL,
 				GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -420,6 +422,7 @@ confirm_overwrite_callback (GtkFileChooser *chooser, gpointer data)
 	/* File exists but is NOT R/O,  prompt to truncate or not */
 	else
 	{
+		close(handle);
 		dialog = gtk_message_dialog_new(NULL,
 				GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_QUESTION,
@@ -429,6 +432,12 @@ confirm_overwrite_callback (GtkFileChooser *chooser, gpointer data)
 		{
 			gtk_widget_destroy(dialog);
 			result = g_remove(filename);
+			if (result == -1)
+			{
+				msg = g_strdup_printf("Removal of \"%s\" FAILED!!!",filename);
+				getfiles_errmsg(msg);
+				g_free(msg);
+			}
 			return GTK_FILE_CHOOSER_CONFIRMATION_ACCEPT_FILENAME;
 		}
 		else
@@ -465,4 +474,19 @@ void free_mtxfileio(MtxFileIO *data)
 	if (data->default_extension)
 		g_free(data->default_extension);
 	return;
+}
+
+
+void getfiles_errmsg(const gchar * text)
+{
+	GtkWidget *dialog = NULL;
+
+	dialog = gtk_message_dialog_new(NULL,
+			GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_ERROR,
+			GTK_BUTTONS_CLOSE,
+			__FILE__":\n -- Error: %s\n",
+			text);
+	gtk_dialog_run (GTK_DIALOG (dialog));
+	gtk_widget_destroy (dialog);
 }

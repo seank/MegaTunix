@@ -52,6 +52,7 @@ gchar ** get_files(gchar *, gchar *, GArray **);
 gchar * get_file(gchar *, gchar *);
 gchar * choose_file(MtxFileIO *);
 void free_mtxfileio(MtxFileIO *);
+void getfiles_errmsg(const gchar * );
 /* Prototypes */
 
 #endif
