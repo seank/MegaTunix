@@ -612,9 +612,9 @@ struct _Ve_View_3D
 	gfloat x_scale;
 	gfloat y_scale;
 	gfloat z_scale;
-	gfloat x_div;
-	gfloat y_div;
-	gfloat z_div;
+	gfloat x_max;
+	gfloat y_max;
+	gfloat z_max;
 	gint x_precision;
 	gint y_precision;
 	gint z_precision;
@@ -657,6 +657,7 @@ struct _Ve_View_3D
 	gchar *table_name;
 	gint table_num;
 	gboolean tracking_focus;
+	gboolean fixed_scale;
 	GtkWidget *tracking_button;
 };
 
