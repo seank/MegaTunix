@@ -543,6 +543,8 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			break;
 		case GDK_R:
 		case GDK_r:
+			if (!GTK_IS_WIDGET(rtt_window))
+				break;
 			if (GTK_WIDGET_VISIBLE(rtt_window))
 				gtk_widget_hide (rtt_window);
 			else
@@ -550,6 +552,8 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			break;
 		case GDK_S:
 		case GDK_s:
+			if (!GTK_IS_WIDGET(status_window))
+				break;
 			if (GTK_WIDGET_VISIBLE(status_window))
 				gtk_widget_hide (status_window);
 			else
