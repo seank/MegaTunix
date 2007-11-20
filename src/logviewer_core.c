@@ -60,22 +60,22 @@ EXPORT gboolean select_datalog_for_import(GtkWidget *widget, gpointer data)
 	filename = choose_file(fileio);
 	if (filename == NULL)
 	{
-		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for normal datalogging!\n"),TRUE,FALSE);
+		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for logviewing!\n"),FALSE,FALSE);
 		return FALSE;
 	}
 
 	iochannel = g_io_channel_new_file(filename, "r+",NULL);
 	if (!iochannel)
 	{
-		update_logbar("dlog_view",g_strdup("warning"),g_strdup("File open FAILURE! \n"),TRUE,FALSE);
+		update_logbar("dlog_view",g_strdup("warning"),g_strdup("File open FAILURE! \n"),FALSE,FALSE);
 		return FALSE;
 	}
 
-	update_logbar("dlog_view",NULL,g_strdup("DataLog ViewFile Opened\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("DataLog ViewFile Opened\n"),FALSE,FALSE);
 	load_logviewer_file(iochannel);
 	g_io_channel_shutdown(iochannel,FALSE,NULL);
 
-	update_logbar("dlog_view",NULL,g_strdup("LogView File Closed\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("LogView File Closed\n"),FALSE,FALSE);
 	free_mtxfileio(fileio);
 	return TRUE;
 }
@@ -112,6 +112,7 @@ Log_Info * initialize_log_info(void)
 	log_info = g_malloc0(sizeof(Log_Info));
 	log_info->field_count = 0;
 	log_info->delimiter = NULL;
+	log_info->signature = NULL;
 	log_info->log_list = g_array_new(FALSE,FALSE,sizeof(GObject *));
 	return log_info;
 }
@@ -133,17 +134,35 @@ void read_log_header(GIOChannel *iochannel, Log_Info *log_info )
 	GObject *object = NULL;
 	gint i = 0;
 	extern GHashTable *dynamic_widgets;
+	extern gboolean offline;
+	extern Rtv_Map *rtv_map;
 
 read_again:
 	status = g_io_channel_read_line_string(iochannel,a_line,NULL,NULL); 
 
 	if (status == G_IO_STATUS_NORMAL) /* good read */
 	{
-		/* Nasty hack to detect a " at the beginning and skip over it
-		 * I really should do this better,  but this works, so...
+		/* This searchjed for a quoted string which should be the 
+		 * ecu signature.  pre 0.9.15 versions of megatunix shoved the
+		 * internal name ofthe firmware in there which is a problem as
+		 * it makes the logs locked to megatunix which is a bad thing 
+		 * as it hurts interoperability.  0.9.16+ changes this to use 
+		 * the REAL signature returned by the firmware. 
 		 */
 		if (g_strrstr(a_line->str,"\"") != NULL)
+		{
+			log_info->signature = g_strdup(g_strstrip(g_strdelimit(a_line->str,"\"\n\r",' ')));
+			printf("LOG signature is \"%s\"\n",log_info->signature);
+			if (offline)
+			{
+				printf("rtv_map->applicable_signatures is \"%s\"\n",rtv_map->applicable_signatures);
+				if (strstr(rtv_map->applicable_signatures,log_info->signature) != NULL)
+					printf("Good this firmware is compatible with the firmware we're using\n");
+				else
+					printf("mismatch between datalog and current firmware\n");
+			}
 			goto read_again;
+		}
 
 		if (g_strrstr(a_line->str,",") != NULL)
 			delimiter = g_strdup(",");

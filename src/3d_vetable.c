@@ -545,8 +545,8 @@ gboolean ve3d_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpoin
 	glViewport (0, 0, w, h);
 //	  glMatrixMode(GL_PROJECTION);
 //	     glLoadIdentity();
-//	        gluPerspective(60.0, 1, 0.1, 40.0);
-//	  glMatrixMode(GL_MODELVIEW);
+//	        gluPerspective(60.0, 1, -1, 1.0);
+	  glMatrixMode(GL_MODELVIEW);
 
 	gdk_gl_drawable_gl_end (gldrawable);
 	/*** OpenGL END ***/                                                                                                                  
@@ -608,8 +608,8 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 	ve3d_calculate_scaling(ve_view,cur_vals);
 	ve3d_draw_runtime_indicator(ve_view,cur_vals);
 	ve3d_draw_edit_indicator(ve_view,cur_vals);
-	ve3d_draw_ve_grid(ve_view,cur_vals);
 	ve3d_draw_active_vertexes_marker(ve_view,cur_vals);
+	ve3d_draw_ve_grid(ve_view,cur_vals);
 	ve3d_draw_axis(ve_view,cur_vals);
 	free_current_values(cur_vals);
 
@@ -647,7 +647,7 @@ gboolean ve3d_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpoi
 	if (event->state & GDK_BUTTON1_MASK)
 	{
 		ve_view->sphi += (gfloat)(event->x - ve_view->beginX) / 4.0;
-		ve_view->stheta += (gfloat)(ve_view->beginY - event->y) / 4.0;
+		ve_view->stheta += (gfloat)(event->y - ve_view->beginY) / 4.0;
 	}
 	// Middle button (or both buttons for two button mice)
 	if (event->state & GDK_BUTTON2_MASK)
@@ -732,10 +732,11 @@ void ve3d_realize (GtkWidget *widget, gpointer data)
 
 	glClearColor (0.0, 0.0, 0.0, 0.0);
 	//gdk_gl_glPolygonOffsetEXT (proc, 1.0, 1.0);
-	glShadeModel(GL_FLAT);
+//	glShadeModel(GL_FLAT);
+	glShadeModel(GL_SMOOTH);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
-	//glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST);
 	glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -830,7 +831,7 @@ VEtable grid
 void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 {
 	extern gint **ms_data;
-	//GdkColor color;
+	GdkColor color;
 	gint x = 0;
 	gint y = 0;
 	gfloat tmpf1 = 0.0;
@@ -869,8 +870,9 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,ms_data[ve_view->z_page][ve_view->z_base+(y*ve_view->y_bincount)+x]))-ve_view->z_trans)*ve_view->z_scale);
 			}
-
-			glColor3f (1.0, 1.0, tmpf3);
+			//glColor3f (1.0, 1.0, tmpf3);
+			color = get_colors_from_hue(((gfloat)ms_data[ve_view->z_page][ve_view->z_base+(y*ve_view->y_bincount)+x]/256.0)*360.0,0.33, 1.0);
+			glColor3s (color.red, color.green, color.blue);
 			glVertex3f(tmpf1,tmpf2,tmpf3);
 
 		}
@@ -898,7 +900,10 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,ms_data[ve_view->z_page][ve_view->z_base+(y*ve_view->y_bincount)+x]))-ve_view->z_trans)*ve_view->z_scale);
 			}
 				
-			glColor3f(1.0,1.0,tmpf3);
+			//glColor3f(1.0,1.0,tmpf3);
+			color = get_colors_from_hue(((gfloat)ms_data[ve_view->z_page][ve_view->z_base+(y*ve_view->y_bincount)+x]/256.0)*360.0,0.33, 1.0);
+			glColor3s (color.red, color.green, color.blue);
+			//glColor3f(tmpf1,tmpf2,tmpf3);
 			glVertex3f(tmpf1,tmpf2,tmpf3);
 		}
 		glEnd();
@@ -1152,7 +1157,7 @@ void ve3d_draw_axis(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 	/* Set line thickness and color */
 	glLineWidth(1.0);
-	glColor3f(0.5,0.5,0.5);
+	glColor3f(0.3,0.3,0.3);
 
 	/* Draw horizontal background grid lines  
 	   starting at 0 VE and working up to VE+10% */

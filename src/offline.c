@@ -344,7 +344,7 @@ gboolean offline_ecu_restore(GtkWidget *widget, gpointer data)
 		filename = choose_file(fileio);
 
 
-	update_logbar("tools_view",NULL,g_strdup("Full Restore of ECU Initiated\n"),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup("Full Restore of ECU Initiated\n"),FALSE,FALSE);
 	restore_all_ecu_settings(filename);
 	g_free(filename);
 	free_mtxfileio(fileio);

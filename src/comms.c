@@ -81,7 +81,7 @@ gint comms_test()
 		err_text = (gchar *)g_strerror(errno);
 		if (dbg_lvl & (SERIAL_RD|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": comms_test()\n\tError writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text));
-		thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text),TRUE,FALSE);
+		thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"C\" to the ecu, ERROR \"%s\" in comms_test()\n",err_text),FALSE,FALSE);
 		connected = FALSE;
 		return connected;
 	}
@@ -93,7 +93,7 @@ gint comms_test()
 			err_text = (gchar *)g_strerror(errno);
 			if (dbg_lvl & (SERIAL_RD|CRITICAL))
 				dbg_func(g_strdup_printf(__FILE__": comms_test()\n\tError writing \"c\" (MS-II clock test) to the ecu, ERROR \"%s\" in comms_test()\n",err_text));
-			thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"c\" (MS-II clock test) to the ecu, ERROR \"%s\" in comms_test()\n",err_text),TRUE,FALSE);
+			thread_update_logbar("comms_view","warning",g_strdup_printf("Error writing \"c\" (MS-II clock test) to the ecu, ERROR \"%s\" in comms_test()\n",err_text),FALSE,FALSE);
 			connected = FALSE;
 			return connected;
 		}
@@ -107,7 +107,7 @@ gint comms_test()
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tECU Comms Test Successfull\n"));
 		queue_function(g_strdup("kill_conn_warning"));
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("ECU Connected..."));
-		thread_update_logbar("comms_view",NULL,g_strdup_printf("ECU Comms Test Successfull\n"),TRUE,FALSE);
+		thread_update_logbar("comms_view",NULL,g_strdup_printf("ECU Comms Test Successfull\n"),FALSE,FALSE);
 
 	}
 	else
@@ -120,7 +120,7 @@ gint comms_test()
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("COMMS ISSUES: Check COMMS tab"));
 		if (dbg_lvl & (SERIAL_RD|IO_PROCESS))
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tI/O with ECU Timeout\n"));
-		thread_update_logbar("comms_view","warning",g_strdup_printf("I/O with ECU Timeout\n"),TRUE,FALSE);
+		thread_update_logbar("comms_view","warning",g_strdup_printf("I/O with ECU Timeout\n"),FALSE,FALSE);
 	}
 	return connected;
 }

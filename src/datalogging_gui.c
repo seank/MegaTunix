@@ -170,7 +170,7 @@ void start_datalogging(void)
 
 	header_needed = TRUE;
 	logging_active = TRUE;
-	update_logbar("dlog_view",NULL,g_strdup("DataLogging Started...\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("DataLogging Started...\n"),FALSE,FALSE);
 
 	if (!offline)
 		start_tickler(RTV_TICKLER);
@@ -205,7 +205,7 @@ void stop_datalogging()
 	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"dlog_file_label")),"No Log Selected Yet");
 
 
-	update_logbar("dlog_view",NULL,g_strdup("DataLogging Stopped...\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("DataLogging Stopped...\n"),FALSE,FALSE);
 	iochannel = (GIOChannel *) g_object_get_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data");
 	if (iochannel)
 		g_io_channel_shutdown(iochannel,TRUE,NULL);
@@ -268,7 +268,7 @@ void write_log_header(GIOChannel *iochannel, gboolean override)
 	}
 	output = g_string_sized_new(64); /* pre-allccate for 64 chars */
 
-	string = g_strdup_printf("\"%s\"\r\n",firmware->name);
+	string = g_strdup_printf("\"%s\"\r\n",firmware->actual_signature);
 	output = g_string_append(output,string); 
 	for (i=0;i<rtv_map->derived_total;i++)
 	{
@@ -456,14 +456,14 @@ EXPORT gboolean select_datalog_for_export(GtkWidget *widget, gpointer data)
 	filename = choose_file(fileio);
 	if (filename == NULL)
 	{
-		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for normal datalogging!\n"),TRUE,FALSE);
+		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for normal datalogging!\n"),FALSE,FALSE);
 		return FALSE;
 	}
 
 	iochannel = g_io_channel_new_file(filename, "a+",NULL);
 	if (!iochannel)
 	{
-		update_logbar("dlog_view",g_strdup("warning"),g_strdup("File open FAILURE! \n"),TRUE,FALSE);
+		update_logbar("dlog_view",g_strdup("warning"),g_strdup("File open FAILURE! \n"),FALSE,FALSE);
 		return FALSE;
 	}
 
@@ -471,7 +471,7 @@ EXPORT gboolean select_datalog_for_export(GtkWidget *widget, gpointer data)
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"dlog_start_logging_button"),TRUE);
 	g_object_set_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data",(gpointer)iochannel);
 	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"dlog_file_label")),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
-	update_logbar("dlog_view",NULL,g_strdup("DataLog File Opened\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("DataLog File Opened\n"),FALSE,FALSE);
 
 	free_mtxfileio(fileio);
 	return TRUE;
@@ -498,16 +498,16 @@ EXPORT gboolean internal_datalog_dump(GtkWidget *widget, gpointer data)
 	filename = choose_file(fileio);
 	if (filename == NULL)
 	{
-		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for internal log export,  aborting dump!\n"),TRUE,FALSE);
+		update_logbar("dlog_view",g_strdup("warning"),g_strdup("NO FILE opened for internal log export,  aborting dump!\n"),FALSE,FALSE);
 		return FALSE;
 	}
 
 	iochannel = g_io_channel_new_file(filename, "a+",NULL);
 	if (iochannel)
-		update_logbar("dlog_view",NULL,g_strdup("File opened successfully for internal log dump\n"),TRUE,FALSE);
+		update_logbar("dlog_view",NULL,g_strdup("File opened successfully for internal log dump\n"),FALSE,FALSE);
 	dump_log_to_disk(iochannel);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
-	update_logbar("dlog_view",NULL,g_strdup("Internal datalog successfully dumped to disk\n"),TRUE,FALSE);
+	update_logbar("dlog_view",NULL,g_strdup("Internal datalog successfully dumped to disk\n"),FALSE,FALSE);
 	free_mtxfileio(fileio);
 	return TRUE;
 

@@ -1331,7 +1331,10 @@ void update_interrogation_gui(Firmware_Details *firmware,GHashTable *tests_hash)
 		if (test)
 		{
 			if (test->num_bytes > 0)
+			{
 				thread_update_widget(g_strdup("ecu_signature_entry"),MTX_ENTRY,g_strndup(test->result_str,test->num_bytes));
+				firmware->actual_signature = g_strndup(test->result_str,test->num_bytes);
+			}
 		}
 		else
 			printf("couldn't find test results for the %s test\n",firmware->SignatureVia);

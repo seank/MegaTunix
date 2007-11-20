@@ -724,19 +724,19 @@ void *restore_update(gpointer data)
 	gint remaining_xfers = max_xfers;
 	gint last_xferd = max_xfers;
 
-	thread_update_logbar("tools_view","warning",g_strdup_printf("There are %i pending I/O transactions waiting to get to the ECU, please be patient.\n",max_xfers),TRUE,FALSE);
+	thread_update_logbar("tools_view","warning",g_strdup_printf("There are %i pending I/O transactions waiting to get to the ECU, please be patient.\n",max_xfers),FALSE,FALSE);
 	while (remaining_xfers > 5)
 	{
 		remaining_xfers = g_async_queue_length(io_queue);
 		g_usleep(5000);
 		if (remaining_xfers <= (last_xferd-50))
 		{
-			thread_update_logbar("tools_view",NULL,g_strdup_printf("Approximately %i Transactions remaining, please wait\n",remaining_xfers),TRUE,FALSE);
+			thread_update_logbar("tools_view",NULL,g_strdup_printf("Approximately %i Transactions remaining, please wait\n",remaining_xfers),FALSE,FALSE);
 			last_xferd = remaining_xfers;
 		}
 
 	}
-	thread_update_logbar("tools_view","warning",g_strdup_printf("All Transactions complete\n"),TRUE,FALSE);
+	thread_update_logbar("tools_view","warning",g_strdup_printf("All Transactions complete\n"),FALSE,FALSE);
 
 	return NULL;
 }

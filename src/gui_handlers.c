@@ -235,7 +235,7 @@ gboolean comm_port_change(GtkEditable *editable)
 	}
 	else
 	{
-		update_logbar("comms_view","warning",g_strdup_printf("\"%s\" File not found\n",port),TRUE,FALSE);
+		update_logbar("comms_view","warning",g_strdup_printf("\"%s\" File not found\n",port),FALSE,FALSE);
 	}
 
 	g_free(port);
@@ -307,14 +307,14 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				break;
 			case COMMA:
 				preferred_delimiter = COMMA;
-				update_logbar("dlog_view", NULL,g_strdup("Setting Log delimiter to a \"Comma\"\n"),TRUE,FALSE);
+				update_logbar("dlog_view", NULL,g_strdup("Setting Log delimiter to a \"Comma\"\n"),FALSE,FALSE);
 				if (delimiter)
 					g_free(delimiter);
 				delimiter = g_strdup(",");
 				break;
 			case TAB:
 				preferred_delimiter = TAB;
-				update_logbar("dlog_view", NULL,g_strdup("Setting Log delimiter to a \"Tab\"\n"),TRUE,FALSE);
+				update_logbar("dlog_view", NULL,g_strdup("Setting Log delimiter to a \"Tab\"\n"),FALSE,FALSE);
 				if (delimiter)
 					g_free(delimiter);
 				delimiter = g_strdup("\t");

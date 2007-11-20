@@ -52,10 +52,10 @@ void start_tickler(TicklerType type)
 			{
 				flush_rt_arrays();
 				realtime_id = g_timeout_add(serial_params->read_wait,(GtkFunction)signal_read_rtvars,NULL);
-				update_logbar("comms_view",NULL,g_strdup("Realtime Reader started\n"),TRUE,FALSE);
+				update_logbar("comms_view",NULL,g_strdup("Realtime Reader started\n"),FALSE,FALSE);
 			}
 			else
-				update_logbar("comms_view","warning",g_strdup("Realtime Reader ALREADY started\n"),TRUE,FALSE);
+				update_logbar("comms_view","warning",g_strdup("Realtime Reader ALREADY started\n"),FALSE,FALSE);
 			break;
 		case LV_PLAYBACK_TICKLER:
 			if (playback_id == 0)
@@ -109,11 +109,11 @@ void stop_tickler(TicklerType type)
 			if (realtime_id)
 			{
 				g_source_remove(realtime_id);
-				update_logbar("comms_view",NULL,g_strdup("Realtime Reader stopped\n"),TRUE,FALSE);
+				update_logbar("comms_view",NULL,g_strdup("Realtime Reader stopped\n"),FALSE,FALSE);
 				realtime_id = 0;
 			}
 			else
-				update_logbar("comms_view","warning",g_strdup("Realtime Reader ALREADY stopped\n"),TRUE,FALSE);
+				update_logbar("comms_view","warning",g_strdup("Realtime Reader ALREADY stopped\n"),FALSE,FALSE);
 
 			if (!leaving)
 				reset_runtime_status();

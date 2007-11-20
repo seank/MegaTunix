@@ -40,7 +40,7 @@ extern gint dbg_lvl;
 /*!
  \brief load_realtime_map() loads the realtime map specified in the detected
  firmware's interrogation profile, and sets up the necessary arrays for storage
- of data coming fro mthe ECU (temporary arrays for the last 50 or so entries)
+ of data coming from the ECU (temporary arrays for the last 50 or so entries)
  */
 gboolean load_realtime_map(void )
 {
@@ -102,17 +102,18 @@ gboolean load_realtime_map(void )
 	g_free(filename);
 
 	/* If file found we continue... */
-	rtv_map = g_new0(Rtv_Map, 1);
 	if(!cfg_read_string(cfgfile,"realtime_map","applicable_firmwares",&tmpbuf))
 	{
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_realtime_map()\n\tCan't find \"applicable_firmwares\" key, ABORTING!!\n"));
+		cfg_free(cfgfile);
+		g_free(cfgfile);
 		return FALSE;
 	}
 	if (strstr(tmpbuf,firmware->name) == NULL)	
 	{
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tFirmware name \"%s\"\n\tis NOT found in this file:\n\t(%s)\n\tPotential firmware choices are \"%s\", ABORT!\n\n",firmware->name,cfgfile->filename,tmpbuf));
+			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tFirmware signature \"%s\"\n\tis NOT found in this file:\n\t(%s)\n\tPotential firmware choices are \"%s\", ABORT!\n\n",firmware->actual_signature,cfgfile->filename,tmpbuf));
 		cfg_free(cfgfile);
 		g_free(cfgfile);
 		g_free(tmpbuf);
@@ -135,6 +136,8 @@ gboolean load_realtime_map(void )
 	}
 
 	tmpbuf = NULL;
+	rtv_map = g_new0(Rtv_Map, 1);
+	cfg_read_string(cfgfile,"realtime_map","applicable_signatures",&rtv_map->applicable_signatures);
 	cfg_read_string(cfgfile,"realtime_map","raw_list",&tmpbuf);
 	if (tmpbuf)
 	{

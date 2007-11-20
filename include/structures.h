@@ -98,6 +98,7 @@ struct _Firmware_Details
 {
 	gchar *name;		/*! textual name */
 	gchar *profile_filename;/*! Interrogation profile filename */
+	gchar *actual_signature;/*! the raw signature from the ECU */
 	gchar **tab_list;	/*! vector string of tabs to load */
 	gchar **tab_confs;	/*! Tab configuration files */
 	gchar *rtv_map_file;	/*! realtime vars map filename */
@@ -265,6 +266,7 @@ struct _Log_Info
 {
 	gint field_count;	/*! How many fields in the logfile */
 	gchar *delimiter;	/*! delimiter between fields for this logfile */
+	gchar *signature;	/*! ECU signature of log */
 	GArray *log_list;	/*! List of objects */
 };
 
@@ -535,6 +537,7 @@ struct _Rtv_Map
 	gint raw_total;		/*! Number of raw variables */
 	gint derived_total;	/*! Number of derived variables */
 	gchar **raw_list;	/*! Char List of raw variables by name */
+	gchar *applicable_signatures;/*! Firmware signatures that use this map*/
 	GArray *rtv_array;	/*! Realtime Values array of lists.. */
 	GArray *ts_array;	/*! Timestamp array */
 	GArray *rtv_list;	/*! List of derived vars IN ORDER */

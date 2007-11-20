@@ -43,7 +43,7 @@ extern Log_Info *log_info;
 
 /*!
  \brief present_viewer_choices() presents the user with the a list of 
- variabels form EIRHT the realtime vars (if in realtime mode) or from a 
+ variables from EITHER the realtime vars (if in realtime mode) or from a 
  datalog (playback mode)
  */
 void present_viewer_choices(void)

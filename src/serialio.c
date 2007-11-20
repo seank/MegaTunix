@@ -78,7 +78,7 @@ gboolean open_serial(gchar * port_name)
 		serial_params->fd = fd;
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
 			dbg_func(g_strdup_printf(__FILE__" open_serial()\n\t%s Opened Successfully\n",device));
-		thread_update_logbar("comms_view",NULL,g_strdup_printf("%s Opened Successfully\n",device),TRUE,FALSE);
+		thread_update_logbar("comms_view",NULL,g_strdup_printf("%s Opened Successfully\n",device),FALSE,FALSE);
 		thread_update_widget(g_strdup("comms_serial_port_entry"),MTX_ENTRY,g_strdup(port_name));
 	}
 	else
@@ -97,7 +97,7 @@ gboolean open_serial(gchar * port_name)
 			dbg_func(g_strdup_printf(__FILE__": open_serial()\n\tError Opening \"%s\", Error Code: \"%s\"\n",device,err_text));
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("Error Opening \"%s\", Error Code: \"%s\"\n",device,err_text));
 
-		thread_update_logbar("comms_view","warning",g_strdup_printf("Error Opening \"%s\", Error Code: %s \n",device,err_text),TRUE,FALSE);
+		thread_update_logbar("comms_view","warning",g_strdup_printf("Error Opening \"%s\", Error Code: %s \n",device,err_text),FALSE,FALSE);
 	}
 
 	g_free(device);
@@ -280,7 +280,7 @@ void close_serial()
 	/* An Closing the comm port */
 	if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
 		dbg_func(g_strdup(__FILE__": close_serial()\n\tCOM Port Closed\n"));
-	thread_update_logbar("comms_view",NULL,g_strdup_printf("COM Port Closed\n"),TRUE,FALSE);
+	thread_update_logbar("comms_view",NULL,g_strdup_printf("COM Port Closed\n"),FALSE,FALSE);
 	g_static_mutex_unlock(&serio_mutex);
 	return;
 }

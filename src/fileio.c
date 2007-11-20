@@ -64,12 +64,12 @@ EXPORT gboolean select_file_for_ecu_backup(GtkWidget *widget, gpointer data)
 	filename = choose_file(fileio);
 	if (filename == NULL)
 	{
-		update_logbar("tools_view",g_strdup("warning"),g_strdup("NO FILE chosen for ECU Backup\n"),TRUE,FALSE);
+		update_logbar("tools_view",g_strdup("warning"),g_strdup("NO FILE chosen for ECU Backup\n"),FALSE,FALSE);
 		return FALSE;
 	}
-	update_logbar("tools_view",NULL,g_strdup("Full Backup of ECU Initiated\n"),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup("Full Backup of ECU Initiated\n"),FALSE,FALSE);
 	backup_all_ecu_settings(filename);
-	update_logbar("tools_view",NULL,g_strdup("Full Backup File Closed\n"),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup("Full Backup File Closed\n"),FALSE,FALSE);
 	g_free(filename);
 	free_mtxfileio(fileio);
 	return TRUE;
@@ -98,10 +98,10 @@ EXPORT gboolean select_file_for_ecu_restore(GtkWidget *widget, gpointer data)
 	filename = choose_file(fileio);
 	if (filename == NULL)
 	{
-		update_logbar("tools_view",g_strdup("warning"),g_strdup("NO FILE chosen for ECU restore\n"),TRUE,FALSE);
+		update_logbar("tools_view",g_strdup("warning"),g_strdup("NO FILE chosen for ECU restore\n"),FALSE,FALSE);
 		return FALSE;
 	}
-	update_logbar("tools_view",NULL,g_strdup("Full Restore of ECU Initiated\n"),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup("Full Restore of ECU Initiated\n"),FALSE,FALSE);
 	restore_all_ecu_settings(filename);
 	g_free(filename);
 	free_mtxfileio(fileio);
@@ -129,7 +129,7 @@ void backup_all_ecu_settings(gchar *filename)
 
 	set_file_api(cfgfile,BACKUP_MAJOR_API,BACKUP_MINOR_API);
 
-	update_logbar("tools_view",NULL,g_strdup_printf("Full Backup Commencing  to file:\n\t%s\n",filename),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup_printf("Full Backup Commencing  to file:\n\t%s\n",filename),FALSE,FALSE);
 	cfg_write_string(cfgfile,"Firmware","name",firmware->name);
 	for(i=0;i<firmware->total_pages;i++)
 	{
@@ -145,7 +145,7 @@ void backup_all_ecu_settings(gchar *filename)
 		cfg_write_string(cfgfile,section,"data",string->str);
 		g_string_free(string,TRUE);
 	}
-	update_logbar("tools_view",NULL,g_strdup_printf("Full Backup Complete...\n"),TRUE,FALSE);
+	update_logbar("tools_view",NULL,g_strdup_printf("Full Backup Complete...\n"),FALSE,FALSE);
 	cfg_write_file(cfgfile,filename);
 	cfg_free(cfgfile);
 	g_free(cfgfile);
@@ -184,18 +184,18 @@ void restore_all_ecu_settings(gchar *filename)
 		get_file_api(cfgfile,&major,&minor);
 		if (major != BACKUP_MAJOR_API) 
 		{
-			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tAPI MAJOR version mismatch: \"%i\" != \"%i\",\ncannot load this file for restoration\n",major, BACKUP_MAJOR_API),TRUE,FALSE);
+			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tAPI MAJOR version mismatch: \"%i\" != \"%i\",\ncannot load this file for restoration\n",major, BACKUP_MAJOR_API),FALSE,FALSE);
 			return;
 		}
 		if (minor != BACKUP_MINOR_API) 
-			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tAPI MINOR version mismatch: \"%i\" != \"%i\",\nLoading this file,  though there is a version mismatch,  EXPECT ERRORS!\n",minor, BACKUP_MINOR_API),TRUE,FALSE);
+			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tAPI MINOR version mismatch: \"%i\" != \"%i\",\nLoading this file,  though there is a version mismatch,  EXPECT ERRORS!\n",minor, BACKUP_MINOR_API),FALSE,FALSE);
 			
 		cfg_read_string(cfgfile,"Firmware","name",&tmpbuf);
 		if (g_strcasecmp(tmpbuf,firmware->name) != 0)
 		{
 			if (dbg_lvl & CRITICAL)
-				dbg_func(g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tFirmware name mismatch: \"%s\" != \"%s\",\ncannot load this file for restoration\n",tmpbuf,firmware->name));
-			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tFirmware name mismatch: \"%s\" != \"%s\",\ncannot load this file for restoration\n",tmpbuf,firmware->name),TRUE,FALSE);
+				dbg_func(g_strdup_printf(__FILE__": restore_all_ecu_settings()\nFirmware name mismatch:\n\"%s\" != \"%s\",\ncannot load this file for restoration\n",tmpbuf,firmware->name));
+			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\nFirmware name mismatch:\n\"%s\" != \"%s\"\ncannot load this file for restoration\n",tmpbuf,firmware->name),FALSE,FALSE);
 			if (tmpbuf)
 				g_free(tmpbuf);
 			cfg_free(cfgfile);
@@ -212,7 +212,7 @@ void restore_all_ecu_settings(gchar *filename)
 			if(cfg_read_int(cfgfile,section,"num_variables",&tmpi))
 				if (tmpi != firmware->page_params[page]->length)
 				{
-					update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in backup \"%i\" and firmware specification \"%i\" do NOT match,\n\tcorruption SHOULD be expected\n",tmpi,firmware->page_params[page]->length),TRUE,FALSE);
+					update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in backup \"%i\" and firmware specification \"%i\" do NOT match,\n\tcorruption SHOULD be expected\n",tmpi,firmware->page_params[page]->length),FALSE,FALSE);
 					if (dbg_lvl & CRITICAL)
 						dbg_func(g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in backup \"%i\" and firmware specification \"%i\" do NOT match,\n\tcorruption SHOULD be expected\n",tmpi,firmware->page_params[page]->length));
 				}
@@ -221,7 +221,7 @@ void restore_all_ecu_settings(gchar *filename)
 				keys = parse_keys(tmpbuf,&num_keys,",");
 				if (num_keys != firmware->page_params[page]->length)
 				{
-					update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in this backup \"%i\" does NOT match the length of the table \"%i\", expect a crash!!!\n",num_keys,firmware->page_params[page]->length),TRUE,FALSE);
+					update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in this backup \"%i\" does NOT match the length of the table \"%i\", expect a crash!!!\n",num_keys,firmware->page_params[page]->length),FALSE,FALSE);
 					if (dbg_lvl & CRITICAL)
 						dbg_func(g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tNumber of variables in this backup \"%i\" does NOT match the length of the table \"%i\", expect a crash!!!\n",num_keys,firmware->page_params[page]->length));
 				}
