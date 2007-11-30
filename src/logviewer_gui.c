@@ -15,6 +15,8 @@
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <getfiles.h>
+#include <glade/glade.h>
 #include <gui_handlers.h>
 #include <listmgmt.h>
 #include <logviewer_core.h>
@@ -1215,53 +1217,79 @@ EXPORT gboolean logviewer_log_position_change(GtkWidget * widget, gpointer data)
 
 
 /*!
- \brief set_playback_mode() sets things up for playback mode
+ \brief set_logviewer_mode() sets things up for playback mode
  */
-void set_playback_mode(void)
+void set_logviewer_mode(Lv_Mode mode)
 {
 	extern GHashTable *dynamic_widgets;
 	GtkWidget *widget;
+	gchar *fname = NULL;
+	gchar *filename = NULL;
+	GladeXML *xml = NULL;
+	static GtkWidget * playback_controls_window = NULL;
 
 	reset_logviewer_state();
 	free_log_info();
-	playback_mode = TRUE;
-	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_params_button"), FALSE);
-	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_logfile_button"), TRUE);
-	gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"logviewer_rt_control_vbox1"));
-	gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"logviewer_playback_control_vbox1"));
-	gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"scroll_speed_vbox"));
-	widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
-	if (GTK_IS_RANGE(widget))
-		gtk_range_set_value(GTK_RANGE(widget),0.0);
-	hue = -60.0;
-	col_sat = 1.0;
-	col_val = 1.0;
-}
+	if (mode == LV_PLAYBACK)
+	{
+		playback_mode = TRUE;
+		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_params_button"), FALSE);
+		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_logfile_button"), TRUE);
+		gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"logviewer_rt_control_vbox1"));
+		gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"logviewer_playback_control_vbox1"));
+		gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"scroll_speed_vbox"));
+		widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
+		if (!GTK_IS_WIDGET(playback_controls_window))
+		{
+			fname = g_build_filename(GUI_DATA_DIR,"logviewer.glade",NULL);
+			filename = get_file(g_strdup(fname),NULL);
+			if (filename)
+			{
+				xml = glade_xml_new(filename, "logviewer_controls_window",NULL);
+				g_free(filename);
+				g_free(fname);
+				glade_xml_signal_autoconnect(xml);
+				playback_controls_window = glade_xml_get_widget(xml,"logviewer_controls_window");
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"goto_start_button")),"handler",GINT_TO_POINTER(LV_GOTO_START));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"goto_end_button")),"handler",GINT_TO_POINTER(LV_GOTO_END));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"rewind_button")),"handler",GINT_TO_POINTER(LV_REWIND));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"fast_forward_button")),"handler",GINT_TO_POINTER(LV_FAST_FORWARD));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"pause_button")),"handler",GINT_TO_POINTER(LV_PAUSE));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"play_button")),"handler",GINT_TO_POINTER(LV_PLAY));
+				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"stop_button")),"handler",GINT_TO_POINTER(LV_STOP));
 
+			}
 
-/*!
- \brief set_realtime_mode() sets things up for realtime mode
- */
-void set_realtime_mode(void)
-{
-	extern GHashTable *dynamic_widgets;
-	GtkWidget *widget = NULL;
+		}
+		else
+			gtk_widget_show_all(playback_controls_window);
 
-	stop_tickler(LV_PLAYBACK_TICKLER);
-	reset_logviewer_state();
-	free_log_info();
-	playback_mode = FALSE;
-	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_logfile_button"), FALSE);
-	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_params_button"), TRUE);
-	gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"logviewer_rt_control_vbox1"));
-	gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"logviewer_playback_control_vbox1"));
-	gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"scroll_speed_vbox"));
-	widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
-	if (GTK_IS_RANGE(widget))
-		gtk_range_set_value(GTK_RANGE(widget),100.0);
-	hue = -60.0;
-	col_sat = 1.0;
-	col_val = 1.0;
+		if (GTK_IS_RANGE(widget))
+			gtk_range_set_value(GTK_RANGE(widget),0.0);
+		hue = -60.0;
+		col_sat = 1.0;
+		col_val = 1.0;
+	}
+	else if (mode == LV_REALTIME)
+	{
+
+		if (GTK_IS_WIDGET(playback_controls_window))
+			gtk_widget_hide(playback_controls_window);
+
+		stop_tickler(LV_PLAYBACK_TICKLER);
+		playback_mode = FALSE;
+		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_logfile_button"), FALSE);
+		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_params_button"), TRUE);
+		gtk_widget_show(g_hash_table_lookup(dynamic_widgets,"logviewer_rt_control_vbox1"));
+		gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"logviewer_playback_control_vbox1"));
+		gtk_widget_hide(g_hash_table_lookup(dynamic_widgets,"scroll_speed_vbox"));
+		widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
+		if (GTK_IS_RANGE(widget))
+			gtk_range_set_value(GTK_RANGE(widget),100.0);
+		hue = -60.0;
+		col_sat = 1.0;
+		col_val = 1.0;
+	}
 }
 
 
@@ -1279,9 +1307,9 @@ EXPORT void finish_logviewer(void)
 	lv_data->info_width = 120;
 
 	if (playback_mode)
-		set_playback_mode();
+		set_logviewer_mode(LV_PLAYBACK);
 	else
-		set_realtime_mode();
+		set_logviewer_mode(LV_REALTIME);
 
 	widget = g_hash_table_lookup(dynamic_widgets,"logviewer_zoom_spinner");
 	if (GTK_IS_SPIN_BUTTON(widget))

@@ -420,4 +420,21 @@ typedef enum
 	FULLMATCH,
 }MatchClass;
 
+typedef enum
+{
+	LV_PLAYBACK=0x270,
+	LV_REALTIME,
+}Lv_Mode;
+
+typedef enum
+{
+	LV_GOTO_START=0x280,
+	LV_GOTO_END,
+	LV_REWIND,
+	LV_FAST_FORWARD,
+	LV_PAUSE,
+	LV_PLAY,
+	LV_STOP,
+}Lv_Handler;
+
 #endif

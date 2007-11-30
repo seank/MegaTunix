@@ -320,10 +320,10 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				delimiter = g_strdup("\t");
 				break;
 			case REALTIME_VIEW:
-				set_realtime_mode();
+				set_logviewer_mode(LV_REALTIME);
 				break;
 			case PLAYBACK_VIEW:
-				set_playback_mode();
+				set_logviewer_mode(LV_PLAYBACK);
 				break;
 			case HEX_VIEW:
 			case DECIMAL_VIEW:

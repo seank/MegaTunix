@@ -114,7 +114,7 @@ EXPORT gboolean lv_expose_event(GtkWidget *widget, GdkEventExpose *event, gpoint
 
 
 /*!
- \brief lv_motion_event() is called whenever there is pointer motion on the
+ \brief lv_mouse_motion_event() is called whenever there is pointer motion on the
  logviewer.  We use this to context highlight things and provide for popup
  menus...
  \param widget (GtkWidget *) widget receiving the event
@@ -122,7 +122,7 @@ EXPORT gboolean lv_expose_event(GtkWidget *widget, GdkEventExpose *event, gpoint
  \param data (gpointer) unused
  \returns TRUE on handled, FALSE otherwise
  */
-EXPORT gboolean lv_motion_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
+EXPORT gboolean lv_mouse_motion_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
 {
 	gint x = 0;
 	gint y = 0;
@@ -198,8 +198,42 @@ void highlight_tinfo(gint tnum, gboolean state)
 }
 
 
+EXPORT gboolean logviewer_button_event(GtkWidget *widget, gpointer data)
+{
+	Lv_Handler handler;
+	handler = (Lv_Handler)g_object_get_data(G_OBJECT(widget),"handler");
+	switch(handler)
+	{
+		case LV_GOTO_START:
+			printf("goto start\n");
+			break;
+		case LV_GOTO_END:
+			printf("goto end\n");
+			break;
+		case LV_PLAY:
+			printf("play\n");
+			break;
+		case LV_STOP:
+			printf("stop\n");
+			break;
+		case LV_PAUSE:
+			printf("pause\n");
+			break;
+		case LV_REWIND:
+			printf("rewind\n");
+			break;
+		case LV_FAST_FORWARD:
+			printf("fast forward\n");
+			break;
+		default:
+			printf("no handler assigned\n");
+			break;
 
-EXPORT gboolean lv_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+	}
+	return TRUE;
+}
+
+EXPORT gboolean lv_mouse_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 	gint x = 0;
 	gint y = 0;

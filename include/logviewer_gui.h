@@ -14,6 +14,7 @@
 #ifndef __LOGVIEWER_GUI_H__
 #define __LOGVIEWER_GUI_H__
 
+#include <enums.h>
 #include <gtk/gtk.h>
 #include <structures.h>
 
@@ -33,8 +34,7 @@ gboolean rt_update_logview_traces(gboolean);
 gboolean pb_update_logview_traces(gboolean);
 void trace_update(gboolean );
 gboolean logviewer_log_position_change(GtkWidget *, gpointer);
-void set_realtime_mode(void);
-void set_playback_mode(void);
+void set_logviewer_mode(Lv_Mode);
 void finish_logviewer(void);
 void populate_viewer(void);
 gboolean reenable_select_params_button(GtkWidget *);

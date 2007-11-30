@@ -55,9 +55,9 @@
 		      <property name="events">GDK_POINTER_MOTION_MASK | GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_FOCUS_CHANGE_MASK</property>
 		      <signal name="configure_event" handler="lv_configure_event" last_modification_time="Sat, 27 Nov 2004 17:55:32 GMT"/>
 		      <signal name="expose_event" handler="lv_expose_event" last_modification_time="Sat, 27 Nov 2004 17:55:47 GMT"/>
-		      <signal name="motion_notify_event" handler="lv_motion_event" last_modification_time="Mon, 07 Mar 2005 14:44:22 GMT"/>
-		      <signal name="button_press_event" handler="lv_button_event" last_modification_time="Mon, 07 Mar 2005 14:46:19 GMT"/>
-		      <signal name="button_release_event" handler="lv_button_event" last_modification_time="Mon, 07 Mar 2005 14:46:29 GMT"/>
+		      <signal name="motion_notify_event" handler="lv_mouse_motion_event" last_modification_time="Mon, 07 Mar 2005 14:44:22 GMT"/>
+		      <signal name="button_press_event" handler="lv_mouse_button_event" last_modification_time="Mon, 07 Mar 2005 14:46:19 GMT"/>
+		      <signal name="button_release_event" handler="lv_mouse_button_event" last_modification_time="Mon, 07 Mar 2005 14:46:29 GMT"/>
 		    </widget>
 		    <packing>
 		      <property name="padding">0</property>
@@ -519,6 +519,221 @@
 	</widget>
 	<packing>
 	  <property name="type">label_item</property>
+	</packing>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="logviewer_controls_window">
+  <property name="visible">True</property>
+  <property name="title" translatable="yes">Playback Controls</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+
+  <child>
+    <widget class="GtkHBox" id="controls_hbox">
+      <property name="visible">True</property>
+      <property name="sensitive">False</property>
+      <property name="homogeneous">False</property>
+      <property name="spacing">0</property>
+
+      <child>
+	<widget class="GtkButton" id="goto_start_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:41:30 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image1">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-previous</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="rewind_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:41:50 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image2">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-rewind</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="stop_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:42:10 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image3">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-stop</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="pause_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:42:24 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image4">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-pause</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="play_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:42:36 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image5">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-play</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="fast_forward_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:42:53 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image6">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-forward</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkButton" id="goto_end_button">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="relief">GTK_RELIEF_NORMAL</property>
+	  <property name="focus_on_click">True</property>
+	  <signal name="clicked" handler="logviewer_button_event" last_modification_time="Fri, 30 Nov 2007 01:43:03 GMT"/>
+
+	  <child>
+	    <widget class="GtkImage" id="image7">
+	      <property name="visible">True</property>
+	      <property name="stock">gtk-media-next</property>
+	      <property name="icon_size">4</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	  </child>
+	</widget>
+	<packing>
+	  <property name="padding">0</property>
+	  <property name="expand">True</property>
+	  <property name="fill">True</property>
 	</packing>
       </child>
     </widget>

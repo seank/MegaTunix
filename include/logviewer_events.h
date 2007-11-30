@@ -20,8 +20,9 @@
 /* Prototypes */
 gboolean lv_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);
 gboolean lv_expose_event(GtkWidget *, GdkEventExpose *, gpointer);
-gboolean lv_motion_event(GtkWidget *, GdkEventMotion *, gpointer);
-gboolean lv_button_event(GtkWidget *, GdkEventButton *, gpointer);
+gboolean lv_mouse_motion_event(GtkWidget *, GdkEventMotion *, gpointer);
+gboolean lv_mouse_button_event(GtkWidget *, GdkEventButton *, gpointer);
+gboolean logviewer_button_event(GtkWidget *, gpointer );
 void highlight_tinfo(gint, gboolean );
 
 /* Prototypes */
