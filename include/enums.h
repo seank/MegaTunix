@@ -432,9 +432,8 @@ typedef enum
 	LV_GOTO_END,
 	LV_REWIND,
 	LV_FAST_FORWARD,
-	LV_PAUSE,
-	LV_PLAY,
 	LV_STOP,
+	LV_PLAY,
 }Lv_Handler;
 
 #endif

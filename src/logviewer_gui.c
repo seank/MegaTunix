@@ -1255,7 +1255,6 @@ void set_logviewer_mode(Lv_Mode mode)
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"goto_end_button")),"handler",GINT_TO_POINTER(LV_GOTO_END));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"rewind_button")),"handler",GINT_TO_POINTER(LV_REWIND));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"fast_forward_button")),"handler",GINT_TO_POINTER(LV_FAST_FORWARD));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"pause_button")),"handler",GINT_TO_POINTER(LV_PAUSE));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"play_button")),"handler",GINT_TO_POINTER(LV_PLAY));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"stop_button")),"handler",GINT_TO_POINTER(LV_STOP));
 				register_widget("logviewer_controls_hbox",glade_xml_get_widget(xml,"controls_hbox"));
