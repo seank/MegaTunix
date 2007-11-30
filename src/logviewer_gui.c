@@ -1223,7 +1223,8 @@ EXPORT gboolean logviewer_log_position_change(GtkWidget * widget, gpointer data)
 void set_logviewer_mode(Lv_Mode mode)
 {
 	extern GHashTable *dynamic_widgets;
-	GtkWidget *widget;
+	GtkWidget *widget = NULL;
+	GtkAdjustment *adj = NULL;
 	gchar *fname = NULL;
 	gchar *filename = NULL;
 	GladeXML *xml = NULL;
@@ -1258,6 +1259,12 @@ void set_logviewer_mode(Lv_Mode mode)
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"play_button")),"handler",GINT_TO_POINTER(LV_PLAY));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"stop_button")),"handler",GINT_TO_POINTER(LV_STOP));
 				register_widget("logviewer_controls_hbox",glade_xml_get_widget(xml,"controls_hbox"));
+				widget = g_hash_table_lookup(dynamic_widgets,"logviewer_scroll_hscale");
+				if (GTK_IS_WIDGET(widget))
+				{
+					adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+					gtk_range_set_adjustment(GTK_RANGE(glade_xml_get_widget(xml,"scroll_speed")),adj);
+				}
 
 			}
 
