@@ -27,6 +27,7 @@
 #include <structures.h>
 #include <tabloader.h>
 #include <timeout_handlers.h>
+#include <widgetmgmt.h>
 
 static gint max_viewables = 0;
 static gboolean adj_scale = TRUE;
@@ -1257,6 +1258,7 @@ void set_logviewer_mode(Lv_Mode mode)
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"pause_button")),"handler",GINT_TO_POINTER(LV_PAUSE));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"play_button")),"handler",GINT_TO_POINTER(LV_PLAY));
 				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"stop_button")),"handler",GINT_TO_POINTER(LV_STOP));
+				register_widget("logviewer_controls_hbox",glade_xml_get_widget(xml,"controls_hbox"));
 
 			}
 
@@ -1274,7 +1276,11 @@ void set_logviewer_mode(Lv_Mode mode)
 	{
 
 		if (GTK_IS_WIDGET(playback_controls_window))
+		{
+			widget = g_hash_table_lookup(dynamic_widgets,"logviewer_controls_hbox");
+			gtk_widget_set_sensitive(widget,FALSE);
 			gtk_widget_hide(playback_controls_window);
+		}
 
 		stop_tickler(LV_PLAYBACK_TICKLER);
 		playback_mode = FALSE;

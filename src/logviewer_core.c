@@ -45,6 +45,7 @@ EXPORT gboolean select_datalog_for_import(GtkWidget *widget, gpointer data)
 	gchar *filename = NULL;
 	GIOChannel *iochannel = NULL;
 	extern GtkWidget *main_window;
+	extern GHashTable *dynamic_widgets;
 
 	reset_logviewer_state();
 	free_log_info();
@@ -76,6 +77,7 @@ EXPORT gboolean select_datalog_for_import(GtkWidget *widget, gpointer data)
 	g_io_channel_shutdown(iochannel,FALSE,NULL);
 
 	update_logbar("dlog_view",NULL,g_strdup("LogView File Closed\n"),FALSE,FALSE);
+	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_controls_hbox"),TRUE);
 	free_mtxfileio(fileio);
 	return TRUE;
 }

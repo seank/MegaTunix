@@ -21,6 +21,7 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_LN_S
 AC_PROG_AWK
+AM_PROG_LIBTOOL
 AM_PROG_LEX
 if test "$LEX" != "flex"; 
 then
