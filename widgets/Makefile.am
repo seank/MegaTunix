@@ -7,15 +7,19 @@ INCLUDES = \
 
 demo_SOURCES = demo.c gauge.h
 
-noinst_PROGRAMS=demo
+piedemo_SOURCES = piedemo.c piegauge.h
+
+noinst_PROGRAMS = demo piedemo
 
 noinst_LTLIBRARIES = libmtxgauge.la
 
-libmtxgauge_la_SOURCES = gauge.c gauge.h gauge-xml.c gauge-xml.h gauge-private.c gauge-private.h
+libmtxgauge_la_SOURCES = gauge.c gauge.h gauge-xml.c gauge-xml.h gauge-private.c gauge-private.h piegauge.c piegauge.h piegauge-private.c piegauge-private.h
 
 libmtxgauge_la_LDFLAGS = @EXTRA_LIBS@ @GTK_LIBS@ @LIBXML2_LIBS@ 
 
 demo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
+
+piedemo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
 
 COMMON_FLAGS = @PROF_FLAGS@ @DEBUG_FLAGS@ 
 

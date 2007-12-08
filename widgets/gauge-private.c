@@ -245,11 +245,12 @@ void mtx_gauge_face_init_default_tick_group(MtxGaugeFace *gauge)
 /*!
  \brief updates the gauge position,  This is the CAIRO implementation that
  looks a bit nicer, though is a little bit slower
- \param widget (GtkWidget *) pointer to the gauge object
+ \param widget (MtxGaugeFace *) pointer to the gauge object
  */
-void cairo_update_gauge_position (GtkWidget *widget)
+void cairo_update_gauge_position (MtxGaugeFace *gauge)
 {
 #ifdef HAVE_CAIRO
+	GtkWidget *widget = NULL;
 	gfloat tmpf = 0.0;
 	gfloat needle_pos = 0.0;
 	gchar * message = NULL;
@@ -270,7 +271,7 @@ void cairo_update_gauge_position (GtkWidget *widget)
 	cairo_t *cr = NULL;
 	cairo_text_extents_t extents;
 
-	MtxGaugeFace * gauge = (MtxGaugeFace *)widget;
+	widget = GTK_WIDGET(gauge);
 
 	/* Check if in alert bounds and alert as necessary */
 	alert = FALSE;
@@ -292,6 +293,7 @@ void cairo_update_gauge_position (GtkWidget *widget)
 			 * as pixmap copies are fast.
 			 */
 			gauge->last_alert_index = i;
+			widget = GTK_WIDGET(gauge);
 			gdk_draw_drawable(gauge->tmp_pixmap,
 					widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 					gauge->bg_pixmap,
@@ -388,13 +390,6 @@ cairo_jump_out_of_alerts:
 	xc = gauge->xc;
 	yc = gauge->yc;
 
-	/* STORE needle coordinates to make the expese event a LOT more 
-	 * efficient */
-	for (i=0;i<6;i++)
-	{
-		gauge->last_needle_coords[i].x = gauge->needle_coords[i].x;
-		gauge->last_needle_coords[i].y = gauge->needle_coords[i].y;
-	}
 	gauge->needle_coords[0].x = xc + ((n_tip) * cos (needle_pos))+((tip_width) * -sin(needle_pos));
 	gauge->needle_coords[0].y = yc + ((n_tip) * sin (needle_pos))+((tip_width) * cos(needle_pos));
 	gauge->needle_coords[1].x = xc + ((n_tip) * cos (needle_pos))+((tip_width) * sin(needle_pos));
@@ -430,11 +425,12 @@ cairo_jump_out_of_alerts:
 /*!
  \brief updates the gauge position,  This is the GDK implementation that
  looks doesn't do antialiasing,  but is the fastest one.
- \param widget (GtkWidget *) pointer to the gauge object
+ \param widget (MtxGaugeFace *) pointer to the gauge object
  */
-void gdk_update_gauge_position (GtkWidget *widget)
+void gdk_update_gauge_position (MtxGaugeFace *gauge)
 {
 #ifndef HAVE_CAIRO
+	GtkWidget *widget = NULL;
 	gint i= 0;
 	gfloat xc = 0.0;
 	gfloat yc = 0.0;
@@ -452,8 +448,8 @@ void gdk_update_gauge_position (GtkWidget *widget)
 	MtxAlertRange* range = NULL;
 	PangoRectangle logical_rect;
 
-	MtxGaugeFace * gauge = (MtxGaugeFace *)widget;
 
+	widget = GTK_WIDGET(gauge);
 	/* Check if in alert bounds and alert as necessary */
 	alert = FALSE;
 	for (i=0;i<gauge->a_ranges->len;i++)
@@ -548,12 +544,6 @@ gdk_jump_out_of_alerts:
 	tip_width = gauge->needle_tip_width * gauge->radius;
 	tail_width = gauge->needle_tail_width * gauge->radius;
 
-	/* Four POINT needle,  point 0 is the tip (easiest to find) */
-	for (i=0;i<6;i++)
-	{
-		gauge->last_needle_coords[i].x = gauge->needle_coords[i].x;
-		gauge->last_needle_coords[i].y = gauge->needle_coords[i].y;
-	}
 	gauge->needle_coords[0].x = xc + ((n_tip) * cos (needle_pos))+((tip_width) * -sin(needle_pos));
 	gauge->needle_coords[0].y = yc + ((n_tip) * sin (needle_pos))+((tip_width) * cos(needle_pos));
 	gauge->needle_coords[1].x = xc + ((n_tip) * cos (needle_pos))+((tip_width) * sin(needle_pos));
@@ -726,8 +716,8 @@ gboolean mtx_gauge_face_configure (GtkWidget *widget, GdkEventConfigure *event)
 	}
 	if (gauge->radius > 0)
 	{
-		generate_gauge_background(widget);
-		update_gauge_position(widget);
+		generate_gauge_background(gauge);
+		update_gauge_position(gauge);
 	}
 
 	return TRUE;
@@ -785,9 +775,10 @@ gboolean mtx_gauge_face_expose (GtkWidget *widget, GdkEventExpose *event)
  This is the cairo version.
  \param widget (GtkWidget *) pointer to the gauge object
  */
-void cairo_generate_gauge_background(GtkWidget *widget)
+void cairo_generate_gauge_background(MtxGaugeFace *gauge)
 {
 #ifdef HAVE_CAIRO
+	GtkWidget * widget = NULL;
 	cairo_t *cr = NULL;
 	double dashes[2] = {4.0,4.0};
 	gfloat deg_per_major_tick = 0.0;
@@ -818,10 +809,8 @@ void cairo_generate_gauge_background(GtkWidget *widget)
 	MtxTextBlock *tblock = NULL;
 	MtxTickGroup *tgroup = NULL;
 
-	MtxGaugeFace * gauge = (MtxGaugeFace *)widget;
-
-	w = widget->allocation.width;
-	h = widget->allocation.height;
+	w = GTK_WIDGET(gauge)->allocation.width;
+	h = GTK_WIDGET(gauge)->allocation.height;
 
 	if (!gauge->bg_pixmap)
 		return;
@@ -1125,6 +1114,7 @@ void cairo_generate_gauge_background(GtkWidget *widget)
 
 	cairo_destroy (cr);
 	/* SAVE copy of this on tmp pixmap */
+	widget = GTK_WIDGET(gauge);
 	gdk_draw_drawable(gauge->tmp_pixmap,
 			widget->style->fg_gc[GTK_WIDGET_STATE (widget)],
 			gauge->bg_pixmap,
@@ -1142,7 +1132,7 @@ void cairo_generate_gauge_background(GtkWidget *widget)
  This is the gdk version.
  \param widget (GtkWidget *) pointer to the gauge object
  */
-void gdk_generate_gauge_background(GtkWidget *widget)
+void gdk_generate_gauge_background(MtxGaugeFace *gauge)
 {
 #ifndef HAVE_CAIRO
 	gfloat deg_per_major_tick = 0.0;
@@ -1186,14 +1176,11 @@ void gdk_generate_gauge_background(GtkWidget *widget)
 	GdkColor *e_color;
 	PangoRectangle logical_rect;
 
-
-	MtxGaugeFace * gauge = (MtxGaugeFace *)widget;
-
 	if (!gauge->bg_pixmap)
 		return;
 
-	w = widget->allocation.width;
-	h = widget->allocation.height;
+	w = GTK_WIDGET(gauge)->allocation.width;
+	h = GTK_WIDGET(gauge)->allocation.height;
 
 
 	/* Wipe the display, black */

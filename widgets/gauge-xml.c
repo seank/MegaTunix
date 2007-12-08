@@ -110,7 +110,7 @@ void mtx_gauge_face_import_xml(MtxGaugeFace *gauge, gchar * filename)
 		g_object_thaw_notify(G_OBJECT(gauge));
 		if (GTK_IS_WINDOW(GTK_WIDGET(gauge)->parent))
 			gtk_window_resize((GtkWindow *)(((GtkWidget *)gauge)->parent),gauge->w,gauge->h);
-		generate_gauge_background(GTK_WIDGET(gauge));
+		generate_gauge_background(gauge);
 		mtx_gauge_face_set_value(MTX_GAUGE_FACE(gauge),gauge->lbound);
 		mtx_gauge_face_redraw_canvas (gauge);
 

@@ -440,10 +440,8 @@ struct _MtxGaugeFace
 	gint needle_polygon_points;
 #ifdef HAVE_CAIRO
 	MtxPoint needle_coords[6];	/*! 6 point needle for now */
-	MtxPoint last_needle_coords[6];	/*! 6 point needle for now */
 #else
 	GdkPoint needle_coords[6];	/*! 6 point needle for now */
-	GdkPoint last_needle_coords[6];	/*! 6 point needle for now */
 #endif
 };
 
@@ -453,8 +451,8 @@ struct _MtxGaugeFaceClass
 };
 
 GType mtx_gauge_face_get_type (void) G_GNUC_CONST;
-void generate_gauge_background(GtkWidget *);
-void update_gauge_position (GtkWidget *);
+void generate_gauge_background(MtxGaugeFace *);
+void update_gauge_position (MtxGaugeFace *);
 GtkWidget* mtx_gauge_face_new ();
 
 void mtx_gauge_face_set_attribute(MtxGaugeFace *gauge, MtxGenAttr field, gfloat value);

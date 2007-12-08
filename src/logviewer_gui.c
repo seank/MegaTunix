@@ -1265,6 +1265,12 @@ void set_logviewer_mode(Lv_Mode mode)
 					adj = gtk_range_get_adjustment(GTK_RANGE(widget));
 					gtk_range_set_adjustment(GTK_RANGE(glade_xml_get_widget(xml,"scroll_speed")),adj);
 				}
+				widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
+				if (GTK_IS_WIDGET(widget))
+				{
+					adj = gtk_range_get_adjustment(GTK_RANGE(widget));
+					gtk_range_set_adjustment(GTK_RANGE(glade_xml_get_widget(xml,"log_position_hscale")),adj);
+				}
 
 			}
 
@@ -1272,6 +1278,7 @@ void set_logviewer_mode(Lv_Mode mode)
 		else
 			gtk_widget_show_all(playback_controls_window);
 
+		widget = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
 		if (GTK_IS_RANGE(widget))
 			gtk_range_set_value(GTK_RANGE(widget),0.0);
 		hue = -60.0;

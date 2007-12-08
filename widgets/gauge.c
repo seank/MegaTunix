@@ -59,7 +59,7 @@ void mtx_gauge_face_set_color (MtxGaugeFace *gauge, ColorIndex index, GdkColor c
 	gauge->colors[index].blue = color.blue;
 	gauge->colors[index].pixel = color.pixel;
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 }
 
@@ -152,7 +152,7 @@ gint mtx_gauge_face_set_color_range_struct(MtxGaugeFace *gauge, MtxColorRange *r
 	newrange = g_memdup(range,sizeof(MtxColorRange)); 
 	g_array_append_val(gauge->c_ranges,newrange);
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return gauge->c_ranges->len-1;
 }
@@ -173,7 +173,7 @@ gint mtx_gauge_face_set_alert_range_struct(MtxGaugeFace *gauge, MtxAlertRange *r
 	newrange = g_memdup(range,sizeof(MtxAlertRange)); 
 	g_array_append_val(gauge->a_ranges,newrange);
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return gauge->a_ranges->len-1;
 }
@@ -199,7 +199,7 @@ gint mtx_gauge_face_set_text_block_struct(MtxGaugeFace *gauge, MtxTextBlock *tbl
 	new_tblock->y_pos = tblock->y_pos;
 	g_array_append_val(gauge->t_blocks,new_tblock);
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return gauge->t_blocks->len-1;
 }
@@ -236,7 +236,7 @@ gint mtx_gauge_face_set_tick_group_struct(MtxGaugeFace *gauge, MtxTickGroup *tgr
 	new_tgroup->sweep_angle = tgroup->sweep_angle;
 	g_array_append_val(gauge->tick_groups,new_tgroup);
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return gauge->tick_groups->len-1;
 }
@@ -290,7 +290,7 @@ gint mtx_gauge_face_set_polygon_struct(MtxGaugeFace *gauge, MtxPolygon *poly)
 	}
 	g_array_append_val(gauge->polygons,new_poly);
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return gauge->polygons->len-1;
 }
@@ -420,7 +420,7 @@ void mtx_gauge_face_set_attribute(MtxGaugeFace *gauge,MtxGenAttr field, gfloat v
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -538,7 +538,7 @@ void mtx_gauge_face_alter_text_block(MtxGaugeFace *gauge, gint index,TbField fie
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -621,7 +621,7 @@ void mtx_gauge_face_alter_tick_group(MtxGaugeFace *gauge, gint index,TgField fie
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -733,7 +733,7 @@ void mtx_gauge_face_alter_polygon(MtxGaugeFace *gauge, gint index,PolyField fiel
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -778,7 +778,7 @@ void mtx_gauge_face_alter_color_range(MtxGaugeFace *gauge, gint index,CrField fi
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -823,7 +823,7 @@ void mtx_gauge_face_alter_alert_range(MtxGaugeFace *gauge, gint index,AlrtField 
 			break;
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -846,7 +846,7 @@ void mtx_gauge_face_remove_all_color_ranges(MtxGaugeFace *gauge)
 		g_free(c_range);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -869,7 +869,7 @@ void mtx_gauge_face_remove_all_alert_ranges(MtxGaugeFace *gauge)
 		g_free(a_range);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -894,7 +894,7 @@ void mtx_gauge_face_remove_all_text_blocks(MtxGaugeFace *gauge)
 		g_free(tblock);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -920,7 +920,7 @@ void mtx_gauge_face_remove_all_tick_groups(MtxGaugeFace *gauge)
 		g_free(tgroup);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -948,7 +948,7 @@ void mtx_gauge_face_remove_all_polygons(MtxGaugeFace *gauge)
 		g_free(poly->data);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 }
@@ -972,7 +972,7 @@ void mtx_gauge_face_remove_color_range(MtxGaugeFace *gauge, gint index)
 			g_free(c_range);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 
@@ -997,7 +997,7 @@ void mtx_gauge_face_remove_alert_range(MtxGaugeFace *gauge, gint index)
 			g_free(a_range);
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 
@@ -1026,7 +1026,7 @@ void mtx_gauge_face_remove_text_block(MtxGaugeFace *gauge, gint index)
 		}
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 
@@ -1055,7 +1055,7 @@ void mtx_gauge_face_remove_tick_group(MtxGaugeFace *gauge, gint index)
 		}
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 
@@ -1087,7 +1087,7 @@ void mtx_gauge_face_remove_polygon(MtxGaugeFace *gauge, gint index)
 		}
 	}
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	return;
 
@@ -1097,14 +1097,14 @@ void mtx_gauge_face_remove_polygon(MtxGaugeFace *gauge, gint index)
 /*!
  \brief updates the gauge position,  This is a wrapper function conditionally
  compiled to call a corresponsing GDK or cairo function.
- \param widget (GtkWidget *) pointer to the gauge object
+ \param widget (MtxGaugeFace *) pointer to the gauge object
  */
-void update_gauge_position(GtkWidget *widget)
+void update_gauge_position(MtxGaugeFace *gauge)
 {
 #ifdef HAVE_CAIRO
-	cairo_update_gauge_position (widget);
+	cairo_update_gauge_position (gauge);
 #else
-	gdk_update_gauge_position (widget);
+	gdk_update_gauge_position (gauge);
 #endif
 }
 
@@ -1115,12 +1115,12 @@ void update_gauge_position(GtkWidget *widget)
  conditionally compiled to call a corresponsing GDK or cairo function.
  \param widget (GtkWidget *) pointer to the gauge object
  */
-void generate_gauge_background(GtkWidget *widget)
+void generate_gauge_background(MtxGaugeFace *gauge)
 {
 #ifdef HAVE_CAIRO
-	cairo_generate_gauge_background(widget);
+	cairo_generate_gauge_background(gauge);
 #else
-	gdk_generate_gauge_background(widget);
+	gdk_generate_gauge_background(gauge);
 #endif
 }
 
@@ -1146,7 +1146,7 @@ void mtx_gauge_face_set_show_drag_border(MtxGaugeFace *gauge, gboolean state)
 	g_object_freeze_notify (G_OBJECT (gauge));
 	gauge->show_drag_border = state;
 	g_object_thaw_notify (G_OBJECT (gauge));
-	generate_gauge_background(GTK_WIDGET(gauge));
+	generate_gauge_background(gauge);
 	mtx_gauge_face_redraw_canvas (gauge);
 	mtx_gauge_face_configure(GTK_WIDGET(gauge),NULL);
 	gdk_window_clear_area_e(GTK_WIDGET(gauge)->window,0,0,gauge->w, gauge->h);
@@ -1171,14 +1171,10 @@ gboolean mtx_gauge_face_get_show_drag_border(MtxGaugeFace *gauge)
  */
 void mtx_gauge_face_redraw_canvas (MtxGaugeFace *gauge)
 {
-	GtkWidget *widget;
+	if (!GTK_WIDGET(gauge)->window) return;
 
-	widget = GTK_WIDGET (gauge);
-
-	if (!widget->window) return;
-
-	update_gauge_position(widget);
-	gdk_window_clear(widget->window);
+	update_gauge_position(gauge);
+	gdk_window_clear(GTK_WIDGET(gauge)->window);
 }
 
 
