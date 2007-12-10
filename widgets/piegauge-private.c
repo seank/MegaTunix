@@ -70,7 +70,7 @@ void mtx_pie_gauge_init (MtxPieGauge *gauge)
 	*/ 
 	gtk_widget_add_events (GTK_WIDGET (gauge),GDK_BUTTON_PRESS_MASK
 			       | GDK_BUTTON_RELEASE_MASK |GDK_POINTER_MOTION_MASK);
-	gauge->w = 80;		
+	gauge->w = 130;		
 	gauge->h = 20;
 	gauge->pie_xc = 17;	// pie x center coord from LL corner
 	gauge->pie_yc = gauge->h-3;	// pie y center coord from LL corner
@@ -106,9 +106,9 @@ void mtx_pie_gauge_init (MtxPieGauge *gauge)
 void mtx_pie_gauge_init_colors(MtxPieGauge *gauge)
 {
 	/*! Main Background */
-	gauge->colors[COL_BG].red=0.7*65535;
-	gauge->colors[COL_BG].green=0.7*65535;
-	gauge->colors[COL_BG].blue=0.7*65535;
+	gauge->colors[COL_BG].red=0.914*65535;
+	gauge->colors[COL_BG].green=0.914*65535;
+	gauge->colors[COL_BG].blue=0.859*65535;
 	/*! Needle */
 	gauge->colors[COL_NEEDLE].red=0.0*65535;
 	gauge->colors[COL_NEEDLE].green=0.0*65535;
@@ -188,16 +188,15 @@ void cairo_update_pie_gauge_position (MtxPieGauge *gauge)
 	g_free(tmpbuf);
 	cairo_select_font_face (cr, gauge->value_font,  slant, weight);
 
-	//cairo_set_font_size (cr, (gauge->radius * gauge->value_font_scale));
-	cairo_set_font_size (cr, 8);
+	cairo_set_font_size (cr, 11);
 
 	message = g_strdup_printf("%s:%.*f", gauge->valname,gauge->precision,gauge->value);
 
 	cairo_text_extents (cr, message, &extents);
 
 	cairo_move_to (cr, 
-			2*gauge->pie_radius + 5 + gauge->value_xpos,
-			gauge->value_ypos);
+			gauge->pie_radius*2 + 5 +gauge->value_xpos,
+			gauge->pie_yc - (extents.height/4) + gauge->value_ypos);
 	cairo_show_text (cr, message);
 	g_free(message);
 
@@ -234,15 +233,13 @@ void gdk_update_pie_gauge_position (MtxPieGauge *gauge)
 {
 #ifndef HAVE_CAIRO
 	GtkWidget *widget = NULL;
-	gint i= 0;
 	gfloat xc = 0.0;
 	gfloat yc = 0.0;
 	gfloat tmpf = 0.0;
 	gfloat needle_pos = 0.0;
 	gchar * message = NULL;
 	gchar * tmpbuf = NULL;
-	gint lwidth = 0;
-	MtxAlertRange* range = NULL;
+	GdkPoint tip;
 	PangoRectangle logical_rect;
 
 	widget = GTK_WIDGET(gauge);
@@ -255,23 +252,20 @@ void gdk_update_pie_gauge_position (MtxPieGauge *gauge)
 			0,0,
 			widget->allocation.width,widget->allocation.height);
 	/* the text */
-	if (gauge->show_value)
-	{
-		gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_VALUE_FONT]);
-		message = g_strdup_printf("%s:%.*f", gauge->valname,gauge->precision,gauge->value);
+	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_VALUE_FONT]);
+	message = g_strdup_printf("%s:%.*f", gauge->valname,gauge->precision,gauge->value);
 
-		tmpbuf = g_strdup_printf("%s %i",gauge->value_font,(gint)(gauge->radius *gauge->value_font_scale*0.82));
-		gauge->font_desc = pango_font_description_from_string(tmpbuf);
-		g_free(tmpbuf);
-		pango_layout_set_font_description(gauge->layout,gauge->font_desc);
-		pango_layout_set_text(gauge->layout,message,-1);
-		pango_layout_get_pixel_extents(gauge->layout,NULL,&logical_rect);
-		g_free(message);
+	tmpbuf = g_strdup_printf("%s 8",gauge->value_font);
+	gauge->font_desc = pango_font_description_from_string(tmpbuf);
+	g_free(tmpbuf);
+	pango_layout_set_font_description(gauge->layout,gauge->font_desc);
+	pango_layout_set_text(gauge->layout,message,-1);
+	pango_layout_get_pixel_extents(gauge->layout,NULL,&logical_rect);
+	g_free(message);
 
-		gdk_draw_layout(gauge->pixmap,gauge->gc,
-				gauge->pie_radius*2 + 5 +gauge->value_xpos,
-				gauge->value_ypos,gauge->layout);
-	}
+	gdk_draw_layout(gauge->pixmap,gauge->gc,
+			gauge->pie_radius*2 + 5 +gauge->value_xpos,
+			gauge->pie_yc - logical_rect.height+gauge->value_ypos,gauge->layout);
 
 	gdk_gc_set_line_attributes(gauge->gc,1,
 			GDK_LINE_SOLID,
@@ -279,18 +273,15 @@ void gdk_update_pie_gauge_position (MtxPieGauge *gauge)
 			GDK_JOIN_ROUND);
 
 	/* gauge hands */
-	tmpf = (gauge->value-gauge->lbound)/(gauge->ubound-gauge->lbound);
+	tmpf = (gauge->value-gauge->min)/(gauge->max-gauge->min);
 	needle_pos = (gauge->start_angle+(tmpf*gauge->sweep_angle))*(M_PI/180.0);
-	xc = gauge->pie_radius+2;
-	yc = 3;
-	tip.x = xc + ((n_tip) * cos (needle_pos));
-	tip.y = yc + ((n_tip) * sin (needle_pos));
+	tip.x = gauge->pie_xc + (gauge->pie_radius * cos (needle_pos));
+	tip.y = gauge->pie_yc + (gauge->pie_radius * sin (needle_pos));
 
-	/* Draw the needle */
 	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_NEEDLE]);
 	gdk_draw_line(gauge->pixmap,
 			gauge->gc,
-			(gint)xc,(gint)yc,
+			gauge->pie_xc,gauge->pie_yc,
 			tip.x,tip.y);
 	
 #endif
@@ -469,31 +460,6 @@ void gdk_generate_pie_gauge_background(MtxPieGauge *gauge)
 #ifndef HAVE_CAIRO
 	gint w = 0;
 	gint h = 0;
-	gint i = 0;
-	gint j = 0;
-	gint k = 0;
-	gint count = 0;
-	gfloat rad = 0.0;
-	gchar **vector = NULL;
-	gint lwidth = 0;
-	gfloat tmpf = 0.0;
-	gfloat counter = 0.0;
-	gfloat subcounter = 0.0;
-	gchar * tmpbuf = NULL;
-	gfloat mintick_inset = 0.0;
-	gfloat angle1 = 0.0;
-	gfloat angle2 = 0.0;
-	gfloat start_pos = 0.0;
-	gfloat stop_pos = 0.0;
-	gfloat start_angle = 0.0;
-	gint r_sign = 0;
-	gint g_sign = 0;
-	gint b_sign = 0;
-	gint num_points = 0;
-	GdkColor color;
-	GdkColor *b_color;
-	GdkColor *e_color;
-	PangoRectangle logical_rect;
 
 	if (!gauge->bg_pixmap)
 		return;
@@ -512,35 +478,35 @@ void gdk_generate_pie_gauge_background(MtxPieGauge *gauge)
 	/* Black Border pie gauge  */
 	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_NEEDLE]);
 	gdk_draw_arc(gauge->bg_pixmap,gauge->gc,TRUE,
-			gauge->xc-gauge->pie_radius-1,
-			gauge->yc-gauge->pie_radius-1,
-			gauge->pie_radius+2,
+			gauge->pie_xc-gauge->pie_radius-1,
+			gauge->pie_yc-gauge->pie_radius-1,
+			2*gauge->pie_radius+2,
 			2*gauge->pie_radius+2,
 			180*64,-180*64);
 	/* Yellow pie gauge  */
 	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_MID]);
 	gdk_draw_arc(gauge->bg_pixmap,gauge->gc,TRUE,
-			gauge->xc-gauge->pie_radius,
-			gauge->yc-gauge->pie_radius,
-			gauge->pie_radius,
+			gauge->pie_xc-gauge->pie_radius,
+			gauge->pie_yc-gauge->pie_radius,
+			2*gauge->pie_radius,
 			2*gauge->pie_radius,
 			180*64,-180*64);
 
 	/* Green Slice */
-	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_MID]);
+	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_LOW]);
 	gdk_draw_arc(gauge->bg_pixmap,gauge->gc,TRUE,
-			gauge->xc-gauge->pie_radius,
-			gauge->yc-gauge->pie_radius,
-			gauge->pie_radius,
+			gauge->pie_xc-gauge->pie_radius,
+			gauge->pie_yc-gauge->pie_radius,
+			2*gauge->pie_radius,
 			2*gauge->pie_radius,
 			180*64,-45*64);
 
 	/* Red Slice */
-	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_MID]);
+	gdk_gc_set_rgb_fg_color(gauge->gc,&gauge->colors[COL_HIGH]);
 	gdk_draw_arc(gauge->bg_pixmap,gauge->gc,TRUE,
-			gauge->xc-gauge->pie_radius,
-			gauge->yc-gauge->pie_radius,
-			gauge->pie_radius,
+			gauge->pie_xc-gauge->pie_radius,
+			gauge->pie_yc-gauge->pie_radius,
+			2*gauge->pie_radius,
 			2*gauge->pie_radius,
 			45*64,-45*64);
 

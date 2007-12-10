@@ -1135,6 +1135,7 @@ void cairo_generate_gauge_background(MtxGaugeFace *gauge)
 void gdk_generate_gauge_background(MtxGaugeFace *gauge)
 {
 #ifndef HAVE_CAIRO
+	GtkWidget * widget = NULL;
 	gfloat deg_per_major_tick = 0.0;
 	gfloat deg_per_minor_tick = 0.0;
 	gint w = 0;
@@ -1179,8 +1180,10 @@ void gdk_generate_gauge_background(MtxGaugeFace *gauge)
 	if (!gauge->bg_pixmap)
 		return;
 
-	w = GTK_WIDGET(gauge)->allocation.width;
-	h = GTK_WIDGET(gauge)->allocation.height;
+	widget = GTK_WIDGET(gauge);
+
+	w = widget->allocation.width;
+	h = widget->allocation.height;
 
 
 	/* Wipe the display, black */
