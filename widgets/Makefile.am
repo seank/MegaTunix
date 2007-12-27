@@ -4,12 +4,13 @@ INCLUDES = \
         @LIBXML2_CFLAGS@ \
         @MEGATUNIX_DEFINES@
 
-
 demo_SOURCES = demo.c gauge.h
 
 piedemo_SOURCES = piedemo.c piegauge.h
 
-noinst_PROGRAMS = demo piedemo
+apifix_SOURCES = apifix.c gauge.h
+
+noinst_PROGRAMS = demo piedemo apifix
 
 noinst_LTLIBRARIES = libmtxgauge.la
 
@@ -20,6 +21,8 @@ libmtxgauge_la_LDFLAGS = @EXTRA_LIBS@ @GTK_LIBS@ @LIBXML2_LIBS@
 demo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
 
 piedemo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
+
+apifix_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
 
 COMMON_FLAGS = @PROF_FLAGS@ @DEBUG_FLAGS@ 
 

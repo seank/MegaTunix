@@ -639,6 +639,7 @@ void mtx_gauge_color_range_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxColorRange *range = NULL;
 	xmlNodePtr node = NULL;
+	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->c_ranges->len;i++)
 	{
@@ -661,13 +662,13 @@ void mtx_gauge_color_range_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
+		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
+		generic_color_export(child,&range->color);
+/*		tmpbuf = g_strdup_printf("%i %i %i", 
 				range->color.red, 
 				range->color.green, 
 				range->color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+*/
 
 	}
 }
@@ -679,6 +680,7 @@ void mtx_gauge_alert_range_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxAlertRange *range = NULL;
 	xmlNodePtr node = NULL;
+	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->a_ranges->len;i++)
 	{
@@ -701,14 +703,8 @@ void mtx_gauge_alert_range_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				range->color.red, 
-				range->color.green, 
-				range->color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
-
+		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
+		generic_color_export(child,&range->color);
 	}
 }
 
@@ -719,6 +715,7 @@ void mtx_gauge_text_block_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxTextBlock *tblock = NULL;
 	xmlNodePtr node = NULL;
+	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->t_blocks->len;i++)
 	{
@@ -745,14 +742,8 @@ void mtx_gauge_text_block_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "y_pos",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				tblock->color.red, 
-				tblock->color.green, 
-				tblock->color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
-
+		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
+		generic_color_export(child,&tblock->color);
 	}
 }
 
@@ -763,6 +754,7 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxTickGroup *tgroup = NULL;
 	xmlNodePtr node = NULL;
+	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->tick_groups->len;i++)
 	{
@@ -785,24 +777,16 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "text_inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				tgroup->text_color.red, 
-				tgroup->text_color.green, 
-				tgroup->text_color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "text_color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+		child = xmlNewChild(node, NULL, BAD_CAST "text_color",NULL);
+		generic_color_export(child,&tgroup->text_color);
+
 		tmpbuf = g_strdup_printf("%i",tgroup->num_maj_ticks);
 		xmlNewChild(node, NULL, BAD_CAST "num_maj_ticks",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				tgroup->maj_tick_color.red, 
-				tgroup->maj_tick_color.green, 
-				tgroup->maj_tick_color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "maj_tick_color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+		child = xmlNewChild(node, NULL, BAD_CAST "maj_tick_color",NULL);
+		generic_color_export(child,&tgroup->maj_tick_color);
+
 		tmpbuf = g_strdup_printf("%f",tgroup->maj_tick_inset);
 		xmlNewChild(node, NULL, BAD_CAST "maj_tick_inset",
 				BAD_CAST tmpbuf);
@@ -819,13 +803,9 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "num_min_ticks",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				tgroup->min_tick_color.red, 
-				tgroup->min_tick_color.green, 
-				tgroup->min_tick_color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "min_tick_color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+		child = xmlNewChild(node, NULL, BAD_CAST "min_tick_color",NULL);
+		generic_color_export(child,&tgroup->min_tick_color);
+
 		tmpbuf = g_strdup_printf("%f",tgroup->min_tick_inset);
 		xmlNewChild(node, NULL, BAD_CAST "min_tick_inset",
 				BAD_CAST tmpbuf);
@@ -984,19 +964,14 @@ void mtx_gauge_polygon_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxPolygon *poly = NULL;
 	xmlNodePtr node = NULL;
+	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->polygons->len;i++)
 	{
 		poly = g_array_index(helper->gauge->polygons,MtxPolygon *, i);
 		node = xmlNewChild(helper->root_node, NULL, BAD_CAST "polygon",NULL );
-
-		tmpbuf = g_strdup_printf("%i %i %i", 
-				poly->color.red, 
-				poly->color.green, 
-				poly->color.blue); 
-		xmlNewChild(node, NULL, BAD_CAST "color",
-				BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
+		generic_color_export(child,&poly->color);
 		tmpbuf = g_strdup_printf("%i",poly->filled);
 		xmlNewChild(node, NULL, BAD_CAST "filled",
 				BAD_CAST tmpbuf);
@@ -1036,16 +1011,28 @@ void mtx_gauge_polygon_export(MtxDispatchHelper * helper)
 
 void mtx_gauge_color_export(MtxDispatchHelper * helper)
 {
-	gchar * tmpbuf = NULL;
+	xmlNodePtr node = NULL;
 	GdkColor *color = helper->src;
-	tmpbuf = g_strdup_printf("%i %i %i", 
-			color->red, 
-			color->green, 
-			color->blue); 
-	xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,
-			BAD_CAST tmpbuf);
+	node = xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,NULL);
+	generic_color_export(node,color);
+			
+}
+
+
+void generic_color_export(xmlNode *parent,GdkColor *color)
+{
+	gchar * tmpbuf =  NULL;
+	tmpbuf = g_strdup_printf("%i",color->red); 
+	xmlNewChild(parent, NULL, BAD_CAST "red",BAD_CAST tmpbuf);
+	g_free(tmpbuf);
+	tmpbuf = g_strdup_printf("%i",color->green); 
+	xmlNewChild(parent, NULL, BAD_CAST "green",BAD_CAST tmpbuf);
+	g_free(tmpbuf);
+	tmpbuf = g_strdup_printf("%i",color->blue); 
+	xmlNewChild(parent, NULL, BAD_CAST "blue",BAD_CAST tmpbuf);
 	g_free(tmpbuf);
 }
+
 
 void mtx_gauge_gfloat_export(MtxDispatchHelper * helper)
 {
