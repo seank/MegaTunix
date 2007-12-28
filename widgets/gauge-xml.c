@@ -200,26 +200,31 @@ void mtx_gauge_face_export_xml(MtxGaugeFace * gauge, gchar * filename)
 
 void mtx_gauge_color_import(MtxGaugeFace *gauge,xmlNode *node,gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	GdkColor *color = NULL;
+
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_color_import, xml node is empty!!\n");
 		return;
 	}
-	if (!(node->children->type == XML_TEXT_NODE))
-	{
-		printf("node type is NOT text,  exiting\n");
-		return;
-	}
-	gchar ** vector = NULL;
-	GdkColor *color = NULL;
-
-	vector = g_strsplit((gchar*)node->children->content," ", 0);
 	color = (GdkColor *)dest;
-	color->red = (guint16)g_ascii_strtod(vector[0],NULL);
-	color->green = (guint16)g_ascii_strtod(vector[1],NULL);
-	color->blue = (guint16)g_ascii_strtod(vector[2],NULL);
-	g_strfreev(vector);
+	cur_node = node->children;
+	while (cur_node->next)
+	{
+		if (cur_node->type == XML_ELEMENT_NODE)
+		{
+		 if (g_strcasecmp((gchar *)cur_node->name,"red") == 0)
+			 mtx_gauge_gint_import(gauge,cur_node,&color->red);
+		 if (g_strcasecmp((gchar *)cur_node->name,"green") == 0)
+			 mtx_gauge_gint_import(gauge,cur_node,&color->green);
+		 if (g_strcasecmp((gchar *)cur_node->name,"blue") == 0)
+			 mtx_gauge_gint_import(gauge,cur_node,&color->blue);
+		}
+		cur_node = cur_node->next;
+	}
 }
+
 
 void mtx_gauge_gfloat_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {

@@ -83,16 +83,15 @@ void traverse(const gchar * top)
 		filename = g_build_filename(top,entry,NULL);
 		if (g_file_test(filename,G_FILE_TEST_IS_REGULAR))
 		{
-
-			printf("entry %s is a regular file\n",filename);
 			if (g_strrstr(filename,".xml"))
+			{
+				printf("fixing %s\n",filename);
 				fix_file(filename);
+			}
 		}
 		else if (g_file_test(filename,G_FILE_TEST_IS_DIR))
-		{
-			printf("entry %s is a directory\n",filename);
 			traverse(filename);
-		}
+
 		entry = g_dir_read_name(dir);
 		g_free(filename);
 	}
