@@ -26,8 +26,9 @@
 
 gint realtime_id = 0;
 gint playback_id = 0;
-gint toothmon_id = 0;
-gint trigmon_id = 0;
+static gint toothmon_id = 0;
+static gint trigmon_id = 0;
+static gboolean restart_realtime = FALSE;
 
 extern gint dbg_lvl;
 
@@ -48,6 +49,11 @@ void start_tickler(TicklerType type)
 		case RTV_TICKLER:
 			if (offline)
 				break;
+			if (restart_realtime)
+			{
+				update_logbar("comms_view",NULL,g_strdup("TTM is active, Realtime Reader suspended\n"),FALSE,FALSE);
+				break;
+			}
 			if (realtime_id == 0)
 			{
 				flush_rt_arrays();
@@ -69,6 +75,17 @@ void start_tickler(TicklerType type)
 		case TOOTHMON_TICKLER:
 			if (offline)
 				break;
+			if (realtime_id != 0)
+			{
+				/* TTM and Realtime are mutulally exclusive,
+				 * and TTM takes precedence,  so disabled 
+				 * realtime, and manually fire it once per
+				 * TTM read so the gauges will still update
+				 */
+				g_source_remove(realtime_id);
+				restart_realtime = TRUE;
+				realtime_id = 0;
+			}
 			if (toothmon_id == 0)
 				toothmon_id = g_timeout_add(400,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
 			else
@@ -80,6 +97,17 @@ void start_tickler(TicklerType type)
 		case TRIGMON_TICKLER:
 			if (offline)
 				break;
+			if (realtime_id != 0)
+			{
+				/* TTM and Realtime are mutulally exclusive,
+				 * and TTM takes precedence,  so disabled 
+				 * realtime, and manually fire it once per
+				 * TTM read so the gauges will still update
+				 */
+				g_source_remove(realtime_id);
+				restart_realtime = TRUE;
+				realtime_id = 0;
+			}
 			if (trigmon_id == 0)
 				trigmon_id = g_timeout_add(500,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TRIGMON_TICKLER));
 			else
@@ -132,12 +160,22 @@ void stop_tickler(TicklerType type)
 				g_source_remove(toothmon_id);
 				toothmon_id = 0;
 			}
+			if (restart_realtime)
+			{
+				restart_realtime = FALSE;
+				start_tickler(RTV_TICKLER);
+			}
 			break;
 		case TRIGMON_TICKLER:
 			if (trigmon_id)
 			{
 				g_source_remove(trigmon_id);
 				trigmon_id = 0;
+			}
+			if (restart_realtime)
+			{
+				restart_realtime = FALSE;
+				start_tickler(RTV_TICKLER);
 			}
 			break;
 
@@ -191,6 +229,11 @@ gboolean signal_toothtrig_read(TicklerType type)
 	if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
 		dbg_func(g_strdup(__FILE__": signal_toothtrig_read()\n\tsending message to thread to read ToothTrigger data\n"));
 
+	/* Make the gauges stay up to date,  even if rather slowly 
+	 * Also gets us access to current RPM and other vars for calculating 
+	 * data from the TTM results
+	 */
+	signal_read_rtvars();
 	switch (type)
 	{
 		case TOOTHMON_TICKLER:

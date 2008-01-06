@@ -95,7 +95,7 @@ void init(void)
 	potential_ports = g_strdup("COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9");
 #else
 	default_serial_port = g_strdup("/dev/ttyS0");
-	potential_ports = g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3");
+	potential_ports = g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3,/tmp/virtual-serial");
 #endif
 	serial_params->fd = 0; /* serial port file-descriptor */
 
