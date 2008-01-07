@@ -439,10 +439,10 @@ void dump_output(gint total_read, guchar *buf)
 		if (dbg_lvl & SERIAL_RD)
 		{
 			dbg_func(g_strdup_printf(__FILE__": dataio.c()\n\tDumping output, enable IO_PROCESS debug to see the cmd's that were sent\n"));
-			dbg_func(g_strdup_printf("Data is in HEX!!\n"));
 			tmpbuf = g_strndup(((gchar *)buf),total_read);
 			dbg_func(g_strdup_printf(__FILE__": dataio.c()\n\tDumping Output string: \"%s\"\n",tmpbuf));
 			g_free(tmpbuf);
+			dbg_func(g_strdup_printf("Data is in HEX!!\n"));
 		}
 		for (j=0;j<total_read;j++)
 		{

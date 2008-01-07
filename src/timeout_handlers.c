@@ -44,10 +44,13 @@ void start_tickler(TicklerType type)
 	extern GObject *global_data;
 	extern Serial_Params *serial_params;
 	extern volatile gboolean offline;
+	extern gboolean rtvars_loaded;
 	switch (type)
 	{
 		case RTV_TICKLER:
 			if (offline)
+				break;
+			if (!rtvars_loaded)
 				break;
 			if (restart_realtime)
 			{
@@ -201,11 +204,11 @@ gboolean signal_read_rtvars()
 
 	length = g_async_queue_length(io_queue);
 
-	/* IF queue depth is too great we should not make the problem worse
+	/* If ueue depth is too great we should not make the problem worse
 	 * so we skip a call as we're probably trying to go faster than the 
-	 * MS and/or serail port can go....
+	 * MS and/or serial port can go....
 	 */
-	if (length > 1)
+	if (length > 2)
 		return TRUE;
 
 	if (dbg_lvl & (SERIAL_RD|SERIAL_WR))

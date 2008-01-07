@@ -115,6 +115,7 @@ void dbg_func(gchar *str)
 	{
 		g_io_channel_write_chars(dbg_channel,str,-1,&count,&error);
 		g_free(str);
+		g_io_channel_flush(dbg_channel,&error);
 	}
 	g_static_mutex_unlock(&dbg_mutex);
 }

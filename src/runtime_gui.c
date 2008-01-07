@@ -40,7 +40,6 @@ extern gint dbg_lvl;
 GHashTable *dash_gauges = NULL;
 
 gboolean forced_update = TRUE;
-gboolean no_update = FALSE;
 GStaticMutex rtv_mutex = G_STATIC_MUTEX_INIT;
 
 
@@ -75,8 +74,6 @@ gboolean update_runtime_vars()
 	extern gint * algorithm;
 
 	if (!firmware)
-		return FALSE;
-	if(no_update)
 		return FALSE;
 
 	count++;

@@ -21,6 +21,7 @@
 #include <math.h>
 #include <t-logger.h>
 #include <logviewer_gui.h>
+#include <rtv_processor.h>
 #include <structures.h>
 
 
@@ -70,8 +71,8 @@ EXPORT void setup_logger_display(GtkWidget * src_widget)
 	ttm_data->wrap_pt = 0;
 	ttm_data->font_height = 0;
 	ttm_data->usable_begin = 0;
-	ttm_data->current = g_array_sized_new(FALSE,TRUE,sizeof (gushort),93);
-	ttm_data->last = g_array_sized_new(FALSE,TRUE,sizeof (gushort),93);
+	ttm_data->current = g_new0(gushort,93);
+	ttm_data->last = g_new0(gushort,93);
 	ttm_data->font_desc = NULL;
 
 	g_object_set_data(G_OBJECT(src_widget),"ttmon_data",(gpointer)ttm_data);
@@ -139,9 +140,16 @@ void crunch_trigtooth_data(gint page)
 	gint tmp = 0;
 	gint min = -1;
 	gint max = -1;
+	gint captures[93];
+	gint cap_idx = 0;
+	gfloat ratio = 0.0;
+	gfloat current = 0.0;
+	gint lower = 0;
+	gint upper = 0;
+	gint missing = 0;
 	gushort total = 0;
 	gint position = ms_data[page][CTR];
-	gint count = 0;
+	gint index = 0;
 
 /*
 	g_printf("Counter position on page %i is %i\n",page,position);
@@ -151,24 +159,25 @@ void crunch_trigtooth_data(gint page)
 		g_printf("data block from position 0 to 185 (93 words)\n");
 */
 
-	count=0;
+//	printf("position is %i\n",position);
+	index=0;
 	for (i=0;i<93;i++)
-		g_array_insert_val(ttm_data->last,i,g_array_index(ttm_data->current,gushort,i));
+		ttm_data->last[i] = ttm_data->current[i];
 
 
 	for (i=position;i<185;i+=2)
 	{
 		total = (ms_data[page][i]*256)+ms_data[page][i+1];
-		g_array_insert_val(ttm_data->current,count,total);
-		count++;
+		ttm_data->current[index] = total;
+		index++;
 	}
 	if (position != 0)
 	{
 		for (i=0;i<position;i+=2)
 		{
 			total = (ms_data[page][i]*256)+ms_data[page][i+1];
-			g_array_insert_val(ttm_data->current,count,total);
-			count++;
+			ttm_data->current[index] = total;
+			index++;
 		}
 	}
 	//	g_printf("\n");
@@ -188,20 +197,70 @@ void crunch_trigtooth_data(gint page)
 	max = 0;
 	for (i=0;i<93;i++)
 	{
-		if (g_array_index(ttm_data->current,gushort, i) < min)
-			min = g_array_index(ttm_data->current,gushort, i);
-		if (g_array_index(ttm_data->current,gushort, i) > max)
-			max = g_array_index(ttm_data->current,gushort, i);
+		if (ttm_data->current[i] < min)
+			min = ttm_data->current[i];
+		if (ttm_data->current[i] > max)
+			max = ttm_data->current[i];
 	}
 	ttm_data->min_time = min;
 	ttm_data->max_time = max;
+	/* Ratio of min to max,  may not work for complex wheel
+	 * patterns
+	 */
+	ratio = (float)max/(float)min;
 	if (page == 9) /* TOOTH logger, we should searh for min/max's */
 	{
+		/* ttm_data->current is the array containing the entire
+		 * sample of data organized so the beginning of the array
+		 * corresponds to the wrap point in the ECU.  Thus we should
+		 * search from here to find then number of "max" pips to see
+		 * how many wheel rotations we captured, and then try and
+		 * count the minor pips between those maxes and crunch on them
+		 * to determine the "quality" of the signal.
+		 */
+
+		/* Problems,  the wheel styles can be very complex, not just
+		 * n-m styles..
+		 */
+
+		cap_idx = 0;
+		for (i=0;i<93;i++)
+		{
+			captures[i] = 0;
+			/* Crude test,  ok for m-n wheels, but not complex*/
+			if ((ttm_data->current[i] > (1.5*min)) && (min != 0))
+				captures[cap_idx++] = i;
+		}
+		upper = (gint)ceil(ratio);
+		lower = (gint)floor(ratio);
+		if ((ratio-lower) < 0.5)
+			missing = lower - 1;
+		else 
+			missing = upper - 1;
+		for (i=1;i<cap_idx;i++)
+		{
+			printf("read %i trigger times followed by %i missing, thus %i-%i wheel\n",captures[i]-captures[i-1],missing,missing+captures[i]-captures[i-1],missing);
+		}
+		for (i=0;i<cap_idx;i++)
+			printf("Missing teeth at index %i\n",captures[i]);
+
+		//		printf("max/min is %f\n ceil %f. floor %f",ratio,ceil(ratio),floor(ratio) );
+		//		printf("wheel is a missing %i style\n",missing);
 
 
+		printf("Data for this block\n");
+		for (i=0;i<93;i++)
+		{
+			printf("%.4x ", ttm_data->current[i]);
+			if (!((i+1)%16))
+				printf("\n");
+		}
+		printf("\n");
 	}
 
-	//g_printf ("Minimum tooth time: %i, max tooth time %i\n",min,max);
+	printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
+	lookup_current_value("rpm",&current);
+	printf("Current RPM %f\n",current);
 
 	/* vertical scale calcs:
 	 * PROBLEM:  max_time can be anywhere from 0-65535, need to 
@@ -325,7 +384,7 @@ void cairo_update_trigtooth_display(gint page)
 	{
 		//		g_printf("moved to %f %i\n",ttm_data->usable_begin+(i*w/93.0),0);
 		cairo_move_to(cr,ttm_data->usable_begin+(i*w/93.0),h-(y_shift/2));
-		val = g_array_index(ttm_data->current,gushort,i);
+		val = ttm_data->current[i];
 		cur_pos = (h-y_shift)*(1.0-(val/ttm_data->peak))+(y_shift/2);
 		cairo_line_to(cr,ttm_data->usable_begin+(i*w/93.0),cur_pos);
 	}
@@ -451,7 +510,7 @@ void gdk_update_trigtooth_display(gint page)
 		else
 			increment = 0;
 
-		val = g_array_index(ttm_data->current,gushort,i);
+		val = ttm_data->current[i];
 		cur_pos = (h-y_shift)*(1.0-(val/ttm_data->peak))+(y_shift/2);
 		gdk_draw_rectangle(ttm_data->pixmap,ttm_data->trace_gc,TRUE,
 				x_pos,(gint)cur_pos,

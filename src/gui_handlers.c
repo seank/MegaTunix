@@ -831,7 +831,6 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 	gchar * tmpbuf = NULL;
 	gboolean restart = FALSE;
 	extern gint realtime_id;
-	extern gboolean no_update;
 	extern volatile gboolean offline;
 	extern gboolean forced_update;
 	extern GHashTable *dynamic_widgets;
@@ -891,7 +890,6 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 		case START_REALTIME:
 			if (offline)
 				break;
-			no_update = FALSE;
 			if (!interrogated)
 				io_cmd(IO_INTERROGATE_ECU, NULL);
 			start_tickler(RTV_TICKLER);
@@ -901,7 +899,6 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			if (offline)
 				break;
 			stop_tickler(RTV_TICKLER);
-			no_update = TRUE;
 			break;
 		case REBOOT_GETERR:
 			if (offline)
