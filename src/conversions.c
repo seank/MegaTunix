@@ -214,7 +214,7 @@ gfloat convert_after_upload(GtkWidget * widget)
 	gfloat return_value = 0.0;
 	gchar * conv_expr = NULL;
 	void *evaluator = NULL;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	gint tmpi = 0;
 	gint page = -1;
 	gint offset = -1;
@@ -320,9 +320,9 @@ gfloat convert_after_upload(GtkWidget * widget)
 
 	}
 	if (g_object_get_data(G_OBJECT(widget),"lookuptable"))
-		tmpi = lookup_data(G_OBJECT(widget),ms_data[page][offset]);
+		tmpi = lookup_data(G_OBJECT(widget),ecu_data[page][offset]);
 	else
-		tmpi = ms_data[page][offset];
+		tmpi = ecu_data[page][offset];
 
 
 	if (!evaluator)

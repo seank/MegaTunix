@@ -41,12 +41,11 @@ typedef struct _Table_Params Table_Params;
 typedef struct _Detection_Test Detection_Test;
 typedef struct _Detection_Test_Result Detection_Test_Result;
 typedef struct _Req_Fuel_Params Req_Fuel_Params;
-typedef struct _Command Command;
 typedef struct _Io_Message Io_Message;
+typedef struct _Io_Cmds Io_Cmds;
 typedef struct _Text_Message Text_Message;
 typedef struct _QFunction QFunction;
 typedef struct _Widget_Update Widget_Update;
-typedef struct _Io_Cmds Io_Cmds;
 typedef struct _Output_Data Output_Data;
 typedef struct _Rtv_Map Rtv_Map;
 typedef struct _DebugLevel DebugLevel;
@@ -59,6 +58,7 @@ typedef struct _TTMon_Data TTMon_Data;
 typedef struct _MultiExpr MultiExpr;
 typedef struct _MultiSource MultiSource;
 typedef struct _CmdLineArgs CmdLineArgs;
+typedef struct _Drain_Data Drain_Data;
 
 /*! 
  \brief _Serial_Params holds all variables related to the state of the serial
@@ -107,17 +107,16 @@ struct _Firmware_Details
 	gchar *status_map_file;	/*! runtime status map filename */
 	gchar *rt_cmd_key;	/*! string key to hashtable for RT command */
 	gchar *ve_cmd_key;	/*! string key to hashtable for VE command */
-	gchar *ign_cmd_key;	/*! string key to hashtable for Ign command */
 	gchar *raw_mem_cmd_key;	/*! string key to hashtable for RAW command */
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
         gint rtvars_size;       /*! Size of Realtime vars datablock */
-        gint ignvars_size;      /*! Size of Realtime vars datablock */
         gint memblock_size;     /*! Size of Raw_Memory datablock */
 	gint capabilities;	/*! Enum list of capabilities*/
 	gboolean multi_page;	/*! Multi-page firmware */
 	gboolean chunk_support;	/*! Supports Chunk Write */
+	gboolean can_capable;	/*! Supports CAnbus and sub modules */
 	gint total_pages;	/*! How many pages do we handle? */
 	gint total_tables;	/*! How many tables do we handle? */
 	gint ro_above;		/*! Read Only debug pages above this one */
@@ -203,9 +202,9 @@ struct _Viewable_Value
 
 struct _Dash_Gauge
 {
-	GObject *object;		/* Data stroage object for RT vars */
-	gchar * source;			/* Source name (unused) */
-	GtkWidget *gauge;		/* pointer to gaugeitself */
+	GObject *object;		/* Data storage object for RT vars */
+	gchar * source;			/* Data Source name */
+	GtkWidget *gauge;		/* pointer to gauge itself */
 	GtkWidget *dash;		/* pointer to gauge parent */
 };
 
@@ -278,6 +277,7 @@ struct _Log_Info
  */
 struct _Page_Params
 {
+	gint can_id;		/*! CanBus ID (if can enabled) */
 	gint length;		/*! How big this page is... */
 	gint truepgnum;		/*! True pagenumber to send */
 	gint is_spark;		/*! does this require alt write cmd? */
@@ -288,9 +288,17 @@ struct _Page_Params
 /*! 
  \brief The _Table_Params structure contains fields defining table parameters
  One struct is allocated per table, and multiple tables per page are allowed
+ This differs a bit in lingo to how the MS-II developers named things in 
+ their code.  On those,  table is analagous to "page",  why they used the 
+ language they did is beyond me, but it makes little sense to say "fuel table
+ 2 inside of table5,  makes more sense to say "fuel table 2 in page5".
+ This structure defines a specific fuel/spark/afr/other table arranged in a 
+ grid format.  Current design restriction is that a table can't span more
+ than on CAN IDs which only makes sense.
  */
 struct _Table_Params
 {
+	gint can_id;		/*! CanBus identifier */
 	gboolean is_fuel;	/*! If true next 7 params must exist */
 	gint dtmode_offset;	/*! DT mode offset (msns-e ONLY) */
 	gint dtmode_page;	/*! DT mode page (msns-e ONLY) */
@@ -406,31 +414,11 @@ struct _Req_Fuel_Params
 
 
 /*!
- \brief the _Command struct is used to store details on the commands that
- are valid for the ECU, they are loaded from a config file "tests" normally
- installed in /usr/local/share/MegaTunix/Interrogator/tests. There will be
- one Command struct created per command, and they are used to interrogate the
- target ECU.
- */
-struct _Command
-{
-	gchar *string;		/*! command to get the data */
-	gchar *desc;		/*! command description */
-	gchar *key;		/*! key into cmd_details hashtable */
-	gint len;		/*! Command length in chars to send */
-	gboolean multipart;	/*! Multipart command? (raw_memory) */
-	gint cmd_int_arg;	/*! multipart arg, integer */
-	gboolean store_data;	/*! Store returned data ? */
-	StoreType store_type;	/*! Store data where */
-};
-
-
-/*!
  \brief _Io_Message structure is used for passing data around in threads.c for
  kicking off commands to send data to/from the ECU or run specified handlers.
  messages and postfunctiosn can be bound into this strucutre to do some complex
  things with a simple subcommand.
- \see _Io_Cmds
+ \see Io_Cmd
  */
 struct _Io_Message
 {
@@ -479,7 +467,7 @@ struct _QFunction
 /*
  \brief _Widget_Update strcture is used for a thread to pass a widget update
  call up a GAsyncQueue to the main gui thread for updating a widget in 
- a thread safe manner. A dispatch queue runs 5 times per second checking 
+ a thread safe manner. A dispatch queue runs periodically checking 
  for messages to dispatch...
  */
 struct _Widget_Update
@@ -490,6 +478,7 @@ struct _Widget_Update
 };
 
 
+
 /*!
  \brief _Io_Cmds stores the basic data for the critical megasquirt command
  codes. (realtime, VE, ign and spark) including the length of each of those
@@ -498,14 +487,12 @@ struct _Widget_Update
  */
 struct _Io_Cmds
 {
-	gchar *realtime_cmd;	/*! Command sent to get RT vars.... */
-	gint rt_cmd_len;	/*! length in bytes of rt_cmd_len */
-	gchar *veconst_cmd;	/*! Command sent to get VE/Const vars.... */
-	gint ve_cmd_len;	/*! length in bytes of veconst_cmd */
-	gchar *ignition_cmd;	/*! Command sent to get Ignition vars.... */
-	gint ign_cmd_len;	/*! length in bytes of ignition_cmd */
-	gchar *raw_mem_cmd;	/*! Command sent to get raw_mem vars.... */
-	gint raw_mem_cmd_len;	/*! length in bytes of raw_mem_cmd */
+	gchar *realtime_cmd;    /*! Command sent to get RT vars.... */
+	gint rt_cmd_len;        /*! length in bytes of rt_cmd_len */
+	gchar *veconst_cmd;     /*! Command sent to get VE/Const vars.... */
+	gint ve_cmd_len;        /*! length in bytes of veconst_cmd */
+	gchar *raw_mem_cmd;     /*! Command sent to get raw_mem vars.... */
+	gint raw_mem_cmd_len;   /*! length in bytes of raw_mem_cmd */
 };
 
 
@@ -515,13 +502,12 @@ struct _Io_Cmds
  */
 struct _Output_Data
 {
-	gint canID;		/*! CAN Module ID (MS-II ONLY) */
+	gint can_id;		/*! CAN Module ID (MS-II ONLY) */
 	gint page;		/*! Page in ECU */
 	gint offset;		/*! Offset in block */
 	gint value;		/*! Value to send */
 	gint len;		/*! Length of chunk write block */
 	guchar *data;		/*! Block of data for chunk write */
-	gboolean ign_parm;	/*! Ignition parameter, True or False */
 	gboolean queue_update;	/*! If true queues a member widget update */
 	WriteMode mode;		/*! Write mode enum */
 };
@@ -574,6 +560,7 @@ struct _Group
 	gint num_keys;		/* How many keys we hold */
 	gint num_keytypes;	/* How many keytypes we hold */
 	gint page;		/* page of this group of data */
+	gint can_id;		/* can_id of this group of data */
 };
 
 
@@ -649,12 +636,12 @@ struct _Ve_View_3D
 	GtkWidget *window;
 	GtkWidget *burn_but;
 	GObject *dep_obj;
-	gint y_base;
-	gint y_page;
-	gint y_bincount;
 	gint x_base;
 	gint x_page;
 	gint x_bincount;
+	gint y_base;
+	gint y_page;
+	gint y_bincount;
 	gint z_base;
 	gint z_page;
 	gchar *table_name;
@@ -780,7 +767,7 @@ struct _MultiSource
 
 
 /*!
- * \brief _Args struct is a container to hold the command line argument
+ * \brief _CmdLineArgs struct is a container to hold the command line argument
  * related variables, used to make mtx quiet, suppress portions of the gui
  * and autolog to files.
  */
@@ -796,6 +783,17 @@ struct _CmdLineArgs
 	gint autolog_minutes;	/* How many minutes to log per file */
 	gchar * autolog_dump_dir;/* What dir to put logs into */
 	gchar *autolog_basename;/* Autolog base filename */
+};
+
+
+/*!
+ * \brief _Drain_Data struct is a container to hold the extra params for the
+ * hash table data drainer.
+ */
+struct _Drain_Data
+{
+	gint page;	
+	gint can_id;
 };
 
 #endif

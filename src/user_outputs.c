@@ -78,6 +78,7 @@ EXPORT void build_model_and_view(GtkWidget * widget)
 	g_object_set_data(G_OBJECT(model),"hys_offset",g_object_get_data(G_OBJECT(widget),"hys_offset"));
 	g_object_set_data(G_OBJECT(model),"ulimit_offset",g_object_get_data(G_OBJECT(widget),"ulimit_offset"));
 	g_object_set_data(G_OBJECT(model),"page",g_object_get_data(G_OBJECT(widget),"page"));
+	g_object_set_data(G_OBJECT(model),"can_id",g_object_get_data(G_OBJECT(widget),"can_id"));
 
 	view = gtk_tree_view_new_with_model(model);
 	views = g_list_append(views,view);
@@ -277,16 +278,17 @@ void cell_edited(GtkCellRendererText *cell,
 	gfloat tmpf = 0.0;
 	void * evaluator = NULL;
 	gint result = 0;
+	gint can_id = 0;
 	gint page = 0;
 	gchar *key = NULL;
 	gchar *hash_key = NULL;
-	gboolean ign_parm = FALSE;
 	gboolean is_float = FALSE;
 	MultiExpr *multi = NULL;
 	GHashTable *hash = NULL;
 	extern GHashTable *sources_hash;
 
 	column = (gint) g_object_get_data (G_OBJECT (cell), "column");
+	can_id = (gint) g_object_get_data(G_OBJECT(model),"can_id");
 	page = (gint) g_object_get_data(G_OBJECT(model),"page");
 	src_offset = (gint) g_object_get_data(G_OBJECT(model),"src_offset");
 	lim_offset = (gint) g_object_get_data(G_OBJECT(model),"lim_offset");
@@ -391,14 +393,14 @@ void cell_edited(GtkCellRendererText *cell,
 	switch (column)
 	{
 		case COL_HYS:
-			write_ve_const(NULL, page, hys_offset, result, ign_parm, TRUE);
+			send_to_ecu(NULL, can_id, page, hys_offset, result, TRUE);
 			break;
 		case COL_ULIMIT:
-			write_ve_const(NULL, page, ulimit_offset, result, ign_parm, TRUE);
+			send_to_ecu(NULL, can_id, page, ulimit_offset, result, TRUE);
 			break;
 		case COL_ENTRY:
-			write_ve_const(NULL, page, src_offset, rt_offset, ign_parm, TRUE);
-			write_ve_const(NULL, page, lim_offset, result, ign_parm, TRUE);
+			send_to_ecu(NULL, can_id, page, src_offset, rt_offset, TRUE);
+			send_to_ecu(NULL, can_id, page, lim_offset, result, TRUE);
 			break;
 	}
 	g_timeout_add(500,(GtkFunction)deferred_model_update,(GtkWidget *)view);
@@ -423,6 +425,7 @@ void update_model_from_view(GtkWidget * widget)
 	gint lim_offset = 0;
 	gint hys_offset = -1;
 	gint ulimit_offset = -1;
+	gint can_id = 0;
 	gint page = 0;
 	gint offset = 0;
 	gint cur_val = 0;
@@ -436,7 +439,7 @@ void update_model_from_view(GtkWidget * widget)
 	gboolean temp_dep = FALSE;
 	gboolean looptest = FALSE;
 	void * evaluator = NULL;
-	extern gint ** ms_data;
+	extern gint ** ecu_data;
 	extern gint temp_units;
 	gchar * tmpbuf = NULL;
 	gchar * key = NULL;
@@ -452,11 +455,12 @@ void update_model_from_view(GtkWidget * widget)
 	hys_offset = (gint)g_object_get_data(G_OBJECT(model),"hys_offset");
 	ulimit_offset = (gint)g_object_get_data(G_OBJECT(model),"ulimit_offset");
 	page = (gint)g_object_get_data(G_OBJECT(model),"page");
+	can_id = (gint)g_object_get_data(G_OBJECT(model),"can_id");
 
-	offset = ms_data[page][src_offset];
-	cur_val = ms_data[page][lim_offset];
-	hys_val = ms_data[page][hys_offset];
-	ulimit_val = ms_data[page][ulimit_offset];
+	offset = ecu_data[page][src_offset];
+	cur_val = ecu_data[page][lim_offset];
+	hys_val = ecu_data[page][hys_offset];
+	ulimit_val = ecu_data[page][ulimit_offset];
 
 	looptest = TRUE;
 	while (looptest)

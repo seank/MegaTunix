@@ -40,7 +40,7 @@ gboolean check_dependancies(GObject *object )
 	gchar * tmpbuf = NULL;
 	gint type = 0;
 	gint num_deps = 0;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 
 	num_deps = (gint)g_object_get_data(object,"num_deps");
 	deps = g_object_get_data(object,"deps");
@@ -79,7 +79,7 @@ gboolean check_dependancies(GObject *object )
 //			printf("bitval %i\n",bitval);
 			g_free(tmpbuf);
 
-			if (!(((ms_data[page][offset]) & bitmask) >> bitshift) == bitval)	
+			if (!(((ecu_data[page][offset]) & bitmask) >> bitshift) == bitval)	
 			{
 //				printf("dep_proc returning FALSE\n");
 				return FALSE;

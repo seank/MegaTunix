@@ -120,7 +120,7 @@ void backup_all_ecu_settings(gchar *filename)
 	gchar * section = NULL;
 	gint i = 0;
 	gint x = 0;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	GString *string = NULL;
 
 	cfgfile = cfg_open_file(filename);
@@ -138,7 +138,7 @@ void backup_all_ecu_settings(gchar *filename)
 		cfg_write_int(cfgfile,section,"num_variables",firmware->page_params[i]->length);
 		for(x=0;x<firmware->page_params[i]->length;x++)
 		{
-			string = g_string_append(string,g_strdup_printf("%i",ms_data[i][x]));
+			string = g_string_append(string,g_strdup_printf("%i",ecu_data[i][x]));
 			if (x < (firmware->page_params[i]->length-1))
 				string = g_string_append(string,",");
 		}
@@ -160,12 +160,16 @@ void backup_all_ecu_settings(gchar *filename)
  pass the file will be loaded and any values that differ from the values
  currently in the ECU will be replaced.
  \param filename (filename to read for ecu restoration
+WARNING:  This function is not yet capable of handling CAN devices, and will
+always restore to can ID ZERO (which can be BAD!!), backup/restore needs to
+be rewritten..
  */
 void restore_all_ecu_settings(gchar *filename)
 {
 	extern Firmware_Details *firmware;
 	ConfigFile *cfgfile;
 	gchar * section = NULL;
+	gint can_id = 0;
 	gint page = 0;
 	gint offset = 0;
 	gint tmpi = 0;
@@ -176,7 +180,7 @@ void restore_all_ecu_settings(gchar *filename)
 	gchar **keys = NULL;
 	gint num_keys = 0;
 	gint dload_val = 0;
-	extern gint **ms_data_last;
+	extern gint **ecu_data_last;
 
 	cfgfile = cfg_open_file(filename);
 	if (cfgfile)
@@ -189,7 +193,7 @@ void restore_all_ecu_settings(gchar *filename)
 		}
 		if (minor != BACKUP_MINOR_API) 
 			update_logbar("tools_view","warning",g_strdup_printf(__FILE__": restore_all_ecu_settings()\n\tAPI MINOR version mismatch: \"%i\" != \"%i\",\nLoading this file,  though there is a version mismatch,  EXPECT ERRORS!\n",minor, BACKUP_MINOR_API),FALSE,FALSE);
-			
+
 		cfg_read_string(cfgfile,"Firmware","name",&tmpbuf);
 		if (g_strcasecmp(tmpbuf,firmware->name) != 0)
 		{
@@ -230,7 +234,7 @@ void restore_all_ecu_settings(gchar *filename)
 					data = g_new0(guchar, firmware->page_params[page]->length);
 					for (offset=0;offset<num_keys;offset++)
 						data[offset]=(guchar)atoi(keys[offset]);
-					chunk_write(page,0,num_keys,data);
+					chunk_write(can_id,page,0,num_keys,data);
 
 				}
 				else
@@ -238,10 +242,10 @@ void restore_all_ecu_settings(gchar *filename)
 					for (offset=0;offset<num_keys;offset++)
 					{
 						dload_val = atoi(keys[offset]);
-						if (dload_val != ms_data_last[page][offset])
+						if (dload_val != ecu_data_last[page][offset])
 						{
 							//					printf("writing data for page %i, offset %i\n",page,offset);
-							write_ve_const(NULL,page,offset,dload_val,firmware->page_params[page]->is_spark, FALSE);
+							send_to_ecu(NULL,can_id,page,offset,dload_val, FALSE);
 						}
 					}
 				}

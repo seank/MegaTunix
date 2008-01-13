@@ -51,10 +51,10 @@ void rescale_table(GtkWidget *widget)
 	gint x_bins = -1;
 	gint y_bins = -1;
 	gint old = 0;
+	gint can_id = 0;
 	gint page = 0;
 	gint offset = 0;
-	gboolean ign_parm = FALSE;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	GtkWidget *scaler = NULL;
 	GtkWidget *tmpwidget = NULL;
 	gchar * tmpbuf = NULL;
@@ -95,7 +95,7 @@ void rescale_table(GtkWidget *widget)
 				tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
 				if ((gboolean)g_object_get_data(G_OBJECT(tmpwidget),"marked"))
 				{
-					ign_parm = (gboolean)g_object_get_data(G_OBJECT(tmpwidget),"ign_parm");
+					can_id = (gint)g_object_get_data(G_OBJECT(tmpwidget),"can_id");
 					page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
 					offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
 					use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
@@ -103,7 +103,7 @@ void rescale_table(GtkWidget *widget)
 						raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
 					if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
 						raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
-					value = ms_data[page][offset];
+					value = ecu_data[page][offset];
 					value = (value*percentage)/100.0;
 					if (value < raw_lower)
 						value = raw_lower;
@@ -117,11 +117,11 @@ void rescale_table(GtkWidget *widget)
 					 * between,  thus we can reset the 
 					 * display to a sane value...
 					 */
-					old = ms_data[page][offset];
-					ms_data[page][offset] = value;
+					old = ecu_data[page][offset];
+					ecu_data[page][offset] = value;
 
 					real_value = convert_after_upload(tmpwidget);
-					ms_data[page][offset] = old;
+					ecu_data[page][offset] = old;
 
 					tmpbuf = g_strdup_printf("%i",(gint)real_value);
 					g_signal_handlers_block_by_func (G_OBJECT(tmpwidget),
@@ -134,7 +134,7 @@ void rescale_table(GtkWidget *widget)
 
 					g_free(tmpbuf);
 
-					write_ve_const(tmpwidget, page, offset, (gint)value, ign_parm, TRUE);
+					send_to_ecu(tmpwidget, can_id, page, offset, (gint)value, TRUE);
 					gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 					widget_grab(tmpwidget,NULL,GINT_TO_POINTER(TRUE));
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(scaler),100.0);
@@ -170,10 +170,10 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	gint x_bins = -1;
 	gint y_bins = -1;
 	gint old = 0;
+	gint can_id = 0;
 	gint page = 0;
 	gint offset = 0;
-	gboolean ign_parm = FALSE;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	GtkWidget *tmpwidget = NULL;
 	gchar * tmpbuf = NULL;
 	GList *list = NULL;
@@ -233,6 +233,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 		x_bins = firmware->table_params[table_num]->x_bincount;
 		y_bins = firmware->table_params[table_num]->y_bincount;
 		z_page = firmware->table_params[table_num]->z_page;
+		can_id = firmware->table_params[table_num]->can_id;
 		data = g_new0(guchar, x_bins*y_bins);
 
 		for (i=z_base;i<(z_base+(x_bins*y_bins));i++)
@@ -245,7 +246,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 					tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
 					if (GTK_IS_ENTRY(tmpwidget))
 					{
-						ign_parm = (gboolean)g_object_get_data(G_OBJECT(tmpwidget),"ign_parm");
+						can_id = (gint)g_object_get_data(G_OBJECT(tmpwidget),"can_id");
 						page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
 						offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
 						use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
@@ -253,7 +254,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 							raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
 						if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
 							raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
-						value = ms_data[page][offset];
+						value = ecu_data[page][offset];
 						value *= percentage;
 						if (value < raw_lower)
 							value = raw_lower;
@@ -267,11 +268,11 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						 * between,  thus we can reset the 
 						 * display to a sane value...
 						 */
-						old = ms_data[page][offset];
-						ms_data[page][offset] = value;
+						old = ecu_data[page][offset];
+						ecu_data[page][offset] = value;
 
 						real_value = convert_after_upload(tmpwidget);
-						ms_data[page][offset] = old;
+						ecu_data[page][offset] = old;
 
 						tmpbuf = g_strdup_printf("%i",(gint)real_value);
 						g_signal_handlers_block_by_func (G_OBJECT(tmpwidget),
@@ -284,7 +285,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						g_free(tmpbuf);
 
 						if (!firmware->chunk_support)
-							write_ve_const(tmpwidget, page, offset, (gint)value, ign_parm, TRUE);
+							send_to_ecu(tmpwidget, can_id, page, offset, (gint)value, TRUE);
 						data[i] = (guchar)value;
 						gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 						if (use_color)
@@ -299,9 +300,8 @@ void reqfuel_rescale_table(GtkWidget *widget)
 			}
 		}
 		if (firmware->chunk_support)
-			chunk_write(z_page,z_base,x_bins*y_bins,data);
+			chunk_write(can_id,z_page,z_base,x_bins*y_bins,data);
 	}
-	//	io_cmd(IO_UPDATE_VE_CONST,NULL);
 	g_strfreev(vector);
 	color_changed = TRUE;
 	forced_update = TRUE;
@@ -322,7 +322,7 @@ void draw_ve_marker()
 	//extern GdkColor white;
 	GdkColor newcolor;
 	gfloat value = 0.0;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	GtkRcStyle *style = NULL;
 	gint i = 0;
 	gint j = 0;
@@ -346,7 +346,7 @@ void draw_ve_marker()
 	GList *list = NULL;
 	static void ***eval;
 	extern Firmware_Details *firmware;
-	extern gint ** ms_data;
+	extern gint ** ecu_data;
 	extern GList ***ve_widgets;
 	extern gint *algorithm;
 	extern gint active_table;
@@ -465,7 +465,7 @@ void draw_ve_marker()
 	{
 		page = firmware->table_params[table]->x_page;
 		base = firmware->table_params[table]->x_base;
-		if (evaluator_evaluate_x(eval[table][_X_],ms_data[page][base]) >= x_source)
+		if (evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base]) >= x_source)
 		{
 			bin[0] = -1;
 			bin[1] = 0;
@@ -473,8 +473,8 @@ void draw_ve_marker()
 			right_w = 1;
 			break;
 		}
-		left = evaluator_evaluate_x(eval[table][_X_],ms_data[page][base+i]);
-		right = evaluator_evaluate_x(eval[table][_X_],ms_data[page][base+i+1]);
+		left = evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base+i]);
+		right = evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base+i+1]);
 
 		if ((x_source > left) && (x_source <= right))
 		{
@@ -500,7 +500,7 @@ void draw_ve_marker()
 	{
 		page = firmware->table_params[table]->y_page;
 		base = firmware->table_params[table]->y_base;
-		if (evaluator_evaluate_x(eval[table][_Y_],ms_data[page][base]) >= y_source)
+		if (evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base]) >= y_source)
 		{
 			bin[2] = -1;
 			bin[3] = 0;
@@ -508,8 +508,8 @@ void draw_ve_marker()
 			bottom_w = 0;
 			break;
 		}
-		bottom = evaluator_evaluate_x(eval[table][_Y_],ms_data[page][base+i]);
-		top = evaluator_evaluate_x(eval[table][_Y_],ms_data[page][base+i+1]);
+		bottom = evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base+i]);
+		top = evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base+i+1]);
 
 		if ((y_source > bottom) && (y_source <= top))
 		{
@@ -581,7 +581,7 @@ redraw:
 				//				printf("setting to normal coord %i\n",last[table][i]);
 				if (color_changed)
 				{
-					value = ms_data[firmware->table_params[table]->z_page][firmware->table_params[table]->z_base+z_bin[i]];
+					value = ecu_data[firmware->table_params[table]->z_page][firmware->table_params[table]->z_base+z_bin[i]];
 					newcolor = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(last_widgets[table][last[table][i]]),GTK_STATE_NORMAL,&newcolor);
 				}

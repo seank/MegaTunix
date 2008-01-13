@@ -210,7 +210,7 @@ store_it:
  */
 gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 {
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	gchar **symbols = NULL;
 	gint *expr_types = NULL;
 	guchar *raw_data = incoming;
@@ -256,7 +256,7 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				bitshift = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
-				values[i]=(gdouble)(((ms_data[page][offset])&bitmask) >> bitshift);
+				values[i]=(gdouble)(((ecu_data[page][offset])&bitmask) >> bitshift);
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": handle_complex_expr()\n\t Embedded bit, name: %s, value %f\n",names[i],values[i]));
 				break;
@@ -268,7 +268,7 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				offset = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
-				values[i]=(gdouble)ms_data[page][offset];
+				values[i]=(gdouble)ecu_data[page][offset];
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": handle_complex_expr()\n\t VE Variable, name: %s, value %f\n",names[i],values[i]));
 				break;

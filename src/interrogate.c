@@ -323,16 +323,6 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 				cmds->ve_cmd_len = g_strv_length(test->test_vector);
 			}
 		}	
-		test = NULL;
-		if (firmware->ign_cmd_key)
-		{
-			test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->ign_cmd_key);
-			if (test)
-			{
-				cmds->ignition_cmd = g_strdup(test->test_vector[0]);
-				cmds->ign_cmd_len = g_strv_length(test->test_vector);
-			}
-		}	
 		return TRUE;
 	
 	}
@@ -396,8 +386,6 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"VE_Cmd_Key\" variable not found in interrogation profile, ERROR\n"));
 	}
-	cfg_read_string(cfgfile,"parameters","Ign_Cmd_Key",
-			&firmware->ign_cmd_key);
 	cfg_read_string(cfgfile,"parameters","Raw_Mem_Cmd_Key",
 			&firmware->raw_mem_cmd_key);
 	if(!cfg_read_string(cfgfile,"parameters","Write_Cmd",
@@ -857,7 +845,6 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
 				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"length\" flag not found in interrogation profile, ERROR\n"));
 		}
-		cfg_read_boolean(cfgfile,section,"is_spark",&firmware->page_params[i]->is_spark);
 		g_free(section);
 	}
 
@@ -1080,28 +1067,6 @@ GArray * validate_and_load_tests(GHashTable **tests_hash)
 
 	g_free(filename);
 	return tests;
-}
-
-
-/*!
- \brief free_test_commands() deallocates the data in the cmd_array array
- */
-void free_test_commands(GArray * cmd_array)
-{
-	Command *cmd = NULL;
-	gint i = 0;
-	for (i=0;i<cmd_array->len;i++)
-	{
-		cmd = g_array_index(cmd_array,Command *,i);
-		if (cmd->string)
-			g_free(cmd->string);
-		if (cmd->desc)
-			g_free(cmd->desc);
-		if (cmd->key)
-			g_free(cmd->key);
-		g_free(cmd);
-	}
-	g_array_free(cmd_array,TRUE);
 }
 
 

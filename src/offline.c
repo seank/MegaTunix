@@ -114,16 +114,6 @@ void set_offline_mode(void)
 			cmds->ve_cmd_len = g_strv_length(test->test_vector);
 		}
 	}
-	test = NULL;
-	if (firmware->ign_cmd_key)
-	{
-		test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->ign_cmd_key);
-		if (test)
-		{
-			cmds->ignition_cmd = g_strdup(test->test_vector[0]);
-			cmds->ign_cmd_len = g_strv_length(test->test_vector);
-		}
-	}
 
 	interrogated = TRUE;
 

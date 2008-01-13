@@ -54,9 +54,9 @@ extern GtkWidget *main_window;
 extern gint dbg_lvl;
 extern Serial_Params *serial_params;
 /* Support up to "x" page firmware.... */
-gint **ms_data = NULL;
-gint **ms_data_last = NULL;
-gint **ms_data_backup = NULL;
+gint **ecu_data = NULL;
+gint **ecu_data_last = NULL;
+gint **ecu_data_backup = NULL;
 CmdLineArgs *args = NULL;
 GList ***ve_widgets = NULL;
 GList **tab_gauges = NULL;
@@ -469,12 +469,12 @@ void mem_alloc()
 	 * download...
 	 */
 
-	if (!ms_data)
-		ms_data = g_new0(gint *, firmware->total_pages);
-	if (!ms_data_last)
-		ms_data_last = g_new0(gint *, firmware->total_pages);
-	if (!ms_data_backup)
-		ms_data_backup = g_new0(gint *, firmware->total_pages);
+	if (!ecu_data)
+		ecu_data = g_new0(gint *, firmware->total_pages);
+	if (!ecu_data_last)
+		ecu_data_last = g_new0(gint *, firmware->total_pages);
+	if (!ecu_data_backup)
+		ecu_data_backup = g_new0(gint *, firmware->total_pages);
 	if (!ve_widgets)
 		ve_widgets = g_new0(GList **, firmware->total_pages);
 	if (!tab_gauges)
@@ -502,12 +502,12 @@ void mem_alloc()
 	{
 		interdep_vars[i] = g_hash_table_new(NULL,NULL);
 
-		if (!ms_data[i])
-			ms_data[i] = g_new0(gint, firmware->page_params[i]->length);
-		if (!ms_data_last[i])
-			ms_data_last[i] = g_new0(gint, firmware->page_params[i]->length);
-		if (!ms_data_backup[i])
-			ms_data_backup[i] = g_new0(gint, firmware->page_params[i]->length);
+		if (!ecu_data[i])
+			ecu_data[i] = g_new0(gint, firmware->page_params[i]->length);
+		if (!ecu_data_last[i])
+			ecu_data_last[i] = g_new0(gint, firmware->page_params[i]->length);
+		if (!ecu_data_backup[i])
+			ecu_data_backup[i] = g_new0(gint, firmware->page_params[i]->length);
 		if (!ve_widgets[i])
 		{
 			ve_widgets[i] = g_new0(GList *, firmware->page_params[i]->length);
@@ -550,12 +550,12 @@ void mem_dealloc()
 	{
 		for (i=0;i<firmware->total_pages;i++)
 		{
-			if (ms_data[i])
-				g_free(ms_data[i]);
-			if (ms_data_last[i])
-				g_free(ms_data_last[i]);
-			if (ms_data_backup[i])
-				g_free(ms_data_backup[i]);
+			if (ecu_data[i])
+				g_free(ecu_data[i]);
+			if (ecu_data_last[i])
+				g_free(ecu_data_last[i]);
+			if (ecu_data_backup[i])
+				g_free(ecu_data_backup[i]);
 			if (interdep_vars[i])
 			{
 				g_hash_table_destroy(interdep_vars[i]);
@@ -603,9 +603,9 @@ void mem_dealloc()
 		firmware->rf_params = NULL;
 		g_free(firmware);
 		firmware = NULL;
-		g_free(ms_data);
-		g_free(ms_data_last);
-		g_free(ms_data_backup);
+		g_free(ecu_data);
+		g_free(ecu_data_last);
+		g_free(ecu_data_backup);
 	}
 	if(widget_group_states)
 		g_hash_table_destroy(widget_group_states);
@@ -642,7 +642,6 @@ Page_Params * initialize_page_params(void)
 	Page_Params *page_params = NULL;
 	page_params = g_malloc0(sizeof(Page_Params));
 	page_params->length = 0;
-	page_params->is_spark = FALSE;
 	page_params->spconfig_offset = -1;
 	return page_params;
 }

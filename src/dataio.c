@@ -56,8 +56,8 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 	guchar *ptr = buf;
 	gchar *err_text = NULL;
 	gchar *tmpbuf = NULL;
-	extern gint **ms_data;
-	extern gint **ms_data_last;
+	extern gint **ecu_data;
+	extern gint **ecu_data_last;
 	extern Serial_Params *serial_params;
 	extern Firmware_Details *firmware;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -352,8 +352,8 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			 * to burn stuff to flash.
 			 */
 			for (i=0;i<total_read;i++)
-				ms_data[message->page][i] = buf[i];
-			memcpy(ms_data_last[message->page],ms_data[message->page],total_read*sizeof(gint));
+				ecu_data[message->page][i] = buf[i];
+			memcpy(ecu_data_last[message->page],ecu_data[message->page],total_read*sizeof(gint));
 			ms_ve_goodread_count++;
 			dump_output(total_read,buf);
 			break;

@@ -135,7 +135,7 @@ EXPORT gboolean logger_display_expose_event(GtkWidget * widget, GdkEventExpose *
 
 void crunch_trigtooth_data(gint page)
 {
-	extern gint ** ms_data;
+	extern gint ** ecu_data;
 	gint i = 0;
 	gint tmp = 0;
 	gint min = -1;
@@ -148,7 +148,7 @@ void crunch_trigtooth_data(gint page)
 	gint upper = 0;
 	gint missing = 0;
 	gushort total = 0;
-	gint position = ms_data[page][CTR];
+	gint position = ecu_data[page][CTR];
 	gint index = 0;
 
 /*
@@ -167,7 +167,7 @@ void crunch_trigtooth_data(gint page)
 
 	for (i=position;i<185;i+=2)
 	{
-		total = (ms_data[page][i]*256)+ms_data[page][i+1];
+		total = (ecu_data[page][i]*256)+ecu_data[page][i+1];
 		ttm_data->current[index] = total;
 		index++;
 	}
@@ -175,14 +175,14 @@ void crunch_trigtooth_data(gint page)
 	{
 		for (i=0;i<position;i+=2)
 		{
-			total = (ms_data[page][i]*256)+ms_data[page][i+1];
+			total = (ecu_data[page][i]*256)+ecu_data[page][i+1];
 			ttm_data->current[index] = total;
 			index++;
 		}
 	}
 	//	g_printf("\n");
 
-	if (ms_data[page][UNITS] == 1)
+	if (ecu_data[page][UNITS] == 1)
 	{
 		//	g_printf("0.1 ms units\n");
 		ttm_data->units=100;

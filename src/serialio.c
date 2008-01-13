@@ -291,7 +291,7 @@ void *serial_repair_thread(gpointer data)
 	/* We got sent here because of one of the following occurred:
 	 * Serial port isn't opened yet (app just fired up)
 	 * Serial I/O errors (missing data, or failures reading/writing)
-	 *  - This includes things like pulling hte RS232 cable out of the ECU
+	 *  - This includes things like pulling the RS232 cable out of the ECU
 	 * Serial port disappeared (i.e. device hot unplugged)
 	 *  - This includes unplugging the USB side of a USB->Serial adapter
 	 *    or going out of bluetooth range, for a BT serial device
@@ -323,6 +323,7 @@ void *serial_repair_thread(gpointer data)
 		i = 0;
 		while (i <= 5)
 		{
+			printf("attempting comms tests\n");
 			if (comms_test())
 			{
 				g_thread_exit(0);
@@ -339,7 +340,7 @@ void *serial_repair_thread(gpointer data)
 	{
 		for (i=0;i<g_strv_length(vector);i++)
 		{
-			/* Messagequeue used to exit immediately */
+			/* Message queue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
 			{
 				g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));

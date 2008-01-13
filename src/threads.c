@@ -285,18 +285,9 @@ void io_cmd(Io_Command cmd, gpointer data)
 					message->command = READ_CMD;
 					message->truepgnum = firmware->page_params[i]->truepgnum;
 					message->page = i;
-					if (firmware->page_params[i]->is_spark)
-					{
-						message->need_page_change = FALSE;
-						message->out_str = g_strdup(cmds->ignition_cmd);
-						message->out_len = cmds->ign_cmd_len;
-					}
-					else
-					{
-						message->need_page_change = TRUE;
-						message->out_str = g_strdup(cmds->veconst_cmd);
-						message->out_len = cmds->ve_cmd_len;
-					}
+					message->need_page_change = TRUE;
+					message->out_str = g_strdup(cmds->veconst_cmd);
+					message->out_len = cmds->ve_cmd_len;
 					message->handler = VE_BLOCK;
 					g_async_queue_ref(io_queue);
 					g_async_queue_push(io_queue,(gpointer)message);
@@ -522,7 +513,7 @@ void *thread_dispatcher(gpointer data)
 
 
 /*!
- \brief write_ve_const() gets called to send a value to the ECU.  This function
+ \brief send_to_ecu() gets called to send a value to the ECU.  This function
  will check if the value sent is NOT the reqfuel_offset (that has special
  interdependancy issues) and then will check if there are more than 1 widgets
  that are associated with this page/offset and update those widgets before
@@ -532,23 +523,22 @@ void *thread_dispatcher(gpointer data)
  \param offset (gint) offset from the beginning of the page that this data
  refers to.
  \param value (gint) the value that should be sent to the ECU At page.offset
- \param ign_parm (gboolean) a flag stating if this requires special handling
  for being an MSnEDIS/MSnSpark ignition variable (alternate command for 
  sending the data to the ECU.)
  \param queue_update (gboolean), if true queues a gui update, used to prevent
  a horrible stall when doing an ECU restore or batch load...
  */
-void write_ve_const(GtkWidget *widget, gint page, gint offset, gint value, gboolean ign_parm, gboolean queue_update)
+void send_to_ecu(GtkWidget *widget, gint can_id, gint page, gint offset, gint value, gboolean queue_update)
 {
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup_printf(__FILE__": write_ve_const()\n\t Sending page %i, offset %i, value %i, ign_parm %i\n",page,offset,value,ign_parm));
+		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending can_id %i, page %i, offset %i, value %i \n",can_id,page,offset,value));
 	output = g_new0(Output_Data, 1);
+	output->can_id = can_id;
 	output->page = page;
 	output->offset = offset;
 	output->value = value;
-	output->ign_parm = ign_parm;
 	output->mode = MTX_SIMPLE_WRITE;
 	output->queue_update = queue_update;
 	io_cmd(IO_WRITE_DATA,output);
@@ -558,6 +548,7 @@ void write_ve_const(GtkWidget *widget, gint page, gint offset, gint value, gbool
 
 /*!
  \brief chunk_write() gets called to send a block of values to the ECU.
+ \param can_id (gint) can identifier (0-14)
  \param page (gint) page in which the value refers to.
  \param offset (gint) offset from the beginning of the page that this data
  refers to.
@@ -565,13 +556,14 @@ void write_ve_const(GtkWidget *widget, gint page, gint offset, gint value, gbool
  \param data (guchar) the block of data to be sent
  a horrible stall when doing an ECU restore or batch load...
  */
-void chunk_write(gint page, gint offset, gint len, guchar * data)
+void chunk_write(gint can_id, gint page, gint offset, gint len, guchar * data)
 {
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, len %i, data %p\n",page,offset,len,data));
 	output = g_new0(Output_Data, 1);
+	output->can_id = can_id;
 	output->page = page;
 	output->offset = offset;
 	output->len = len;

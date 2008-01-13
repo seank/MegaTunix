@@ -105,9 +105,6 @@ EXPORT void finish_raweditor(void)
 			g_object_set_data(G_OBJECT(entry),"base",GINT_TO_POINTER(16));
 			g_object_set_data(G_OBJECT(entry),"raw_lower",GINT_TO_POINTER(0));
 			g_object_set_data(G_OBJECT(entry),"raw_upper",GINT_TO_POINTER(255));
-			if (firmware->page_params[i]->is_spark)
-				g_object_set_data(G_OBJECT(entry),"ign_parm",GINT_TO_POINTER(TRUE));
-
 			ve_widgets[i][j] = g_list_prepend(ve_widgets[i][j],(gpointer)entry);
 			g_object_set_data(G_OBJECT(entry),"handler",
 					GINT_TO_POINTER(GENERIC));

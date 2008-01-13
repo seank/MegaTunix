@@ -284,6 +284,7 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				tracking_focus[(gint)g_ascii_strtod(tmpbuf,NULL)] = TRUE;
 				break;
 			case TOOLTIPS_STATE:
+				printf("enable tooltips\n");
 				gtk_tooltips_enable(tip);
 				tips_in_use = TRUE;
 				break;
@@ -361,6 +362,7 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				tracking_focus[(gint)g_ascii_strtod(tmpbuf,NULL)] = FALSE;
 				break;
 			case TOOLTIPS_STATE:
+				printf("disable tooltips\n");
 				gtk_tooltips_disable(tip);
 				tips_in_use = FALSE;
 				break;
@@ -395,11 +397,11 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	gint bitval = -1;
 	gint bitmask = -1;
 	gint dload_val = -1;
+	gint can_id = 0;
 	gint page = -1;
 	gint tmp = 0;
 	gint tmp32 = 0;
 	gint offset = -1;
-	gboolean ign_parm = FALSE;
 	gint dl_type = -1;
 	gint handler = 0;
 	gint table_num = -1;
@@ -409,7 +411,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	gchar * group_2_update = NULL;
 	gchar * tmpbuf = NULL;
 	extern gint dbg_lvl;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	extern GHashTable **interdep_vars;
 	extern Firmware_Details *firmware;
 	extern GHashTable *sources_hash;
@@ -423,7 +425,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	if (gtk_toggle_button_get_inconsistent(GTK_TOGGLE_BUTTON(widget)))
 		gtk_toggle_button_set_inconsistent(GTK_TOGGLE_BUTTON(widget),FALSE);
 
-	ign_parm = (gboolean)g_object_get_data(G_OBJECT(widget),"ign_parm");
+	can_id = (gint)g_object_get_data(G_OBJECT(widget),"can_id");
 	page = (gint)g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint)g_object_get_data(G_OBJECT(widget),"offset");
 	dl_type = (gint)g_object_get_data(G_OBJECT(widget),"dl_type");
@@ -451,11 +453,11 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 			}
 			/* FAll Through */
 		case GENERIC:
-			tmp = ms_data[page][offset];
+			tmp = ecu_data[page][offset];
 			tmp = tmp & ~bitmask;	//clears bits 
 			tmp = tmp | (bitval << bitshift);
 			dload_val = tmp;
-			if (dload_val == ms_data[page][offset])
+			if (dload_val == ecu_data[page][offset])
 				return FALSE;
 			break;
 		case DEBUG_LEVEL:
@@ -473,11 +475,11 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 				tmpbuf = (gchar *)g_object_get_data(
 						G_OBJECT(widget),"table_num");
 				table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
-				tmp = ms_data[page][offset];
+				tmp = ecu_data[page][offset];
 				tmp = tmp & ~bitmask;// clears bits 
 				tmp = tmp | (bitval << bitshift);
 				dload_val = tmp;
-				if (dload_val == ms_data[page][offset])
+				if (dload_val == ecu_data[page][offset])
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
@@ -492,7 +494,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 						G_OBJECT(widget),"table_num");
 				table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 				dload_val = bitval;
-				if (dload_val == ms_data[page][offset])
+				if (dload_val == ecu_data[page][offset])
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
@@ -534,7 +536,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	if (dl_type == IMMEDIATE)
 	{
 		dload_val = convert_before_download(widget,dload_val);
-		write_ve_const(widget, page, offset, dload_val, ign_parm, TRUE);
+		send_to_ecu(widget, can_id, page, offset, dload_val, TRUE);
 	}
 	return TRUE;
 }
@@ -596,6 +598,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	gfloat tmpf = -1;
 	gint tmpi = -1;
 	gint tmp = -1;
+	gint can_id = 0;
 	gint page = -1;
 	gint base = -1;
 	gint old = -1;
@@ -607,10 +610,9 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	gint oddfire_bit_offset = -1;
 	gfloat real_value = 0.0;
 	gboolean is_float = FALSE;
-	gboolean ign_parm = FALSE;
 	gboolean use_color = FALSE;
 	GdkColor color;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 
 	if ((paused_handlers) || (!ready))
 	{
@@ -623,13 +625,13 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 
 	handler = (SpinButton)g_object_get_data(G_OBJECT(widget),"handler");
 	dl_type = (gint) g_object_get_data(G_OBJECT(widget),"dl_type");
+	can_id = (gint)g_object_get_data(G_OBJECT(widget),"can_id");
 	page = (gint)g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint)g_object_get_data(G_OBJECT(widget),"offset");
 	if (!g_object_get_data(G_OBJECT(widget),"base"))
 		base = 10;
 	else
 		base = (gint)g_object_get_data(G_OBJECT(widget),"base");
-	ign_parm = (gboolean)g_object_get_data(G_OBJECT(widget),"ign_parm");
 	precision = (gint)g_object_get_data(G_OBJECT(widget),"precision");
 	is_float = (gboolean)g_object_get_data(G_OBJECT(widget),"is_float");
 	use_color = (gboolean)g_object_get_data(G_OBJECT(widget),"use_color");
@@ -676,11 +678,11 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			 * if the user inputs something in between,  thus 
 			 * we can reset the display to a sane value...
 			 */
-			old = ms_data[page][offset];
-			ms_data[page][offset] = dload_val;
+			old = ecu_data[page][offset];
+			ecu_data[page][offset] = dload_val;
 
 			real_value = convert_after_upload(widget);
-			ms_data[page][offset] = old;
+			ecu_data[page][offset] = old;
 
 			//			printf("real_value %f\n",real_value);
 			g_signal_handlers_block_by_func (widget,(gpointer) std_entry_handler, data);
@@ -720,30 +722,30 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			}
 			if (tmpf > 112.15)	/* Extra long trigger needed */	
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 1);	/* Set xlong_trig */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp,  TRUE);
 				tmpf -= 45.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
 			else if (tmpf > 89.65) /* Long trigger needed */
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 0);	/* Set long_trig */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp, TRUE);
 				tmpf -= 22.5;
 				dload_val = convert_before_download(widget,tmpf);
 			}
 			else	// tmpf <= 89.65 degrees, no long trigger
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp, TRUE);
 				dload_val = convert_before_download(widget,tmpf);
 			}
 
@@ -761,27 +763,27 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			}
 			if (tmpf > 90)	/*  */	
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 2);	/* Set +90 */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp, TRUE);
 				tmpf -= 90.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
 			else if (tmpf > 45) /* */
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 1);	/* Set +45 */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp, TRUE);
 				tmpf -= 45.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
 			else	// tmpf <= 45 degrees, 
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp,  TRUE);
 				dload_val = convert_before_download(widget,tmpf);
 			}
 
@@ -798,8 +800,8 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 		/* If data has NOT changed,  don't bother updating 
 		 *                  * and wasting time.
 		 *                                   */
-		if (dload_val != ms_data[page][offset])
-			write_ve_const(widget, page, offset, dload_val, ign_parm, TRUE);
+		if (dload_val != ecu_data[page][offset])
+			send_to_ecu(widget, can_id, page, offset, dload_val, TRUE);
 	}
 
 	gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
@@ -1005,12 +1007,12 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gint dl_type = -1;
 	gint offset = -1;
 	gint dload_val = -1;
+	gint can_id = 0;
 	gint page = -1;
 	gint bitmask = -1;
 	gint bitshift = -1;
 	gint spconfig_offset = 0;
 	gint oddfire_bit_offset = 0;
-	gboolean ign_parm = FALSE;
 	gboolean temp_dep = FALSE;
 	gint tmpi = 0;
 	gint tmp = 0;
@@ -1021,7 +1023,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gchar *tmpbuf = NULL;
 	GtkWidget * tmpwidget = NULL;
 	extern gint realtime_id;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	extern gint lv_zoom;
 	Reqd_Fuel *reqd_fuel = NULL;
 	extern GHashTable *dynamic_widgets;
@@ -1045,8 +1047,8 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	reqd_fuel = (Reqd_Fuel *)g_object_get_data(
 			G_OBJECT(widget),"reqd_fuel");
 	handler = (SpinButton)g_object_get_data(G_OBJECT(widget),"handler");
-	ign_parm = (gboolean)g_object_get_data(G_OBJECT(widget),"ign_parm");
 	dl_type = (gint) g_object_get_data(G_OBJECT(widget),"dl_type");
+	can_id = (gint) g_object_get_data(G_OBJECT(widget),"can_id");
 	page = (gint) g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint) g_object_get_data(G_OBJECT(widget),"offset");
 	bitmask = (gint) g_object_get_data(G_OBJECT(widget),"bitmask");
@@ -1124,7 +1126,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 			divider_offset = firmware->table_params[table_num]->divider_offset;
 			firmware->rf_params[table_num]->last_num_squirts = firmware->rf_params[table_num]->num_squirts;
-			firmware->rf_params[table_num]->last_divider = ms_data[page][divider_offset];
+			firmware->rf_params[table_num]->last_divider = ecu_data[page][divider_offset];
 
 			firmware->rf_params[table_num]->num_squirts = tmpi;
 			if (firmware->rf_params[table_num]->num_cyls % firmware->rf_params[table_num]->num_squirts)
@@ -1153,7 +1155,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 			//printf("table num %i\n",table_num);
 			divider_offset = firmware->table_params[table_num]->divider_offset;
-			firmware->rf_params[table_num]->last_divider = ms_data[page][divider_offset];
+			firmware->rf_params[table_num]->last_divider = ecu_data[page][divider_offset];
 			firmware->rf_params[table_num]->last_num_cyls = firmware->rf_params[table_num]->num_cyls;
 
 			firmware->rf_params[table_num]->num_cyls = tmpi;
@@ -1164,7 +1166,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			}
 			else
 			{
-				tmp = ms_data[page][offset];
+				tmp = ecu_data[page][offset];
 				tmp = tmp & ~bitmask;	/*clears top 4 bits */
 				tmp = tmp | ((tmpi-1) << bitshift);
 				dload_val = tmp;
@@ -1175,7 +1177,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 
 				dload_val = 
 					(gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
-						
+
 				firmware->rf_params[table_num]->divider = dload_val;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
@@ -1195,10 +1197,10 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			firmware->rf_params[table_num]->last_num_inj = firmware->rf_params[table_num]->num_inj;
 			firmware->rf_params[table_num]->num_inj = tmpi;
 
-			tmp = ms_data[page][offset];
+			tmp = ecu_data[page][offset];
 			tmp = tmp & ~bitmask;	/*clears top 4 bits */
 			tmp = tmp | ((tmpi-1) << bitshift);
-			//ms_data[page][offset] = tmp;
+			//ecu_data[page][offset] = tmp;
 			dload_val = tmp;
 			g_hash_table_insert(interdep_vars[page],
 					GINT_TO_POINTER(offset),
@@ -1218,30 +1220,30 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			}
 			if (value > 112.15)	/* Extra long trigger needed */	
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 1);	/* Set xlong_trig */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp,  TRUE);
 				value -= 45.0;
 				dload_val = convert_before_download(widget,value);
 			}
 			else if (value > 89.65) /* Long trigger needed */
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 0);	/* Set long_trig */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp, TRUE);
 				value -= 22.5;
 				dload_val = convert_before_download(widget,value);
 			}
 			else	// value <= 89.65 degrees, no long trigger
 			{
-				tmp = ms_data[page][spconfig_offset];
+				tmp = ecu_data[page][spconfig_offset];
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
-				//ms_data[page][spconfig_offset] = tmp;
-				write_ve_const(widget, page, spconfig_offset, tmp, ign_parm, TRUE);
+				//ecu_data[page][spconfig_offset] = tmp;
+				send_to_ecu(widget, can_id, page, spconfig_offset, tmp, TRUE);
 				dload_val = convert_before_download(widget,value);
 			}
 
@@ -1259,27 +1261,27 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			}
 			if (value > 90)	/*  */	
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 2);	/* Set +90 */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp, TRUE);
 				value -= 90.0;
 				dload_val = convert_before_download(widget,value);
 			}
 			else if (value > 45) /* */
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 1);	/* Set +45 */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp, TRUE);
 				value -= 45.0;
 				dload_val = convert_before_download(widget,value);
 			}
 			else	// value <= 45 degrees, 
 			{
-				tmp = ms_data[page][oddfire_bit_offset];
+				tmp = ecu_data[page][oddfire_bit_offset];
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
-				write_ve_const(widget, page, oddfire_bit_offset, tmp, ign_parm, TRUE);
+				send_to_ecu(widget, can_id, page, oddfire_bit_offset, tmp,  TRUE);
 				dload_val = convert_before_download(widget,value);
 			}
 
@@ -1306,8 +1308,8 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 		/* If data has NOT changed,  don't bother updating 
 		 * and wasting time.
 		 */
-		if (dload_val != ms_data[page][offset])
-			write_ve_const(widget, page, offset, dload_val, ign_parm, TRUE);
+		if (dload_val != ecu_data[page][offset])
+			send_to_ecu(widget, can_id, page, offset, dload_val, TRUE);
 	}
 	gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
 	return TRUE;
@@ -1329,7 +1331,7 @@ void update_ve_const()
 	gint i = 0;
 	union config11 cfg11;
 	union config12 cfg12;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	extern volatile gboolean leaving;
 	extern Firmware_Details *firmware;
 
@@ -1376,18 +1378,18 @@ void update_ve_const()
 		if (firmware->table_params[i]->reqfuel_offset < 0)
 			continue;
 
-		cfg11.value = ms_data[page][firmware->table_params[i]->cfg11_offset];	
-		cfg12.value = ms_data[page][firmware->table_params[i]->cfg12_offset];	
+		cfg11.value = ecu_data[page][firmware->table_params[i]->cfg11_offset];	
+		cfg12.value = ecu_data[page][firmware->table_params[i]->cfg12_offset];	
 		firmware->rf_params[i]->num_cyls = cfg11.bit.cylinders+1;
 		firmware->rf_params[i]->last_num_cyls = cfg11.bit.cylinders+1;
 		firmware->rf_params[i]->num_inj = cfg12.bit.injectors+1;
 		firmware->rf_params[i]->last_num_inj = cfg12.bit.injectors+1;
 
-		firmware->rf_params[i]->divider = ms_data[page][firmware->table_params[i]->divider_offset];
+		firmware->rf_params[i]->divider = ecu_data[page][firmware->table_params[i]->divider_offset];
 		firmware->rf_params[i]->last_divider = firmware->rf_params[i]->divider;
-		firmware->rf_params[i]->alternate = ms_data[page][firmware->table_params[i]->alternate_offset];
+		firmware->rf_params[i]->alternate = ecu_data[page][firmware->table_params[i]->alternate_offset];
 		firmware->rf_params[i]->last_alternate = firmware->rf_params[i]->alternate;
-		reqfuel = ms_data[page][firmware->table_params[i]->reqfuel_offset];
+		reqfuel = ecu_data[page][firmware->table_params[i]->reqfuel_offset];
 
 		//printf("num_inj %i, divider %i\n",firmware->rf_params[i]->num_inj,firmware->rf_params[i]->divider);
 		//printf("num_cyls %i, alternate %i\n",firmware->rf_params[i]->num_cyls,firmware->rf_params[i]->alternate);
@@ -1404,7 +1406,7 @@ void update_ve_const()
 		//	printf("DT\n");
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
-		else if ((firmware->capabilities & MSNS_E) && (((ms_data[firmware->table_params[i]->dtmode_page][firmware->table_params[i]->dtmode_offset] & 0x10) >> 4) == 1))
+		else if ((firmware->capabilities & MSNS_E) && (((ecu_data[firmware->table_params[i]->dtmode_page][firmware->table_params[i]->dtmode_offset] & 0x10) >> 4) == 1))
 		{
 		//	printf("MSnS-E DT\n");
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
@@ -1479,7 +1481,7 @@ gboolean force_update_table(gpointer data)
 	gint offset = -1;
 	gint page = -1;
 	gint table_num = -1;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	extern volatile gboolean leaving;
 	extern gboolean forced_update;
 	extern GList ***ve_widgets;
@@ -1555,7 +1557,7 @@ void update_widget(gpointer object, gpointer user_data)
 	gdouble spin_value = 0.0; 
 	gboolean update_color = TRUE;
 	GdkColor color;
-	extern gint ** ms_data;
+	extern gint ** ecu_data;
 	extern GHashTable *widget_group_states;
 	extern gint *algorithm;
 	extern volatile gboolean leaving;
@@ -1583,9 +1585,11 @@ void update_widget(gpointer object, gpointer user_data)
 	if (!GTK_IS_OBJECT(widget))
 		return;
 
+	/* If passed widget and user data are identical,  break out as
+	 * we already updated the widget.
+	 */
 	if ((GTK_IS_OBJECT(user_data)) && (widget == user_data))
 		return;
-
 
 	dl_type = (gint)g_object_get_data(G_OBJECT(widget),
 			"dl_type");
@@ -1640,7 +1644,7 @@ void update_widget(gpointer object, gpointer user_data)
 			oddfire_bit_offset = (gint)g_object_get_data(G_OBJECT(widget),"oddfire_bit_offset");
 			if (oddfire_bit_offset == 0)
 				return;
-			switch (ms_data[page][oddfire_bit_offset])
+			switch (ecu_data[page][oddfire_bit_offset])
 			{
 				case 4:
 					if (is_float)
@@ -1662,7 +1666,7 @@ void update_widget(gpointer object, gpointer user_data)
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
-						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t ODDFIRE_ANGLE_UPDATE invalid value for oddfire_bit_offset at ms_data[%i][%i], ERROR\n",page,oddfire_bit_offset));
+						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t ODDFIRE_ANGLE_UPDATE invalid value for oddfire_bit_offset at ecu_data[%i][%i], ERROR\n",page,oddfire_bit_offset));
 
 			}
 			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
@@ -1671,7 +1675,7 @@ void update_widget(gpointer object, gpointer user_data)
 		else if ((int)g_object_get_data(G_OBJECT(widget),"handler") == TRIGGER_ANGLE)
 		{
 			spconfig_offset = (gint)g_object_get_data(G_OBJECT(widget),"spconfig_offset");
-			switch ((ms_data[page][spconfig_offset] & 0x03))
+			switch ((ecu_data[page][spconfig_offset] & 0x03))
 			{
 				case 2:
 					if (is_float)
@@ -1693,7 +1697,7 @@ void update_widget(gpointer object, gpointer user_data)
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
-						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t TRIGGER_ANGLE_UPDATE invalid value for spconfig_offset at ms_data[%i][%i], ERROR\n",page,spconfig_offset));
+						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t TRIGGER_ANGLE_UPDATE invalid value for spconfig_offset at ecu_data[%i][%i], ERROR\n",page,spconfig_offset));
 
 			}
 			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
@@ -1739,7 +1743,7 @@ void update_widget(gpointer object, gpointer user_data)
 
 			if ((use_color) && (update_color))
 			{
-				color = get_colors_from_hue(((gfloat)ms_data[page][offset]/256.0)*360.0,0.33, 1.0);
+				color = get_colors_from_hue(((gfloat)ecu_data[page][offset]/256.0)*360.0,0.33, 1.0);
 				gtk_widget_modify_base(GTK_WIDGET(widget),GTK_STATE_NORMAL,&color);	
 			}
 			if (update_color)
@@ -1753,7 +1757,7 @@ void update_widget(gpointer object, gpointer user_data)
 			oddfire_bit_offset = (gint)g_object_get_data(G_OBJECT(widget),"oddfire_bit_offset");
 			if (oddfire_bit_offset == 0)
 				return;
-			switch (ms_data[page][oddfire_bit_offset])
+			switch (ecu_data[page][oddfire_bit_offset])
 			{
 				case 4:
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),value+90);
@@ -1766,7 +1770,7 @@ void update_widget(gpointer object, gpointer user_data)
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
-						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t ODDFIRE_ANGLE_UPDATE invalid value for oddfire_bit_offset at ms_data[%i][%i], ERROR\n",page,oddfire_bit_offset));
+						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t ODDFIRE_ANGLE_UPDATE invalid value for oddfire_bit_offset at ecu_data[%i][%i], ERROR\n",page,oddfire_bit_offset));
 
 
 			}
@@ -1774,7 +1778,7 @@ void update_widget(gpointer object, gpointer user_data)
 		else if ((int)g_object_get_data(G_OBJECT(widget),"handler") == TRIGGER_ANGLE)
 		{
 			spconfig_offset = (gint)g_object_get_data(G_OBJECT(widget),"spconfig_offset");
-			switch ((ms_data[page][spconfig_offset] & 0x03))
+			switch ((ecu_data[page][spconfig_offset] & 0x03))
 			{
 				case 2:
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),value+45);
@@ -1787,7 +1791,7 @@ void update_widget(gpointer object, gpointer user_data)
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
-						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t TRIGGER_ANGLE_UPDATE invalid value for spconfig_offset at ms_data[%i][%i], ERROR\n",page,spconfig_offset));
+						dbg_func(g_strdup_printf(__FILE__": update_widget()\n\t TRIGGER_ANGLE_UPDATE invalid value for spconfig_offset at ecu_data[%i][%i], ERROR\n",page,spconfig_offset));
 
 
 			}
@@ -1800,7 +1804,7 @@ void update_widget(gpointer object, gpointer user_data)
 				gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),value);
 				if (use_color)
 				{
-					color = get_colors_from_hue(((gfloat)ms_data[page][offset]/256.0)*360.0,0.33, 1.0);
+					color = get_colors_from_hue(((gfloat)ecu_data[page][offset]/256.0)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(widget),GTK_STATE_NORMAL,&color);	
 				}
 			}
@@ -1921,28 +1925,28 @@ noalgo:
  */
 EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+	gint can_id = 0;
 	gint page = 0;
 	gint offset = 0;
 	gint value = 0;
 	gint lower = 0;
 	gint upper = 255;
 	gint dload_val = 0;
-	gboolean ign_parm = FALSE;
 	gboolean retval = FALSE;
 	gboolean reverse_keys = FALSE;
-	extern gint **ms_data;
+	extern gint **ecu_data;
 	extern GList ***ve_widgets;
 
 	if (g_object_get_data(G_OBJECT(widget),"raw_lower") != NULL)
 		lower = (gint) g_object_get_data(G_OBJECT(widget),"raw_lower");
 	if (g_object_get_data(G_OBJECT(widget),"raw_upper") != NULL)
 		upper = (gint) g_object_get_data(G_OBJECT(widget),"raw_upper");
+	can_id = (gint) g_object_get_data(G_OBJECT(widget),"can_id");
 	page = (gint) g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint) g_object_get_data(G_OBJECT(widget),"offset");
-	ign_parm = (gboolean) g_object_get_data(G_OBJECT(widget),"ign_parm");
 	reverse_keys = (gboolean) g_object_get_data(G_OBJECT(widget),"reverse_keys");
 
-	value = ms_data[page][offset];
+	value = ecu_data[page][offset];
 	if (event->keyval == GDK_KP_Space)
 	{
 		printf("spacebar!\n");
@@ -1968,14 +1972,14 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			if (reverse_keys)
 			{
 				if (value >= (lower+10))
-					dload_val = ms_data[page][offset] - 10;
+					dload_val = value - 10;
 				else
 					return FALSE;
 			}
 			else 
 			{
 				if (value <= (upper-10))
-					dload_val = ms_data[page][offset] + 10;
+					dload_val = value + 10;
 				else
 					return FALSE;
 			}
@@ -1985,14 +1989,14 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			if (reverse_keys)
 			{
 				if (value <= (upper-10))
-					dload_val = ms_data[page][offset] + 10;
+					dload_val = value + 10;
 				else
 					return FALSE;
 			}
 			else 
 			{
 				if (value >= (lower+10))
-					dload_val = ms_data[page][offset] - 10;
+					dload_val = value - 10;
 				else
 					return FALSE;
 			}
@@ -2007,14 +2011,14 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			if (reverse_keys)
 			{
 				if (value >= (lower+1))
-					dload_val = ms_data[page][offset] - 1;
+					dload_val = value - 1;
 				else
 					return FALSE;
 			}
 			else 
 			{
 				if (value <= (upper-1))
-					dload_val = (ms_data[page][offset]) + 1;
+					dload_val = value + 1;
 				else
 					return FALSE;
 			}
@@ -2027,14 +2031,14 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			if (reverse_keys)
 			{
 				if (value <= (upper-1))
-					dload_val = ms_data[page][offset] + 1;
+					dload_val = value + 1;
 				else
 					return FALSE;
 			}
 			else 
 			{
 				if (value >= (lower+1))
-					dload_val = ms_data[page][offset] - 1;
+					dload_val = value - 1;
 				else
 					return FALSE;
 			}
@@ -2049,7 +2053,7 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			retval = FALSE;
 	}
 	if (retval)
-		write_ve_const(widget,page,offset,dload_val,ign_parm, TRUE);
+		send_to_ecu(widget,can_id, page,offset,dload_val, TRUE);
 
 	return retval;
 }
