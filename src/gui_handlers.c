@@ -284,7 +284,6 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				tracking_focus[(gint)g_ascii_strtod(tmpbuf,NULL)] = TRUE;
 				break;
 			case TOOLTIPS_STATE:
-				printf("enable tooltips\n");
 				gtk_tooltips_enable(tip);
 				tips_in_use = TRUE;
 				break;
@@ -362,7 +361,6 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				tracking_focus[(gint)g_ascii_strtod(tmpbuf,NULL)] = FALSE;
 				break;
 			case TOOLTIPS_STATE:
-				printf("disable tooltips\n");
 				gtk_tooltips_disable(tip);
 				tips_in_use = FALSE;
 				break;

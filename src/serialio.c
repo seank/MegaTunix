@@ -55,18 +55,16 @@ gboolean open_serial(gchar * port_name)
 	 * thus com1=/dev/ttyS0, com2=/dev/ttyS1 and so on 
 	 */
 	gint fd = -1;
-	gchar *device = NULL;	/* temporary unix name of the serial port */
 	gchar * err_text = NULL;
 
 	g_static_mutex_lock(&serio_mutex);
 	//printf("Opening serial port %s\n",port_name);
-	device = g_strdup(port_name);
 	/* Open Read/Write and NOT as the controlling TTY */
 	/* Blocking mode... */
 #ifdef __WIN32__
-	fd = open(device, O_RDWR | O_NOCTTY | O_BINARY );
+	fd = open(port_name, O_RDWR | O_NOCTTY | O_BINARY );
 #else
-	fd = open(device, O_RDWR | O_NOCTTY);
+	fd = open(port_name, O_RDWR | O_NOCTTY);
 #endif
 	if (fd > 0)
 	{
@@ -77,8 +75,8 @@ gboolean open_serial(gchar * port_name)
 		port_open = TRUE;
 		serial_params->fd = fd;
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
-			dbg_func(g_strdup_printf(__FILE__" open_serial()\n\t%s Opened Successfully\n",device));
-		thread_update_logbar("comms_view",NULL,g_strdup_printf("%s Opened Successfully\n",device),FALSE,FALSE);
+			dbg_func(g_strdup_printf(__FILE__" open_serial()\n\t%s Opened Successfully\n",port_name));
+		thread_update_logbar("comms_view",NULL,g_strdup_printf("%s Opened Successfully\n",port_name),FALSE,FALSE);
 		thread_update_widget(g_strdup("comms_serial_port_entry"),MTX_ENTRY,g_strdup(port_name));
 	}
 	else
@@ -92,15 +90,14 @@ gboolean open_serial(gchar * port_name)
 		serial_params->open = FALSE;
 		serial_params->fd = -1;
 		err_text = (gchar *)g_strerror(errno);
-		//printf("Error Opening \"%s\", Error Code: \"%s\"\n",device,g_strdup(err_text));
+		//printf("Error Opening \"%s\", Error Code: \"%s\"\n",port_name,g_strdup(err_text));
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": open_serial()\n\tError Opening \"%s\", Error Code: \"%s\"\n",device,err_text));
-		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("Error Opening \"%s\", Error Code: \"%s\"\n",device,err_text));
+			dbg_func(g_strdup_printf(__FILE__": open_serial()\n\tError Opening \"%s\", Error Code: \"%s\"\n",port_name,err_text));
+		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("Error Opening \"%s\", Error Code: \"%s\"\n",port_name,err_text));
 
-		thread_update_logbar("comms_view","warning",g_strdup_printf("Error Opening \"%s\", Error Code: %s \n",device,err_text),FALSE,FALSE);
+		thread_update_logbar("comms_view","warning",g_strdup_printf("Error Opening \"%s\", Error Code: %s \n",port_name,err_text),FALSE,FALSE);
 	}
 
-	g_free(device);
 	//printf("open_serial returning\n");
 	g_static_mutex_unlock(&serio_mutex);
 	return port_open;
@@ -323,7 +320,6 @@ void *serial_repair_thread(gpointer data)
 		i = 0;
 		while (i <= 5)
 		{
-			printf("attempting comms tests\n");
 			if (comms_test())
 			{
 				g_thread_exit(0);
@@ -343,11 +339,15 @@ void *serial_repair_thread(gpointer data)
 			/* Message queue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
 			{
+				printf ("exiting repair thread immediately\n");
 				g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));
 				g_thread_exit(0);
 			}
 			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
+			{
+				printf("File %s, doesn't exist\n",vector[i]);
 				continue;
+			}
 			if (open_serial(vector[i]))
 			{
 				setup_serial_params(9600);
