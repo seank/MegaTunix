@@ -564,7 +564,6 @@ we don't
  */
 gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
-	//extern gboolean forced_update;
 	Ve_View_3D *ve_view = NULL;
 	Cur_Vals *cur_vals = NULL;
 
@@ -622,7 +621,6 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 	gdk_gl_drawable_gl_end (gldrawable);
 	/*** OpenGL END ***/
 
-	//forced_update = TRUE;
 	return TRUE; 
 }
 

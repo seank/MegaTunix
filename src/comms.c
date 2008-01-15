@@ -583,10 +583,17 @@ void set_ms_page(guint8 ms_page)
 	 * Found that wihtout it was getting a corrupted first page
 	 */
 	if (last_page == -1)
-		goto forceburn;
+		goto force_change;
 
+	if ((ms_page > firmware->ro_above) && (last_page <= firmware->ro_above))
+	{
+		g_static_mutex_unlock(&serio_mutex);
+		burn_ecu_flash();
+		g_static_mutex_lock(&serio_mutex);
+		goto force_change;
+	}
 	if ((ms_page > firmware->ro_above) || (last_page > firmware->ro_above))
-		goto skipburn;
+		goto skip_change;
 	//	printf("last page %i, ms_page %i, memcpy results for last page %i, memcmp results for current page %i\n",last_page, ms_page, memcmp(ecu_data_last[last_page],ecu_data[last_page],sizeof(gint)*firmware->page_params[last_page]->length),memcmp(ecu_data_last[ms_page],ecu_data[ms_page],sizeof(gint)*firmware->page_params[ms_page]->length));
 
 	if (((ms_page != last_page) && (((memcmp(ecu_data_last[last_page],ecu_data[last_page],sizeof(gint)*firmware->page_params[last_page]->length) != 0)) || ((memcmp(ecu_data_last[ms_page],ecu_data[ms_page],sizeof(gint)*firmware->page_params[ms_page]->length) != 0)))))
@@ -595,7 +602,7 @@ void set_ms_page(guint8 ms_page)
 		burn_ecu_flash();
 		g_static_mutex_lock(&serio_mutex);
 	}
-skipburn:
+skip_change:
 	if ((ms_page == last_page) && (!force_page_change))
 	{
 		//	printf("no need to change the page again as it's already %i\n",ms_page);
@@ -604,7 +611,7 @@ skipburn:
 		return;
 	}
 
-forceburn:
+force_change:
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": set_ms_page()\n\tSetting Page to \"%i\" with \"%s\" command...\n",ms_page,firmware->page_cmd));
 

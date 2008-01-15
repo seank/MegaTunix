@@ -134,7 +134,7 @@ gboolean update_runtime_vars()
 					lookup_previous_value(ve_view->x_source,&xl);
 				}
 				/* Test X values, redraw if needed */
-				if (((fabs(x-xl)/x) > 0.01) || (forced_update))
+				if (((fabs(x-xl)/x) > 0.005) || (forced_update))
 					goto redraw;
 
 				/* Get Y values */
@@ -173,7 +173,7 @@ gboolean update_runtime_vars()
 					lookup_previous_value(ve_view->y_source,&yl);
 				}
 				/* Test Y values, redraw if needed */
-				if (((fabs(y-yl)/y) > 0.01) || (forced_update))
+				if (((fabs(y-yl)/y) > 0.001) || (forced_update))
 					goto redraw;
 
 				/* Get Z values */
@@ -212,7 +212,7 @@ gboolean update_runtime_vars()
 					lookup_previous_value(ve_view->z_source,&zl);
 				}
 				/* Test Z values, redraw if needed */
-				if (((fabs(z-zl)/z) > 0.01) || (forced_update))
+				if (((fabs(z-zl)/z) > 0.001) || (forced_update))
 					goto redraw;
 				goto breakout;
 
