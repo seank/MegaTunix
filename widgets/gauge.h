@@ -34,10 +34,17 @@ G_BEGIN_DECLS
 
 
 #define DRAG_BORDER 7
+/* MtxClampAt enum,  display clamping */
+typedef enum
+{
+	CLAMP_UPPER = 0xaa,
+	CLAMP_LOWER,
+	CLAMP_NONE,
+}MtxClampType;
 /* MtxPolyType enumeration,  for polygon support */
 typedef enum
 {
-	MTX_CIRCLE = 0xaa,
+	MTX_CIRCLE = 0xbb,
 	MTX_ARC,
 	MTX_RECTANGLE,
 	MTX_GENPOLY,
@@ -401,6 +408,7 @@ struct _MtxGaugeFace
 				   *  parsing functions */
 	gchar * xml_filename;	/*! Filename of XML for this gauge  */
 	gboolean show_drag_border;	/*! Show drag border flag */
+	MtxClampType clamped;	/*! Isthe display clamped? */
 	gint last_alert_index;	/*! index of last active alert struct */
 	gint w;			/*! width */
 	gint h;			/*! height */

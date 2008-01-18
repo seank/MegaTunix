@@ -94,6 +94,7 @@ void mtx_gauge_face_init (MtxGaugeFace *gauge)
 	gauge->lbound = 0.0;
 	gauge->ubound = 100.0;
 	gauge->precision = 2;
+	gauge->clamped = CLAMP_NONE;
 	gauge->start_angle = 135; // *lower left quadrant
 	gauge->sweep_angle = 270; // CW sweep
 	gauge->needle_width = 0.05;  /* % of radius */
@@ -266,6 +267,7 @@ void cairo_update_gauge_position (MtxGaugeFace *gauge)
 	gfloat xc = 0.0;
 	gfloat yc = 0.0;
 	gfloat lwidth = 0.0;
+	gfloat val = 0.0;
 	gboolean alert = FALSE;
 	MtxAlertRange *range = NULL;
 	cairo_t *cr = NULL;
@@ -373,7 +375,13 @@ cairo_jump_out_of_alerts:
 	}
 
 	/* gauge hands */
-	tmpf = (gauge->value-gauge->lbound)/(gauge->ubound-gauge->lbound);
+	if (gauge->clamped == CLAMP_UPPER)
+		val = gauge->ubound;
+	else if (gauge->clamped == CLAMP_LOWER)
+		val = gauge->lbound;
+	else
+		val = gauge->value;
+	tmpf = (val-gauge->lbound)/(gauge->ubound-gauge->lbound);
 	needle_pos = (gauge->start_angle+(tmpf*gauge->sweep_angle))*(M_PI/180);
 
 
@@ -534,7 +542,13 @@ gdk_jump_out_of_alerts:
 			GDK_JOIN_ROUND);
 
 	/* gauge hands */
-	tmpf = (gauge->value-gauge->lbound)/(gauge->ubound-gauge->lbound);
+	if (gauge->clamped == CLAMP_UPPER)
+		val = gauge->ubound;
+	else if (gauge->clamped == CLAMP_LOWER)
+		val = gauge->lbound;
+	else
+		val = gauge->value;
+	tmpf = (val-gauge->lbound)/(gauge->ubound-gauge->lbound);
 	needle_pos = (gauge->start_angle+(tmpf*gauge->sweep_angle))*(M_PI/180.0);
 	xc= gauge->xc;
 	yc= gauge->yc;
