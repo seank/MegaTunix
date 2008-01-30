@@ -285,7 +285,10 @@ gchar * present_firmware_choices()
 
 
 
-	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
+	if (i==1)
+		gtk_toggle_button_toggled(GTK_TOGGLE_BUTTON(button));
+	else
+		gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),TRUE);
 	g_strfreev(filenames);
 	g_array_free(classes,TRUE);
 	

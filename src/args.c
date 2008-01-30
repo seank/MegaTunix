@@ -34,7 +34,7 @@ void handle_args(gint argc, gchar * argv[])
 	GOptionContext *context = NULL;
 	GOptionEntry entries[] =
 	{
-		{"debug",'d',0,G_OPTION_ARG_NONE,&args->debug,"Dump some debugging info to console",NULL},
+		{"argdebug",'a',0,G_OPTION_ARG_NONE,&args->debug,"Dump argument debugging info to console",NULL},
 		{"version",'v',0,G_OPTION_ARG_NONE,&args->version,"Print MegaTunix's Version number",NULL},
 		{"quiet",'q',0,G_OPTION_ARG_NONE,&args->be_quiet,"Suppress all GUI error notifications",NULL},
 		{"no-rttext",'r',0,G_OPTION_ARG_NONE,&args->hide_rttext,"Hide RealTime Vars Text window",NULL},

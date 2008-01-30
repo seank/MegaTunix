@@ -339,13 +339,16 @@ void *serial_repair_thread(gpointer data)
 			/* Message queue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
 			{
-				printf ("exiting repair thread immediately\n");
+				//printf ("exiting repair thread immediately\n");
 				g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));
 				g_thread_exit(0);
 			}
 			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
 			{
-				printf("File %s, doesn't exist\n",vector[i]);
+				//printf("File %s, doesn't exist\n",vector[i]);
+				
+				//Wait 10 ms to avoid deadlocking
+				usleep(10000);
 				continue;
 			}
 			if (open_serial(vector[i]))
@@ -357,6 +360,7 @@ void *serial_repair_thread(gpointer data)
 					if (!comms_test())
 					{  
 						close_serial();
+						usleep(10000);
 						continue;
 					}
 					else
