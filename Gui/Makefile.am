@@ -23,10 +23,6 @@ gui_files = 	README \
 		logviewer.datamap \
 		memviewer.glade \
 		memviewer.datamap \
-		msnedis-3.0.x_ignition.glade \
-		msnedis-3.0.x_ignition.datamap \
-		msns-3.0_ignition.glade \
-		msns-3.0_ignition.datamap \
 		msns-e-accelwizard.glade \
 		msns-e-accelwizard-029x.datamap \
 		msns-e-advanced.glade \
@@ -60,8 +56,6 @@ gui_files = 	README \
 		msns-e-wheeldecode-029x.datamap \
 		msns-e-wheeldecode-hr_10x.glade \
 		msns-e-wheeldecode-hr_10x.datamap \
-		projection.glade \
-		projection.datamap \
 		raweditor.glade \
 		raweditor.datamap \
 		rotary-trail-029x.datamap \
