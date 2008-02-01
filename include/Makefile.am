@@ -65,6 +65,7 @@ headers = \
 	user_outputs.h \
         vetable_gui.h \
 	vex_support.h \
+	visibility.h \
 	warmwizard_gui.h \
 	widgetmgmt.h \
 	winserialio.h 

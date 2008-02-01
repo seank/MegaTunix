@@ -52,7 +52,7 @@ int setup_gui()
 	gchar *fname = NULL;
 	gchar *filename = NULL;
 	GtkWidget *window = NULL;
-	GtkWidget *top_vbox = NULL;
+	GtkWidget *top_box = NULL;
 	GladeXML *xml = NULL;
 	extern CmdLineArgs *args;
 	gint x = 0;
@@ -78,10 +78,12 @@ int setup_gui()
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	g_signal_connect(G_OBJECT(window),"delete_event",
 			G_CALLBACK(leave),NULL);
+	g_signal_connect(G_OBJECT(window),"destroy_event",
+			G_CALLBACK(leave),NULL);
 	main_window = window;
 	gtk_window_set_focus_on_map((GtkWindow *)window,FALSE);
-	top_vbox = glade_xml_get_widget(xml,"mtx_top_vbox");
-	gtk_container_add(GTK_CONTAINER(window),top_vbox);
+	top_box = glade_xml_get_widget(xml,"mtx_top_vbox");
+	gtk_container_add(GTK_CONTAINER(window),top_box);
 
 	glade_xml_signal_autoconnect(xml);
 	g_object_set_data(global_data,"main_xml",xml);

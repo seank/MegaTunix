@@ -66,6 +66,7 @@ megatunix_SOURCES = \
 	user_outputs.c \
 	vetable_gui.c \
 	vex_support.c \
+	visibility.c \
 	warmwizard_gui.c \
 	widgetmgmt.c \
 	winserialio.c
