@@ -22,6 +22,7 @@
 #include <listmgmt.h>
 #include "../mtxmatheval/mtxmatheval.h"
 #include <structures.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -76,10 +77,16 @@ gboolean *tracking_focus = NULL;
 void init(void)
 {
 	/* defaults */
+	gboolean *hidden_list = NULL;
+	gint i = 0;
+
 	global_data = g_object_new(GTK_TYPE_INVISIBLE,NULL);
 	interval_min = 5;	/* 5 millisecond minimum interval delay */
 	interval_step = 5;	/* 5 ms steps */
 	interval_max = 1000;	/* 1000 millisecond maximum interval delay */
+	hidden_list = g_new0(gboolean, 100); /*static, 100 max tabs... */
+	for (i=0;i<100;i++)
+		hidden_list[i]=FALSE;
 	g_object_set_data(global_data,"status_width",GINT_TO_POINTER(130));
 	g_object_set_data(global_data,"status_height",GINT_TO_POINTER(386));
 	g_object_set_data(global_data,"rtt_width",GINT_TO_POINTER(125));
@@ -88,6 +95,7 @@ void init(void)
 	g_object_set_data(global_data,"height",GINT_TO_POINTER(480));
 	g_object_set_data(global_data,"main_x_origin",GINT_TO_POINTER(160));
 	g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(120));
+	g_object_set_data(global_data,"hidden_list",hidden_list);
 
 	/* initialize all global variables to known states */
 #ifdef __WIN32__
@@ -135,10 +143,14 @@ void init(void)
 gboolean read_config(void)
 {
 	gint tmpi = 0;
+	gint i = 0;
 	gfloat tmpf = 0.0;
 	gchar * tmpbuf = NULL;
+	gchar **vector = NULL;
 	ConfigFile *cfgfile;
 	gchar *filename = NULL;
+	extern GObject *global_data;
+	gboolean *hidden_list;
 	filename = g_strconcat(HOME(), PSEP,".MegaTunix",PSEP,"config", NULL);
 	cfgfile = cfg_open_file(filename);
 	if (cfgfile)
@@ -187,6 +199,15 @@ gboolean read_config(void)
 			g_object_set_data(global_data,"main_x_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_int(cfgfile, "Window", "main_y_origin", &tmpi))
 			g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(tmpi));
+		if (cfg_read_string(cfgfile, "Window", "hidden_tabs_list", &tmpbuf))
+		{
+			hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
+			vector = g_strsplit(tmpbuf,",",-1);
+			for (i=0;i<g_strv_length(vector);i++)
+				hidden_list[atoi(vector[i])] = TRUE;
+			g_strfreev(vector);
+			g_free(tmpbuf);
+		}
 
 		if(cfg_read_string(cfgfile, "Serial", "port_name", &tmpbuf))
 		{
@@ -254,14 +275,19 @@ void save_config(void)
 	GtkWidget *widget = NULL;
 	int x = 0;
 	int y = 0;
+	int i = 0;
+	int count = 0;
 	int tmp_width = 0;
 	int tmp_height = 0;
 	int orig_width = 0;
 	int orig_height = 0;
+	gint total = 0;
 	gfloat ratio = 0.0;
 	GtkWidget *dash = NULL;
 	extern gboolean ready;
 	ConfigFile *cfgfile = NULL;
+	gboolean * hidden_list;
+	GString *string = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 	extern GHashTable *dynamic_widgets;
 
@@ -383,6 +409,24 @@ void save_config(void)
 					cfg_write_int(cfgfile, "Window", "rtt_y_origin", y);
 			}
 		}
+		widget = g_hash_table_lookup(dynamic_widgets,"toplevel_notebook");
+		total = gtk_notebook_get_n_pages(GTK_NOTEBOOK(widget));
+		hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
+		string = g_string_new(NULL);
+		for (i=0;i<total;i++)
+		{
+			if (hidden_list[i] == FALSE)
+				continue;
+			if (count == 0)
+				g_string_printf(string,"%i",i);
+			else
+				g_string_append_printf(string,",%i",i);
+			count++;
+		}
+		tmpbuf = g_strndup(string->str,string->len);
+		cfg_write_string(cfgfile, "Window", "hidden_tabs_list", tmpbuf);
+		g_free(tmpbuf);
+
 	}
 	cfg_write_int(cfgfile, "DataLogger", "preferred_delimiter", preferred_delimiter);
 	if (serial_params->port_name)

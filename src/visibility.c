@@ -33,6 +33,7 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 	GtkWidget *label = NULL;
 	GtkWidget *button = NULL;
 	extern GObject *global_data;
+	gboolean *hidden_list = NULL;
 	gint rows = 0;
 	gint i = 0;
 
@@ -43,10 +44,12 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 			return FALSE;
 
 		notebook = glade_xml_get_widget(main_xml,"toplevel_notebook");
+		hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
 
 		xml = glade_xml_new(main_xml->filename,"tab_visibility_top_vbox",NULL);
 
 		vis_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title(GTK_WINDOW(vis_window),"Tab Visibility");
 		gtk_window_set_default_size(GTK_WINDOW(vis_window),200,300);
 		g_signal_connect(G_OBJECT(vis_window),"delete_event",
 				G_CALLBACK(gtk_widget_hide),vis_window);
@@ -65,7 +68,7 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 		{
 			child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),i);
 			button = gtk_check_button_new();
-			gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),TRUE);
+			gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),hidden_list[i]);
 			g_signal_connect(G_OBJECT(button),"toggled",
 					G_CALLBACK(hide_tab),
 					GINT_TO_POINTER(i));
@@ -91,8 +94,10 @@ gboolean hide_tab(GtkWidget *widget, gpointer data)
 	GtkWidget *notebook;
 	GladeXML *main_xml = NULL;
 	gint index = (gint)data;
+	gint *hidden_list;
 
 	main_xml = (GladeXML *)g_object_get_data(global_data,"main_xml");
+	hidden_list = (gboolean *)g_object_get_data(global_data,"hidden_list");
 	notebook = glade_xml_get_widget(main_xml,"toplevel_notebook");
 
 	child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),index);
@@ -100,13 +105,15 @@ gboolean hide_tab(GtkWidget *widget, gpointer data)
 
 	if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 	{
-		gtk_widget_show(child);
-		gtk_widget_show(label);
+		gtk_widget_hide(child);
+		gtk_widget_hide(label);
+		hidden_list[index] = TRUE;
 	}
 	else
 	{
-		gtk_widget_hide(child);
-		gtk_widget_hide(label);
+		gtk_widget_show(child);
+		gtk_widget_show(label);
+		hidden_list[index] = FALSE;
 	}
 	return TRUE;
 }

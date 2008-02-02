@@ -46,6 +46,7 @@ gboolean load_gui_tabs(void)
 {
 	extern Firmware_Details * firmware;
 	gint i = 0;
+	gint cur = 0;
 	ConfigFile *cfgfile = NULL;
 	gchar * map_file = NULL;
 	gchar * glade_file = NULL;
@@ -56,9 +57,12 @@ gboolean load_gui_tabs(void)
 	GtkWidget *topframe = NULL;
 	GHashTable *groups = NULL;
 	BindGroup *bindgroup = NULL;
+	GtkWidget *child = NULL;
 	GtkWidget * notebook;
 	extern volatile gboolean leaving;
 	extern GHashTable *dynamic_widgets;
+	extern GObject *global_data;
+	gboolean * hidden_list = NULL;
 
 	if (!firmware)
 		return FALSE;
@@ -69,6 +73,7 @@ gboolean load_gui_tabs(void)
 
 	bindgroup = g_new0(BindGroup,1);
 	notebook = g_hash_table_lookup(dynamic_widgets,"toplevel_notebook");
+	hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
 
 	while (firmware->tab_list[i])
 	{
@@ -130,6 +135,14 @@ gboolean load_gui_tabs(void)
 				gtk_notebook_append_page(GTK_NOTEBOOK(notebook),topframe,label);
 				glade_xml_signal_autoconnect(xml);
 				gtk_widget_show_all(topframe);
+			}
+			cur = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook))-1;
+			if (hidden_list[cur] == TRUE)
+			{
+				child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),cur);
+				label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),child);
+				gtk_widget_hide(child);
+				gtk_widget_hide(label);
 			}
 			if (cfg_read_string(cfgfile,"global","post_function",&tmpbuf))
 			{

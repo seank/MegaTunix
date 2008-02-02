@@ -53,7 +53,13 @@ int setup_gui()
 	gchar *filename = NULL;
 	GtkWidget *window = NULL;
 	GtkWidget *top_box = NULL;
+	GtkWidget *child = NULL;
+	GtkWidget *label = NULL;
+	GtkWidget *notebook = NULL;
+	gint i = 0;
 	GladeXML *xml = NULL;
+	gint tabcount = 0;
+	gboolean *hidden_list;
 	extern CmdLineArgs *args;
 	gint x = 0;
 	gint y = 0;
@@ -106,6 +112,22 @@ int setup_gui()
 
 	if (!args->hide_maingui)
 		gtk_widget_show_all(main_window);
+
+	/* Tabs that should be hidden.... */
+	notebook = glade_xml_get_widget(xml,"toplevel_notebook");
+	tabcount = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
+	hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
+	for (i=0;i<tabcount;i++)
+	{
+		if(hidden_list[i] == TRUE)
+		{
+			/* Get tab and child label and hide it.. */
+			child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),i);
+			label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),child);
+			gtk_widget_hide(child);
+			gtk_widget_hide(label);
+		}
+	}
 
 	return TRUE;
 }
@@ -305,5 +327,4 @@ void finalize_core_gui(GladeXML * xml)
 			"warning",
 			"foreground",
 			"red", NULL);
-
 }
