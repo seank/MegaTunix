@@ -35,10 +35,10 @@ static gboolean blocked = FALSE;
 static gfloat hue = -60.0;
 static gfloat col_sat = 1.0;
 static gfloat col_val = 1.0;
+gint lv_zoom;
 extern gint dbg_lvl;
 
 Logview_Data *lv_data = NULL;
-gint lv_zoom = 0;		/* logviewer scroll amount */
 gboolean playback_mode = FALSE;
 static GStaticMutex update_mutex = G_STATIC_MUTEX_INIT;
 extern Log_Info *log_info;
@@ -897,6 +897,7 @@ void trace_update(gboolean redraw_all)
 	static gulong sig_id = 0;
 	static GtkWidget *scale = NULL;
 	extern GHashTable *dynamic_widgets;
+	extern GObject *global_data;
 
 	pixmap = lv_data->pixmap;
 
@@ -1320,6 +1321,7 @@ EXPORT void finish_logviewer(void)
 {
 	GtkWidget * widget = NULL;
 	extern GHashTable *dynamic_widgets;
+	extern GObject *global_data;
 
 	lv_data = g_new0(Logview_Data,1);
 	lv_data->traces = g_hash_table_new(g_str_hash,g_str_equal);

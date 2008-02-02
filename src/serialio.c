@@ -77,7 +77,6 @@ gboolean open_serial(gchar * port_name)
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR))
 			dbg_func(g_strdup_printf(__FILE__" open_serial()\n\t%s Opened Successfully\n",port_name));
 		thread_update_logbar("comms_view",NULL,g_strdup_printf("%s Opened Successfully\n",port_name),FALSE,FALSE);
-		thread_update_widget(g_strdup("comms_serial_port_entry"),MTX_ENTRY,g_strdup(port_name));
 	}
 	else
 	{
@@ -297,10 +296,12 @@ void *serial_repair_thread(gpointer data)
 	 */
 	gboolean abort = FALSE;
 	static gboolean serial_is_open = FALSE; // Assume never opened 
-	extern gchar * potential_ports;
+	gchar * potential_ports;
+	gboolean autodetect = FALSE;
 	extern volatile gboolean offline;
 	gchar ** vector = NULL;
 	gint i = 0;
+	extern GObject *global_data;
 
 	if (offline)
 	{
@@ -312,7 +313,7 @@ void *serial_repair_thread(gpointer data)
 		serial_repair_queue = g_async_queue_new();
 	/* IF serial_is_open is true, then the port was ALREADY opened 
 	 * previously but some error occurred that sent us down here. Thus
-	 * first do a cimple comms test, if that succeeds, then just cleanup 
+	 * first do a simple comms test, if that succeeds, then just cleanup 
 	 * and return,  if not, close the port and essentially start over.
 	 */
 	if (serial_is_open == TRUE)
@@ -330,10 +331,19 @@ void *serial_repair_thread(gpointer data)
 		serial_is_open = FALSE;
 		/* Fall through */
 	}
-	vector = g_strsplit(potential_ports,",",-1);
 	// App just started, no connection yet
 	while ((!serial_is_open) && (!abort)) 	
 	{
+		autodetect = (gboolean) g_object_get_data(G_OBJECT(global_data),"autodetect_port");
+		if (!autodetect) /* User thinks he/she is S M A R T */
+		{
+			potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data), "override_port");
+			if (potential_ports == NULL)
+				potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports");
+		}
+		else	/* Auto mode */
+			potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports");
+		vector = g_strsplit(potential_ports,",",-1);
 		for (i=0;i<g_strv_length(vector);i++)
 		{
 			/* Message queue used to exit immediately */
@@ -346,9 +356,9 @@ void *serial_repair_thread(gpointer data)
 			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
 			{
 				//printf("File %s, doesn't exist\n",vector[i]);
-				
-				//Wait 10 ms to avoid deadlocking
-				usleep(10000);
+
+				//Wait 100 ms to avoid deadlocking
+				usleep(100000);
 				continue;
 			}
 			if (open_serial(vector[i]))
@@ -379,6 +389,8 @@ void *serial_repair_thread(gpointer data)
 		}
 	}
 
+	if (serial_is_open)
+		thread_update_widget(g_strdup("active_port_entry"),MTX_ENTRY,g_strdup(vector[i]));
 	if (vector)
 		g_strfreev(vector);
 	g_thread_exit(0);

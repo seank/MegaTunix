@@ -33,10 +33,8 @@ gint major_ver;
 gint minor_ver;
 gint micro_ver;
 gint preferred_delimiter;
-gint baudrate;
-gchar * default_serial_port = NULL;
-gchar *potential_ports = NULL;
 extern gint dbg_lvl;
+extern gint lv_zoom;
 extern gint mem_view_style[];
 extern gint ms_reset_count;
 extern gint ms_goodread_count;
@@ -45,7 +43,6 @@ extern gboolean tips_in_use;
 extern gint temp_units;
 extern gint main_x_origin;
 extern gint main_y_origin;
-extern gint lv_zoom;
 extern gint width;
 extern gint height;
 extern gint interval_min;
@@ -96,29 +93,29 @@ void init(void)
 	g_object_set_data(global_data,"main_x_origin",GINT_TO_POINTER(160));
 	g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(120));
 	g_object_set_data(global_data,"hidden_list",hidden_list);
+	g_object_set_data(global_data,"baudrate",GINT_TO_POINTER(9600));
 
 	/* initialize all global variables to known states */
 #ifdef __WIN32__
-	default_serial_port = g_strdup("COM1");
-	potential_ports = g_strdup("COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9");
+	g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup("COM1"));
+	g_object_set_data(G_OBJECT(global_data),"potential_ports",g_strdup("COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9"));
 #else
-	default_serial_port = g_strdup("/dev/ttyS0");
-	potential_ports = g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3,/tmp/virtual-serial");
+	g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup("/dev/ttyS0"));
+	 g_object_set_data(G_OBJECT(global_data),"potential_ports", g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3,/tmp/virtual-serial"));
 #endif
 	serial_params->fd = 0; /* serial port file-descriptor */
 
 	serial_params->errcount = 0; /* I/O error count */
 	/* default for MS V 1.x and 2.x */
 	serial_params->read_wait = 10;	/* delay between reads in milliseconds */
-	baudrate = 9600;	/* default to MS-I */
 
 	/* Set flags to clean state */
 	just_starting = TRUE; 	/* to handle initial errors */
+	lv_zoom = 1;		/* logviewer zoom factor */
 	ms_reset_count = 0; 	/* Counts MS clock resets */
 	ms_goodread_count = 0; 	/* How many reads of realtime vars completed */
 	tips_in_use = TRUE;	/* Use tooltips by default */
 	temp_units = FAHRENHEIT;/* Use SAE units by default */
-	lv_zoom = 1;		/* Logviewer scroll speed */
 	preferred_delimiter = TAB;
 
 	args = g_new0(CmdLineArgs, 1);
@@ -130,6 +127,11 @@ void init(void)
 	args->autolog_minutes = 5;
 	args->autolog_dump_dir = NULL;
 	args->autolog_basename = NULL;
+
+	if (!widget_group_states)
+		widget_group_states = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,NULL);
+		g_hash_table_insert(widget_group_states,g_strdup("temperature"),(gpointer)TRUE);
+		g_hash_table_insert(widget_group_states,g_strdup("multi_expression"),(gpointer)TRUE);
 }
 
 
@@ -215,28 +217,27 @@ gboolean read_config(void)
 			 * but we have a user override.  Prevents a memory
 			 * leak.
 			 */
-			if (default_serial_port)
-				g_free(default_serial_port);
-			default_serial_port = g_strdup(tmpbuf);
+			g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup(tmpbuf));
 			g_free(tmpbuf);
 		}
 				
 		if (cfg_read_string(cfgfile, "Serial", "potential_ports", &tmpbuf))
 		{
-			/* Handle the case where it's already defined,  
-			 * but we have a user override.  Prevents a memory
-			 * leak.
-			 */
-			if (potential_ports)
-				g_free(potential_ports);
-			potential_ports = g_strdup(tmpbuf);
+			g_object_set_data(G_OBJECT(global_data),"potential_ports",g_strdup(tmpbuf));
 			g_free(tmpbuf);
 		}
+		if (cfg_read_string(cfgfile, "Serial", "override_port", &tmpbuf))
+		{
+			g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup(tmpbuf));
+			g_free(tmpbuf);
+		}
+		if(cfg_read_boolean(cfgfile, "Serial", "autodetect_port",&tmpi));
+			g_object_set_data(G_OBJECT(global_data),"autodetect_port",GINT_TO_POINTER(tmpi));
 				
 		cfg_read_int(cfgfile, "Serial", "read_wait", 
 				&serial_params->read_wait);
-		cfg_read_int(cfgfile, "Serial", "baudrate", 
-				&baudrate);
+		if (cfg_read_int(cfgfile, "Serial", "baudrate", &tmpi))
+			g_object_set_data(global_data,"baudrate",GINT_TO_POINTER(tmpi));
 		cfg_read_int(cfgfile, "Logviewer", "zoom", &lv_zoom);
 		if(cfg_read_int(cfgfile, "Logviewer", "scroll_delay", &tmpi))
 			g_object_set_data(global_data,"lv_scroll_delay",GINT_TO_POINTER(tmpi));
@@ -433,10 +434,14 @@ void save_config(void)
 		cfg_write_string(cfgfile, "Serial", "port_name", 
 				serial_params->port_name);
 	cfg_write_string(cfgfile, "Serial", "potential_ports", 
-				potential_ports);
+				(gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports"));
+	cfg_write_string(cfgfile, "Serial", "override_port", 
+				(gchar *)g_object_get_data(G_OBJECT(global_data),"override_port"));
+	cfg_write_boolean(cfgfile, "Serial", "autodetect_port", 
+				(gboolean)g_object_get_data(G_OBJECT(global_data),"autodetect_port"));
 	cfg_write_int(cfgfile, "Serial", "read_wait", 
 			serial_params->read_wait);
-	cfg_write_int(cfgfile, "Serial", "baudrate", baudrate);
+	cfg_write_int(cfgfile, "Serial", "baudrate", (gint)g_object_get_data(G_OBJECT(global_data),"baudrate"));
 			
 	cfg_write_int(cfgfile, "Logviewer", "zoom", lv_zoom);
 	cfg_write_int(cfgfile, "Logviewer", "scroll_delay",(gint) g_object_get_data(global_data,"lv_scroll_delay"));
@@ -525,10 +530,6 @@ void mem_alloc()
 		tab_gauges = g_new0(GList *, firmware->total_tables);
 	if (!sources_hash)
 		sources_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
-	if (!widget_group_states)
-		widget_group_states = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,NULL);
-		g_hash_table_insert(widget_group_states,g_strdup("temperature"),(gpointer)TRUE);
-		g_hash_table_insert(widget_group_states,g_strdup("multi_expression"),(gpointer)TRUE);
 	if (!interdep_vars)
 		interdep_vars = g_new0(GHashTable *,firmware->total_pages);
 	if (!algorithm)
@@ -584,10 +585,6 @@ void mem_dealloc()
 		g_free(serial_params);
 	serial_params = NULL;
 	g_static_mutex_unlock(&serio_mutex);
-
-	/* Defautl serial port stuff.. */
-	g_free(default_serial_port);
-	g_free(potential_ports);
 
 	/* Firmware datastructure.... */
 	if (firmware)

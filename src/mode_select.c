@@ -56,7 +56,6 @@ void set_widget_active(gpointer widget, gpointer state)
  */
 gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 {
-	extern Firmware_Details *firmware;
 	Drain_Data *data = (Drain_Data *)user_data;
 	/* called per element from the hash table to drain and send to ECU */
 	send_to_ecu(NULL, data->can_id, data->page, (gint)offset,(gint)value, TRUE);

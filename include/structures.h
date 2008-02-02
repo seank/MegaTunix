@@ -683,7 +683,7 @@ struct _Vex_Import
 
 /*!
  \brief The _Logview_Data struct is a ontainer used within the logviewer_gui.c
- file used to store settigns specific to the logviewer including th pointer to
+ file used to store settings specific to the logviewer including th pointer to
  the drawing area, and a hashtable and list of pointers to the trace 
  datastructures.
  */

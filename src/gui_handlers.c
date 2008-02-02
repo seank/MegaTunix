@@ -61,7 +61,6 @@ extern gint ready;
 extern GtkTooltips *tip;
 extern GList ***ve_widgets;
 extern Serial_Params *serial_params;
-extern gchar * default_serial_port;
 extern gint dbg_lvl;
 
 gboolean tips_in_use;
@@ -213,31 +212,20 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 
 
 /*!
- \brief comm_port_change() is called every time the comm port text entry
+ \brief comm_port_override() is called every time the comm port text entry
  changes. it'll try to open the port and if it does it'll setup the serial 
  parameters
- \param editable (GtkWditable *) pointer to editable widget to extract text from
+ \param editable (GtkEditable *) pointer to editable widget to extract text from
  \returns TRUE
  */
-gboolean comm_port_change(GtkEditable *editable)
+gboolean comm_port_override(GtkEditable *editable)
 {
 	gchar *port;
-	gboolean result;
+	extern GObject *global_data;
 
 	port = gtk_editable_get_chars(editable,0,-1);
 	gtk_widget_modify_text(GTK_WIDGET(editable),GTK_STATE_NORMAL,&black);
-	result = g_file_test(port,G_FILE_TEST_EXISTS);
-	if (result)
-	{
-		/* This should append this new string to the vector of serial
-		 * ports to search,  but it doesn't do anything yet...
-		 */
-	}
-	else
-	{
-		update_logbar("comms_view","warning",g_strdup_printf("\"%s\" File not found\n",port),FALSE,FALSE);
-	}
-
+	g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup(port));
 	g_free(port);
 	return TRUE;
 }
@@ -259,6 +247,7 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 	extern gboolean forced_update;
 	extern gboolean *tracking_focus;
 	extern GHashTable *dynamic_widgets;
+	extern GObject *global_data;
 
 	if (GTK_IS_OBJECT(widget))
 	{
@@ -273,7 +262,11 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 	{	/* It's pressed (or checked) */
 		switch ((ToggleButton)handler)
 		{
-
+			case COMM_AUTODETECT:
+				g_object_set_data(G_OBJECT(global_data),"autodetect_port", GINT_TO_POINTER(TRUE));
+				gtk_entry_set_editable(GTK_ENTRY(g_hash_table_lookup(dynamic_widgets,"active_port_entry")),FALSE);
+				toggle_groups_linked(widget,TRUE);
+				break;
 			case OFFLINE_FIRMWARE_CHOICE:
 				if(offline_firmware_choice)
 					g_free(offline_firmware_choice);
@@ -356,6 +349,11 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 	{	/* not pressed */
 		switch ((ToggleButton)handler)
 		{
+			case COMM_AUTODETECT:
+				g_object_set_data(G_OBJECT(global_data),"autodetect_port", GINT_TO_POINTER(FALSE));
+				gtk_entry_set_editable(GTK_ENTRY(g_hash_table_lookup(dynamic_widgets,"active_port_entry")),TRUE);
+				toggle_groups_linked(widget,FALSE);
+				break;
 			case TRACKING_FOCUS:
 				tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
 				tracking_focus[(gint)g_ascii_strtod(tmpbuf,NULL)] = FALSE;
@@ -1535,17 +1533,12 @@ void update_widget(gpointer object, gpointer user_data)
 	gint bitmask = -1;
 	gint base = -1;
 	gint precision = -1;
-	gint num_groups = 0;
 	gint spconfig_offset = 0;
 	gint oddfire_bit_offset = 0;
-	gchar ** groups = NULL;
-	gchar * toggle_groups = NULL;
-	gchar * group_states = NULL;
 	gboolean cur_state = FALSE;
-	gboolean tmp_state = FALSE;
 	gboolean new_state = FALSE;
-	gboolean state = FALSE;
 	gint algo = -0;
+	gchar * toggle_groups = NULL;
 	gchar * swap_list = NULL;
 	gchar * set_labels = NULL;
 	gchar * tmpbuf = NULL;
@@ -1556,7 +1549,6 @@ void update_widget(gpointer object, gpointer user_data)
 	gboolean update_color = TRUE;
 	GdkColor color;
 	extern gint ** ecu_data;
-	extern GHashTable *widget_group_states;
 	extern gint *algorithm;
 	extern volatile gboolean leaving;
 	extern GHashTable *sources_hash;
@@ -1615,8 +1607,6 @@ void update_widget(gpointer object, gpointer user_data)
 			"is_float");
 	toggle_groups = (gchar *)g_object_get_data(G_OBJECT(widget),
 			"toggle_groups");
-	group_states = (gchar *)g_object_get_data(G_OBJECT(widget),
-			"group_states");
 	use_color = (gboolean)g_object_get_data(G_OBJECT(widget),
 			"use_color");
 	swap_list = (gchar *)g_object_get_data(G_OBJECT(widget),
@@ -1876,26 +1866,7 @@ void update_widget(gpointer object, gpointer user_data)
 		}
 noalgo:
 		if (toggle_groups)
-		{
-			//	printf("toggling groups\n");
-			groups = parse_keys(toggle_groups,&num_groups,",");
-			//	printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);
-
-			for (i=0;i<num_groups;i++)
-			{
-				//		printf("UW: This widget has %i groups, checking state of (%s)\n", num_groups, groups[i]);
-				tmp_state = get_state(group_states,i);
-				//		printf("If this ctrl is active we want state to be %i\n",tmp_state);
-				state = tmp_state == TRUE ? new_state:!new_state;
-				//		printf("Current state of button is %i\n",new_state),
-				//		printf("new group state is %i\n",state);
-				g_hash_table_insert(widget_group_states,g_strdup(groups[i]),(gpointer)state);
-				//		printf("setting all widgets in that group to state %i\n\n",state);
-				g_list_foreach(get_list(groups[i]),alter_widget_state,NULL);
-			}
-			//	printf ("DONE!\n\n\n");
-			g_strfreev(groups);
-		}
+			toggle_groups_linked(widget,new_state);
 
 	}
 	else if (GTK_IS_SCROLLED_WINDOW(widget))
@@ -2420,3 +2391,47 @@ void prompt_to_save(void)
 }
 
 
+/*!
+ * \brief toggle_groups_linked is used to change the state of controls that
+ * are "linked" to various other controls for the purpose of making the 
+ * UI more intuitive.  i.e. if u uncheck a feature, this can be used to 
+ * grey out a group of related controls.
+ * \param toggle_groups, comms sep list of group names
+ * \param new_state,  new state of the button linking to these groups
+ */
+ 
+void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
+{
+	gint num_groups = 0;
+	gint i = 0;
+	gboolean tmp_state = FALSE;
+	gboolean state = FALSE;
+	gchar ** groups = NULL;
+	gchar * group_states = NULL;
+	gchar * toggle_groups = NULL;
+	extern GHashTable *widget_group_states;
+
+	group_states = (gchar *)g_object_get_data(G_OBJECT(widget),
+			"group_states");
+	toggle_groups = (gchar *)g_object_get_data(G_OBJECT(widget),
+			"toggle_groups");
+
+	//	printf("toggling groups\n");
+	groups = parse_keys(toggle_groups,&num_groups,",");
+	//	printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);
+
+	for (i=0;i<num_groups;i++)
+	{
+		//		printf("UW: This widget has %i groups, checking state of (%s)\n", num_groups, groups[i]);
+		tmp_state = get_state(group_states,i);
+		//		printf("If this ctrl is active we want state to be %i\n",tmp_state);
+		state = tmp_state == TRUE ? new_state:!new_state;
+		//		printf("Current state of button is %i\n",new_state),
+		//		printf("new group state is %i\n",state);
+		g_hash_table_insert(widget_group_states,g_strdup(groups[i]),(gpointer)state);
+		//		printf("setting all widgets in that group to state %i\n\n",state);
+		g_list_foreach(get_list(groups[i]),alter_widget_state,NULL);
+	}
+	//	printf ("DONE!\n\n\n");
+	g_strfreev(groups);
+}

@@ -287,9 +287,19 @@ void finalize_core_gui(GladeXML * xml)
 	ebox = glade_xml_get_widget(xml,"commport_ebox");
 	gtk_tooltips_set_tip(tip,ebox,"Sets the comm port to use. Type in the device name of your serial connection (Typical values under Windows would be COM1, COM2, etc, Linux would be /dev/ttyS0 or /dev/ttyUSB0, under Mac OS-X with a USB/Serial adapter would be /dev/tty.usbserial0, and under FreeBSD /dev/cuaa0)",NULL);
 
-	/* COMM Port entry */
-	widget = glade_xml_get_widget(xml,"commport_entry");
-	register_widget("comms_serial_port_entry",widget);
+	/* Active COMM Port entry */
+	widget = glade_xml_get_widget(xml,"active_port_entry");
+	register_widget("active_port_entry",widget);
+
+	/* Active COMM Port label */
+	widget = glade_xml_get_widget(xml,"active_port_label");
+	register_widget("active_port_label",widget);
+
+	/* Autodetect Checkbutton */
+	widget = glade_xml_get_widget(xml,"serial_autodetect_cbutton");
+	register_widget("serial_autodetect_cbutton",widget);
+	g_object_set_data(G_OBJECT(widget),"handler",GINT_TO_POINTER(COMM_AUTODETECT));
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(widget),(gboolean)g_object_get_data(G_OBJECT(global_data),"autodetect_port"));
 
 	/* COMMS Tab Read delay subtable */
 	ebox = glade_xml_get_widget(xml,"read_delay_ebox");
