@@ -407,10 +407,12 @@ typedef enum
 typedef enum
 {
 	MTX_CHAR=0x250,
-	MTX_UINT8,
-	MTX_SINT8,
-	MTX_UINT16,
-	MTX_SINT16
+	MTX_U08,
+	MTX_S08,
+	MTX_U16,
+	MTX_S16,
+	MTX_U32,
+	MTX_S32,
 }TestArgType;
 
 typedef enum
@@ -436,5 +438,6 @@ typedef enum
 	LV_STOP,
 	LV_PLAY,
 }Lv_Handler;
+
 
 #endif

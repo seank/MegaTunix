@@ -26,7 +26,7 @@
 #			values sent to the ECU. This requires the corresponding
 #			field "test_arg_types"
 #	test_arg_types	<-- (Enum CSV list), comma separated list of enum
-#			strings. (i.e. _CHAR_, _UINT8_, _SINT8, etc )
+#			strings. (i.e. _CHAR_, _U08_, _S08, _U16_,  etc )
 #	
 
 [API]
@@ -93,11 +93,11 @@ test_desc=MSnS-3.x Ignition Page
 [test_09]
 test_name=MS-DT_Raw_Mem
 actual_test=F,0
-test_arg_types=_CHAR_,_UINT8_
+test_arg_types=_CHAR_,_U08_
 test_desc=MS-I DT Raw Mem
 
 [test_10]
 test_name=MS-II_RTVars
 actual_test=a,0,6
-test_arg_types=_CHAR_,_UINT8_,_UINT8_
+test_arg_types=_CHAR_,_U08_,_U08_
 test_desc=MS-II RTVars

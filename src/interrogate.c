@@ -133,21 +133,21 @@ void interrogate_ecu()
 					dbg_func(g_strdup_printf("\tSent command \"%s\"\n",string));
 				g_free(string);
 			}
-			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_UINT8)
+			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_U08)
 			{
 				uint8 = (guint8)atoi(test->test_vector[j]);
 				res = write(serial_params->fd,&uint8,1);
 				if (res != 1)
-					interrogate_error("UINT8 Write error",j);
+					interrogate_error("U08 Write error",j);
 				if (dbg_lvl & INTERROGATOR)
 					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",uint8));
 			}
-			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_SINT8)
+			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_S08)
 			{
 				sint8 = (gint8)atoi(test->test_vector[j]);
 				res = write(serial_params->fd,&sint8,1);
 				if (res != 1)
-					interrogate_error("SINT8 Write error",j);
+					interrogate_error("S08 Write error",j);
 				if (dbg_lvl & INTERROGATOR)
 					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",sint8));
 			}

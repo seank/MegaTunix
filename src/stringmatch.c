@@ -41,14 +41,18 @@ void build_string_2_enum_table()
 	/* Interrogation field types */
 	g_hash_table_insert(str_2_enum,"_CHAR_",
 			GINT_TO_POINTER(MTX_CHAR));
-	g_hash_table_insert(str_2_enum,"_UINT8_",
-			GINT_TO_POINTER(MTX_UINT8));
-	g_hash_table_insert(str_2_enum,"_SINT8_",
-			GINT_TO_POINTER(MTX_SINT8));
-	g_hash_table_insert(str_2_enum,"_UINT16_",
-			GINT_TO_POINTER(MTX_UINT16));
-	g_hash_table_insert(str_2_enum,"_SINT16_",
-			GINT_TO_POINTER(MTX_SINT16));
+	g_hash_table_insert(str_2_enum,"_U08_",
+			GINT_TO_POINTER(MTX_U08));
+	g_hash_table_insert(str_2_enum,"_S08_",
+			GINT_TO_POINTER(MTX_S08));
+	g_hash_table_insert(str_2_enum,"_U16_",
+			GINT_TO_POINTER(MTX_U16));
+	g_hash_table_insert(str_2_enum,"_S16_",
+			GINT_TO_POINTER(MTX_S16));
+	g_hash_table_insert(str_2_enum,"_U32_",
+			GINT_TO_POINTER(MTX_U32));
+	g_hash_table_insert(str_2_enum,"_S32_",
+			GINT_TO_POINTER(MTX_S32));
 	g_hash_table_insert(str_2_enum,"_COUNT_",
 			GINT_TO_POINTER(COUNT));
 	g_hash_table_insert(str_2_enum,"_SUBMATCH_",

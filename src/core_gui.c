@@ -161,6 +161,10 @@ void finalize_core_gui(GladeXML * xml)
 	gtk_label_set_text(GTK_LABEL(label),tmpbuf);
 	g_free(tmpbuf);
 
+	/* Main status label at base of UI */
+	widget = glade_xml_get_widget(xml,"main_status_label");
+	register_widget("main_status_label",widget);
+
 	/* Load Main MegaTunix logo */
 	alignment = glade_xml_get_widget(xml,"logo_alignment");
 	pixbuf = gdk_pixbuf_new_from_inline(sizeof(Logo),Logo,TRUE,NULL);

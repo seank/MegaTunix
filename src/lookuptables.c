@@ -354,8 +354,8 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 	GtkCellRenderer *renderer = NULL;
 	GtkTreeViewColumn *column = NULL;
 	GtkWidget * vbox = NULL;
-	GtkWidget * label = NULL;
 	GtkWidget * tree = NULL;
+	GtkWidget * frame = NULL;
 	ConfigFile *cfgfile = NULL;
 	GArray *classes = NULL;
 	gint i = 0;
@@ -374,6 +374,7 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 	{
 		lookuptables_config_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title(GTK_WINDOW(lookuptables_config_window),"MegaTunix LookupTables");
+		gtk_window_set_default_size(GTK_WINDOW(lookuptables_config_window),300,200);
 		vbox = gtk_vbox_new(FALSE,0);
 		gtk_container_add(GTK_CONTAINER(lookuptables_config_window),vbox);
 		gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
@@ -381,8 +382,10 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 
 		ltc_created = TRUE;
 		ltc_visible = TRUE;
-		label = gtk_label_new("MegaTunix LookupTables");
-		gtk_box_pack_start (GTK_BOX(vbox),label,FALSE,TRUE,0);
+		frame = gtk_frame_new("MegaTunix LookupTables");
+		gtk_box_pack_start (GTK_BOX(vbox),frame,FALSE,TRUE,5);
+		vbox = gtk_vbox_new(FALSE,0);
+		gtk_container_add(GTK_CONTAINER(frame),vbox);
 
 		store = gtk_list_store_new(N_COLS,	/* total cols */
 				G_TYPE_STRING, /* int name */
@@ -451,12 +454,12 @@ EXPORT gboolean lookuptables_configurator(GtkWidget *widget, gpointer data)
 		g_signal_connect(G_OBJECT(renderer),"edited", G_CALLBACK(lookuptable_change),store);
 		column = gtk_tree_view_column_new_with_attributes("Table Filename",renderer,"text",FILENAME_COL,NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(tree),column);
+
 		renderer = gtk_cell_renderer_toggle_new();
 		column = gtk_tree_view_column_new_with_attributes("View/Edit",renderer,"active",VIEW_EDIT_COL,NULL);
 		gtk_tree_view_append_column(GTK_TREE_VIEW(tree),column);
-
-
 		gtk_widget_show_all (lookuptables_config_window);
+		gtk_tree_view_columns_autosize( GTK_TREE_VIEW(tree));
 		return TRUE;
 	}
 

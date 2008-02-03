@@ -97,13 +97,12 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
 	gboolean tmp = TRUE;
-	gboolean be_quiet = (gboolean) data;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+	extern CmdLineArgs *args;
 	gint count = 0;
 
-
-	if (!be_quiet)
+	if (!args->be_quiet)
 		prompt_to_save();
 
 	if (leaving)
