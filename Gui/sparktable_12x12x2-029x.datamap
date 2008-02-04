@@ -1,14 +1,16 @@
-# 8x8 sparktables,  used by the SquirtnSpark and SquirtnEDIS firmwares but 
-# NOT by the SquirtnSpark-Extra code which uses 12x12 tables and more pages.
-
-
 [global]
 description=Object data map for the Spark Advance Tables (MSnS-Extra)
 tab_name=_Spark Tables
 id_prefix=SP_
-groups=load_1,load_2,rpm_1,rpm_2,spark_1,spark_2
+groups=defaults,load_1,load_2,rpm_1,rpm_2,spark_1,spark_2
 
-#----- Group config ----------------------------------------------------------
+#----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=3
+size=_U08_
 
 [load_1]
 keys=page,dl_type,handler,raw_lower,raw_upper,table_num,source_key,multi_expr_keys,dl_conv_exprs,ul_conv_exprs,use_color,bind_to_list,tooltip

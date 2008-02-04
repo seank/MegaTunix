@@ -14,6 +14,7 @@
 #include <3d_vetable.h>
 #include <config.h>
 #include <conversions.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
@@ -42,7 +43,6 @@ static gboolean color_changed = FALSE;
 
 void rescale_table(GtkWidget *widget)
 {
-	extern Firmware_Details *firmware;
 	extern GList ***ve_widgets;
 	extern GHashTable *dynamic_widgets;
 	gint table_num = -1;
@@ -51,10 +51,11 @@ void rescale_table(GtkWidget *widget)
 	gint x_bins = -1;
 	gint y_bins = -1;
 	gint old = 0;
-	gint can_id = 0;
+	gint canID = 0;
 	gint page = 0;
 	gint offset = 0;
-	extern gint **ecu_data;
+	DataSize size = 0;
+	extern Firmware_Details *firmware;
 	GtkWidget *scaler = NULL;
 	GtkWidget *tmpwidget = NULL;
 	gchar * tmpbuf = NULL;
@@ -95,15 +96,16 @@ void rescale_table(GtkWidget *widget)
 				tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
 				if ((gboolean)g_object_get_data(G_OBJECT(tmpwidget),"marked"))
 				{
-					can_id = (gint)g_object_get_data(G_OBJECT(tmpwidget),"can_id");
+					canID = (gint)g_object_get_data(G_OBJECT(tmpwidget),"canID");
 					page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
+					size = (DataSize)g_object_get_data(G_OBJECT(tmpwidget),"size");
 					offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
 					use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
 					if (g_object_get_data(G_OBJECT(tmpwidget),"raw_upper") != NULL)
 						raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
 					if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
 						raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
-					value = ecu_data[page][offset];
+					value = get_ecu_data(canID,page,offset,size);
 					value = (value*percentage)/100.0;
 					if (value < raw_lower)
 						value = raw_lower;
@@ -117,11 +119,10 @@ void rescale_table(GtkWidget *widget)
 					 * between,  thus we can reset the 
 					 * display to a sane value...
 					 */
-					old = ecu_data[page][offset];
-					ecu_data[page][offset] = value;
-
+					old = get_ecu_data(canID,page,offset,size);
+					set_ecu_data(canID,page,offset,size,value);
 					real_value = convert_after_upload(tmpwidget);
-					ecu_data[page][offset] = old;
+					set_ecu_data(canID,page,offset,size,old);
 
 					tmpbuf = g_strdup_printf("%i",(gint)real_value);
 					g_signal_handlers_block_by_func (G_OBJECT(tmpwidget),
@@ -134,7 +135,7 @@ void rescale_table(GtkWidget *widget)
 
 					g_free(tmpbuf);
 
-					send_to_ecu(tmpwidget, can_id, page, offset, (gint)value, TRUE);
+					send_to_ecu(tmpwidget, canID, page, offset, (gint)value, TRUE);
 					gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 					widget_grab(tmpwidget,NULL,GINT_TO_POINTER(TRUE));
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(scaler),100.0);
@@ -170,10 +171,10 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	gint x_bins = -1;
 	gint y_bins = -1;
 	gint old = 0;
-	gint can_id = 0;
+	gint canID = 0;
 	gint page = 0;
 	gint offset = 0;
-	extern gint **ecu_data;
+	DataSize size = 0;
 	GtkWidget *tmpwidget = NULL;
 	gchar * tmpbuf = NULL;
 	GList *list = NULL;
@@ -233,7 +234,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 		x_bins = firmware->table_params[table_num]->x_bincount;
 		y_bins = firmware->table_params[table_num]->y_bincount;
 		z_page = firmware->table_params[table_num]->z_page;
-		can_id = firmware->table_params[table_num]->can_id;
+		canID = firmware->canID;
 		data = g_new0(guchar, x_bins*y_bins);
 
 		for (i=z_base;i<(z_base+(x_bins*y_bins));i++)
@@ -246,15 +247,16 @@ void reqfuel_rescale_table(GtkWidget *widget)
 					tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
 					if (GTK_IS_ENTRY(tmpwidget))
 					{
-						can_id = (gint)g_object_get_data(G_OBJECT(tmpwidget),"can_id");
+						canID = (gint)g_object_get_data(G_OBJECT(tmpwidget),"canID");
 						page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
 						offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
+						size = (DataSize)g_object_get_data(G_OBJECT(tmpwidget),"size");
 						use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
 						if (g_object_get_data(G_OBJECT(tmpwidget),"raw_upper") != NULL)
 							raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
 						if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
 							raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
-						value = ecu_data[page][offset];
+						value = get_ecu_data(canID,page,offset,size);
 						value *= percentage;
 						if (value < raw_lower)
 							value = raw_lower;
@@ -268,11 +270,11 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						 * between,  thus we can reset the 
 						 * display to a sane value...
 						 */
-						old = ecu_data[page][offset];
-						ecu_data[page][offset] = value;
+						old = get_ecu_data(canID,page,offset,size);
+						set_ecu_data(canID,page,offset,size,value);
 
 						real_value = convert_after_upload(tmpwidget);
-						ecu_data[page][offset] = old;
+						set_ecu_data(canID,page,offset,size,old);
 
 						tmpbuf = g_strdup_printf("%i",(gint)real_value);
 						g_signal_handlers_block_by_func (G_OBJECT(tmpwidget),
@@ -285,7 +287,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						g_free(tmpbuf);
 
 						if (!firmware->chunk_support)
-							send_to_ecu(tmpwidget, can_id, page, offset, (gint)value, TRUE);
+							send_to_ecu(tmpwidget, canID, page, offset, (gint)value, TRUE);
 						data[i] = (guchar)value;
 						gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 						if (use_color)
@@ -300,7 +302,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 			}
 		}
 		if (firmware->chunk_support)
-			chunk_write(can_id,z_page,z_base,x_bins*y_bins,data);
+			chunk_write(canID,z_page,z_base,x_bins*y_bins,data);
 	}
 	g_strfreev(vector);
 	color_changed = TRUE;
@@ -322,13 +324,13 @@ void draw_ve_marker()
 	//extern GdkColor white;
 	GdkColor newcolor;
 	gfloat value = 0.0;
-	extern gint **ecu_data;
 	GtkRcStyle *style = NULL;
 	gint i = 0;
 	gint j = 0;
 	gint table = 0;
 	gint page = 0;
 	gint base = 0;
+	DataSize size = 0;
 	gint z_bin[4] = {0,0,0,0};
 	gint bin[4] = {0,0,0,0};
 	gfloat left_w = 0.0;
@@ -346,7 +348,6 @@ void draw_ve_marker()
 	GList *list = NULL;
 	static void ***eval;
 	extern Firmware_Details *firmware;
-	extern gint ** ecu_data;
 	extern GList ***ve_widgets;
 	extern gint *algorithm;
 	extern gint active_table;
@@ -354,6 +355,7 @@ void draw_ve_marker()
 	extern gboolean *tracking_focus;
 	extern GHashTable *sources_hash;
 	gchar *key = NULL;
+	gint canID = firmware->canID;
 	gchar *hash_key = NULL;
 	GHashTable *hash = NULL;
 	MultiSource *multi = NULL;
@@ -465,7 +467,8 @@ void draw_ve_marker()
 	{
 		page = firmware->table_params[table]->x_page;
 		base = firmware->table_params[table]->x_base;
-		if (evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base]) >= x_source)
+		size = firmware->table_params[table]->x_size;
+		if (evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base,size)) >= x_source)
 		{
 			bin[0] = -1;
 			bin[1] = 0;
@@ -473,8 +476,8 @@ void draw_ve_marker()
 			right_w = 1;
 			break;
 		}
-		left = evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base+i]);
-		right = evaluator_evaluate_x(eval[table][_X_],ecu_data[page][base+i+1]);
+		left = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+i,size));
+		right = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+i+1,size));
 
 		if ((x_source > left) && (x_source <= right))
 		{
@@ -500,7 +503,8 @@ void draw_ve_marker()
 	{
 		page = firmware->table_params[table]->y_page;
 		base = firmware->table_params[table]->y_base;
-		if (evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base]) >= y_source)
+		size = firmware->table_params[table]->y_size;
+		if (evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base,size)) >= y_source)
 		{
 			bin[2] = -1;
 			bin[3] = 0;
@@ -508,8 +512,8 @@ void draw_ve_marker()
 			bottom_w = 0;
 			break;
 		}
-		bottom = evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base+i]);
-		top = evaluator_evaluate_x(eval[table][_Y_],ecu_data[page][base+i+1]);
+		bottom = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+i,size));
+		top = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+i+1,size));
 
 		if ((y_source > bottom) && (y_source <= top))
 		{
@@ -581,7 +585,8 @@ redraw:
 				//				printf("setting to normal coord %i\n",last[table][i]);
 				if (color_changed)
 				{
-					value = ecu_data[firmware->table_params[table]->z_page][firmware->table_params[table]->z_base+z_bin[i]];
+					size = firmware->table_params[table]->z_size;
+					value = get_ecu_data(canID,firmware->table_params[table]->z_page,firmware->table_params[table]->z_base+z_bin[i],size);
 					newcolor = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(last_widgets[table][last[table][i]]),GTK_STATE_NORMAL,&newcolor);
 				}

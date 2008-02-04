@@ -341,6 +341,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 	gchar * name = NULL;
 	gint tmpi;
 	gint i = 0;
+	extern Firmware_Details *firmware;
 
 	if (!cfg_read_string(cfgfile,section,"expr_symbols",&tmpbuf))
 	{
@@ -403,6 +404,23 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
+				name=g_strdup_printf("%s_canID",expr_symbols[i]);
+				if (!cfg_read_int(cfgfile,section,name,&tmpi))
+					tmpi = firmware->canID;
+				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				g_free(name);
+				name=NULL;
+				name=g_strdup_printf("%s_size",expr_symbols[i]);
+				if (!cfg_read_string(cfgfile,section,name,&tmpbuf))
+					tmpi = MTX_U08;
+				else
+				{
+					tmpi = translate_string(tmpbuf);
+					g_free(tmpbuf);
+				}
+				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				g_free(name);
+				name=NULL;
 				name=g_strdup_printf("%s_bitmask",expr_symbols[i]);
 				if (!cfg_read_int(cfgfile,section,name,&tmpi))
 				{
@@ -439,6 +457,24 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 				{
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_VAR, failure looking for:%s\n",name));
+				}
+				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				g_free(name);
+				name=NULL;
+				name=g_strdup_printf("%s_canID",expr_symbols[i]);
+				if (!cfg_read_int(cfgfile,section,name,&tmpi))
+					tmpi = firmware->canID;
+
+				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				g_free(name);
+				name=NULL;
+				name=g_strdup_printf("%s_size",expr_symbols[i]);
+				if (!cfg_read_string(cfgfile,section,name,&tmpbuf))
+					tmpi = MTX_U08;
+				else
+				{
+					tmpi = translate_string(tmpbuf);
+					g_free(tmpbuf);
 				}
 				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);

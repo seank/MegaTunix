@@ -13,6 +13,7 @@
 
 #include <config.h>
 #include <dataio.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
@@ -46,7 +47,6 @@ extern GStaticMutex serio_mutex;
 gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 {
 	gint res = 0;
-	gint i = 0;
 	gboolean state = TRUE;
 	gint total_read = 0;
 	gint total_wanted = 0;
@@ -56,8 +56,6 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 	guchar *ptr = buf;
 	gchar *err_text = NULL;
 	gchar *tmpbuf = NULL;
-	extern gint **ecu_data;
-	extern gint **ecu_data_last;
 	extern Serial_Params *serial_params;
 	extern Firmware_Details *firmware;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -351,9 +349,9 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 			 * comparison against to know if we have 
 			 * to burn stuff to flash.
 			 */
-			for (i=0;i<total_read;i++)
-				ecu_data[message->page][i] = buf[i];
-			memcpy(ecu_data_last[message->page],ecu_data[message->page],total_read*sizeof(gint));
+			store_new_block(0,message->page,0,buf,total_read);
+			backup_current_data(0,message->page);
+
 			ms_ve_goodread_count++;
 			dump_output(total_read,buf);
 			break;

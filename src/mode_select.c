@@ -58,6 +58,6 @@ gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 {
 	Drain_Data *data = (Drain_Data *)user_data;
 	/* called per element from the hash table to drain and send to ECU */
-	send_to_ecu(NULL, data->can_id, data->page, (gint)offset,(gint)value, TRUE);
+	send_to_ecu(NULL, data->canID, data->page, (gint)offset,(gint)value, TRUE);
 	return TRUE;
 }

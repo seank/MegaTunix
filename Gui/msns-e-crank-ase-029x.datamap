@@ -1,12 +1,16 @@
-# MSnS-E-024x Enrichments data map
-
 [global]
 description=Object data map for MSnS-E 024 series Cranking/Warmup Enrichments
 tab_name=_Cranking/Warmup
 id_prefix=CR_WU_
-groups=warmup,crank,ase
+groups=defaults,warmup,crank,ase
 
 #----- Groups -----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=8
+size=_U08_
 
 [warmup]
 keys=page,dl_type,handler,use_color

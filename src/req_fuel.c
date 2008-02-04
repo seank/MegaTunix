@@ -14,6 +14,7 @@
 #include <config.h>
 #include <configfile.h>
 #include <conversions.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
@@ -436,8 +437,9 @@ void check_req_fuel_limits(gint table_num)
 	gboolean lim_flag = FALSE;
 	gint dload_val = 0;
 	gint offset = 0;
-	gint can_id = 0;
+	gint canID = 0;
 	gint page = -1;
+	DataSize size = MTX_U08;	/* <<<<<< BAD BAD >>>>>>> */
 	gint rpmk_offset = 0;
 	gint num_squirts = 0;
 	gint num_cyls = 0;
@@ -459,7 +461,6 @@ void check_req_fuel_limits(gint table_num)
 	extern gboolean paused_handlers;
 	extern GHashTable ** interdep_vars;
 	extern GHashTable *dynamic_widgets;
-	extern gint **ecu_data;
 	extern Firmware_Details *firmware;
 
 	/* F&H Dualtable required Fuel calc
@@ -501,7 +502,7 @@ void check_req_fuel_limits(gint table_num)
 	 */
 
 	page = firmware->table_params[table_num]->z_page;
-	can_id = firmware->table_params[table_num]->can_id;
+	canID = firmware->canID;
 
 	rf_total = firmware->rf_params[table_num]->req_fuel_total;
 	last_rf_total = firmware->rf_params[table_num]->last_req_fuel_total;
@@ -530,7 +531,7 @@ void check_req_fuel_limits(gint table_num)
 	//	printf ("dualtable\n");
 		tmp = (float)num_inj/(float)divider;
 	}
-	else if ((firmware->capabilities & MSNS_E) && (((ecu_data[firmware->table_params[table_num]->dtmode_page][firmware->table_params[table_num]->dtmode_offset] & 0x10) >> 4) == 1))
+	else if ((firmware->capabilities & MSNS_E) && (((get_ecu_data(canID,firmware->table_params[table_num]->dtmode_page,firmware->table_params[table_num]->dtmode_offset,size) & 0x10) >> 4) == 1))
 	{
 	//	printf ("msns-E with DT enabled\n");
 		tmp = (float)num_inj/(float)divider;
@@ -576,7 +577,7 @@ void check_req_fuel_limits(gint table_num)
 
 		/* Send rpmk value as it's needed for rpm calc on 
 		 * spark firmwares... */
-		cfg11.value = ecu_data[page][firmware->table_params[table_num]->cfg11_offset];
+		cfg11.value = get_ecu_data(canID,page,firmware->table_params[table_num]->cfg11_offset,size);
 		rpmk_offset = firmware->table_params[table_num]->rpmk_offset;
 		/* Top is two stroke, botton is four stroke.. */
 		if (cfg11.bit.eng_type)
@@ -584,14 +585,14 @@ void check_req_fuel_limits(gint table_num)
 		else
 			dload_val = (int)(12000.0/((double)num_cyls));
 
-		send_to_ecu(NULL, can_id, page, rpmk_offset, dload_val, TRUE);
+		send_to_ecu(NULL, canID, page, rpmk_offset, dload_val, TRUE);
 
 		offset = firmware->table_params[table_num]->reqfuel_offset;
-		send_to_ecu(widget, can_id, page, offset, rf_per_squirt, TRUE);
+		send_to_ecu(widget, canID, page, offset, rf_per_squirt, TRUE);
 		/* Call handler to empty interdependant hash table */
 		data = g_new0(Drain_Data,1);
 		data->page = page;
-		data->can_id = can_id;
+		data->canID = canID;
 		g_hash_table_foreach_remove(interdep_vars[page],drain_hashtable,GINT_TO_POINTER(page));
 		g_free(data);
 

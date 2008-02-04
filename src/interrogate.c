@@ -123,7 +123,7 @@ void interrogate_ecu()
 
 		for (j=0;j<test->test_arg_count;j++)
 		{
-			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_CHAR)
+			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_CHAR)
 			{
 				string = g_strdup(test->test_vector[j]);
 				res = write(serial_params->fd,string,1);
@@ -133,7 +133,7 @@ void interrogate_ecu()
 					dbg_func(g_strdup_printf("\tSent command \"%s\"\n",string));
 				g_free(string);
 			}
-			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_U08)
+			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_U08)
 			{
 				uint8 = (guint8)atoi(test->test_vector[j]);
 				res = write(serial_params->fd,&uint8,1);
@@ -142,7 +142,7 @@ void interrogate_ecu()
 				if (dbg_lvl & INTERROGATOR)
 					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",uint8));
 			}
-			if (g_array_index(test->test_arg_types,TestArgType,j) == MTX_S08)
+			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_S08)
 			{
 				sint8 = (gint8)atoi(test->test_vector[j]);
 				res = write(serial_params->fd,&sint8,1);
@@ -633,6 +633,36 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
 				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"x_bincount\" variable not found in interrogation profile, ERROR\n"));
 		}
+		if(!cfg_read_string(cfgfile,section,"x_size",&tmpbuf))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"x_size\" enumeration not found in interrogation profile, ERROR\n"));
+		}
+		else
+		{
+			firmware->table_params[i]->x_size = translate_string(tmpbuf);
+			g_free(tmpbuf);
+		}
+		if(!cfg_read_string(cfgfile,section,"y_size",&tmpbuf))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"y_size\" enumeration not found in interrogation profile, ERROR\n"));
+		}
+		else
+		{
+			firmware->table_params[i]->y_size = translate_string(tmpbuf);
+			g_free(tmpbuf);
+		}
+		if(!cfg_read_string(cfgfile,section,"z_size",&tmpbuf))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"z_size\" enumeration not found in interrogation profile, ERROR\n"));
+		}
+		else
+		{
+			firmware->table_params[i]->z_size = translate_string(tmpbuf);
+			g_free(tmpbuf);
+		}
 		if(!cfg_read_int(cfgfile,section,"y_bincount",&firmware->table_params[i]->y_bincount))
 		{
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
@@ -1050,7 +1080,7 @@ GArray * validate_and_load_tests(GHashTable **tests_hash)
 
 			test->test_vector = g_strsplit(test->actual_test,",",-1);
 			test->test_arg_count = g_strv_length(test->test_vector);
-			test->test_arg_types = g_array_new(FALSE,TRUE,sizeof(TestArgType));
+			test->test_arg_types = g_array_new(FALSE,TRUE,sizeof(DataSize));
 			vector = g_strsplit(tmpbuf,",",-1);
 			for (j=0;j<test->test_arg_count;j++)
 			{

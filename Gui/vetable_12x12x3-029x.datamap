@@ -1,12 +1,17 @@
-# 12x12 vetable, used by the SquirtnSpark-Extra firmware
-
 [global]
 description=Object data map for the combined VEtables tab
 tab_name=_VE Tables
 id_prefix=VE_
-groups=load_1,rpm_1,ve_1,load_2,rpm_2,ve_2,load_3,rpm_3,ve_3
+size=_U08_
+groups=defaults,load_1,rpm_1,ve_1,load_2,rpm_2,ve_2,load_3,rpm_3,ve_3
 
-#----- Group config ----------------------------------------------------------
+#----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=1
+size=_U08_
 
 [load_1]
 keys=page,dl_type,handler,raw_lower,raw_upper,table_num,source_key,multi_expr_keys,dl_conv_exprs,ul_conv_exprs,use_color,bind_to_list,tooltip

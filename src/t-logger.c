@@ -15,6 +15,7 @@
 #ifdef HAVE_CAIRO
 #include <cairo/cairo.h>
 #endif
+#include <datamgmt.h>
 #include <enums.h>
 #include <glib.h>
 #include <glib/gprintf.h>
@@ -135,7 +136,9 @@ EXPORT gboolean logger_display_expose_event(GtkWidget * widget, GdkEventExpose *
 
 void crunch_trigtooth_data(gint page)
 {
-	extern gint ** ecu_data;
+	extern Firmware_Details *firmware;
+	gint canID = firmware->canID;
+	DataSize size = MTX_U08;
 	gint i = 0;
 	gint tmp = 0;
 	gint min = -1;
@@ -148,7 +151,7 @@ void crunch_trigtooth_data(gint page)
 	gint upper = 0;
 	gint missing = 0;
 	gushort total = 0;
-	gint position = ecu_data[page][CTR];
+	gint position = get_ecu_data(canID,page,CTR,size);
 	gint index = 0;
 
 /*
@@ -167,7 +170,8 @@ void crunch_trigtooth_data(gint page)
 
 	for (i=position;i<185;i+=2)
 	{
-		total = (ecu_data[page][i]*256)+ecu_data[page][i+1];
+		//total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);
+		total = get_ecu_data(canID,page,i,MTX_U16);
 		ttm_data->current[index] = total;
 		index++;
 	}
@@ -175,14 +179,15 @@ void crunch_trigtooth_data(gint page)
 	{
 		for (i=0;i<position;i+=2)
 		{
-			total = (ecu_data[page][i]*256)+ecu_data[page][i+1];
+			//total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);
+			total = get_ecu_data(canID,page,i,MTX_U16);
 			ttm_data->current[index] = total;
 			index++;
 		}
 	}
 	//	g_printf("\n");
 
-	if (ecu_data[page][UNITS] == 1)
+	if (get_ecu_data(canID,page,UNITS,size) == 1)
 	{
 		//	g_printf("0.1 ms units\n");
 		ttm_data->units=100;

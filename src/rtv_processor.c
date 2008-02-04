@@ -16,6 +16,7 @@
 #include <assert.h>
 #include <config.h>
 #include <configfile.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <dep_processor.h>
@@ -210,7 +211,7 @@ store_it:
  */
 gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 {
-	extern gint **ecu_data;
+	extern Firmware_Details *firmware;
 	gchar **symbols = NULL;
 	gint *expr_types = NULL;
 	guchar *raw_data = incoming;
@@ -220,6 +221,8 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 	gint offset = 0;
 	gint bitmask = 0;
 	gint bitshift = 0;
+	gint canID = 0;
+	DataSize size = 0;
 	void * evaluator = NULL;
 	gchar **names = NULL;
 	gdouble * values = NULL;
@@ -249,6 +252,12 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
 				offset = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
+				tmpbuf = g_strdup_printf("%s_canID",symbols[i]);
+				canID = (gint) g_object_get_data(object,tmpbuf);
+				g_free(tmpbuf);
+				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
+				size = (DataSize) g_object_get_data(object,tmpbuf);
+				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_bitmask",symbols[i]);
 				bitmask = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
@@ -256,7 +265,7 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				bitshift = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
-				values[i]=(gdouble)(((ecu_data[page][offset])&bitmask) >> bitshift);
+				values[i]=(gdouble)(((get_ecu_data(canID,page,offset,size))&bitmask) >> bitshift);
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": handle_complex_expr()\n\t Embedded bit, name: %s, value %f\n",names[i],values[i]));
 				break;
@@ -267,8 +276,14 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
 				offset = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
+				tmpbuf = g_strdup_printf("%s_canID",symbols[i]);
+				canID = (gint) g_object_get_data(object,tmpbuf);
+				g_free(tmpbuf);
+				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
+				size = (DataSize) g_object_get_data(object,tmpbuf);
+				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
-				values[i]=(gdouble)ecu_data[page][offset];
+				values[i]=(gdouble)get_ecu_data(canID,page,offset,size);
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": handle_complex_expr()\n\t VE Variable, name: %s, value %f\n",names[i],values[i]));
 				break;

@@ -1,12 +1,16 @@
-# DT VEtable 1, (page 0),
-
 [global]
 description=Object data map for DT VE-Table 1 (page 0)
 tab_name=_VE Table(1)
 id_prefix=VE1_
-groups=load,rpm,vetable
+groups=defaults,load,rpm,vetable
 
 #----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=0
+size=_U08_
 
 [load]
 keys=page,raw_lower,raw_upper,is_float,dl_type,handler,use_color,tooltip

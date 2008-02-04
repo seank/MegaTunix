@@ -13,6 +13,7 @@ headers = \
         core_gui.h \
         dashboard.h \
         dataio.h \
+	datamgmt.h \
         datalogging_gui.h \
         debugging.h \
         defines.h \

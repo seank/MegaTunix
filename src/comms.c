@@ -14,6 +14,7 @@
 #include <comms.h>
 #include <config.h>
 #include <dataio.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
@@ -135,10 +136,10 @@ gint comms_test()
  */
 void update_write_status(Output_Data *data)
 {
-	extern gint **ecu_data;
-	extern gint **ecu_data_last;
-	gint i = 0;
 	extern Firmware_Details *firmware;
+	guint8 **ecu_data = firmware->ecu_data;
+	guint8 **ecu_data_last = firmware->ecu_data_last;
+	gint i = 0;
 	extern GList ***ve_widgets;
 	extern gboolean paused_handlers;
 
@@ -174,7 +175,7 @@ void update_write_status(Output_Data *data)
 	for (i=0;i<firmware->total_pages;i++)
 	{
 
-		if(memcmp(ecu_data_last[i],ecu_data[i],sizeof(gint)*firmware->page_params[i]->length) != 0)
+		if(memcmp(ecu_data_last[i],ecu_data[i],firmware->page_params[i]->length) != 0)
 		{
 			set_group_color(RED,"burners");
 			return;
@@ -200,6 +201,8 @@ void writeto_ecu(Io_Message *message)
 	gint truepgnum = message->truepgnum;
 	gint offset = output->offset;
 	gint value = output->value;
+	gint canID = output->canID;
+	DataSize size = output->size;
 	gint highbyte = 0;
 	gint lowbyte = 0;
 	gboolean twopart = 0;
@@ -209,9 +212,8 @@ void writeto_ecu(Io_Message *message)
 	gint i = 0;
 	char *lbuff = NULL;
 	gchar * write_cmd = NULL;
-	extern Firmware_Details *firmware;
 	extern Serial_Params *serial_params;
-	extern gint **ecu_data;
+	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
@@ -224,11 +226,10 @@ void writeto_ecu(Io_Message *message)
 		switch (output->mode)
 		{
 			case MTX_SIMPLE_WRITE:
-				ecu_data[page][offset] = value;
+				set_ecu_data(canID,page,offset,size,value);
 				break;
 			case MTX_CHUNK_WRITE:
-				for (i=0;i<output->len;i++)
-					ecu_data[page][offset+i] = output->data[i];
+				store_new_block(canID,page,offset,output->data,output->len);
 				break;
 		}
 		g_static_mutex_unlock(&serio_mutex);
@@ -345,7 +346,7 @@ void writeto_ecu(Io_Message *message)
 		}
 
 		g_free(lbuff);
-		ecu_data[page][offset] = value;
+		set_ecu_data(canID,page,offset,size,value);
 
 		g_free(write_cmd);
 		g_usleep(5000);
@@ -368,15 +369,13 @@ void writeto_ecu(Io_Message *message)
 		}
 
 		/* count is len+2 cause we need two bytes for offset and len*/
+		store_new_block(canID,page,offset,output->data,output->len);
 		count = output->len+2;
 		lbuff = g_new0(char,count);
 		lbuff[0]=offset;
 		lbuff[1]=output->len;
 		for(i=0;i<output->len;i++)
-		{
-			ecu_data[page][offset+i] = output->data[i];
 			lbuff[2+i] = output->data[i];
-		}
 		res = write (serial_params->fd,lbuff,count);	/* Send write command */
 		if (res != count )
 		{
@@ -407,8 +406,9 @@ void writeto_ecu(Io_Message *message)
  */
 void burn_ecu_flash()
 {
-	extern gint **ecu_data;
-	extern gint **ecu_data_last;
+	extern Firmware_Details *firmware;
+	guint8 **ecu_data = firmware->ecu_data;
+	guint8 **ecu_data_last = firmware->ecu_data_last;
 	gint res = 0;
 	gint i = 0;
 	gchar * err_text = NULL;
@@ -452,7 +452,7 @@ void burn_ecu_flash()
 copyover:
 	/* sync temp buffer with current burned settings */
 	for (i=0;i<firmware->total_pages;i++)
-		memcpy(ecu_data_last[i],ecu_data[i],sizeof(gint)*firmware->page_params[i]->length);
+		memcpy(ecu_data_last[i],ecu_data[i],firmware->page_params[i]->length);
 
 	g_static_mutex_unlock(&serio_mutex);
 	g_static_mutex_unlock(&mutex);
@@ -565,10 +565,10 @@ void readfrom_ecu(Io_Message *message)
  */
 void set_ms_page(guint8 ms_page)
 {
-	extern Firmware_Details *firmware;
 	extern Serial_Params *serial_params;
-	extern gint **ecu_data;
-	extern gint **ecu_data_last;
+	extern Firmware_Details *firmware;
+	guint8 **ecu_data = firmware->ecu_data;
+	guint8 **ecu_data_last = firmware->ecu_data_last;
 	extern gboolean force_page_change;
 	static gint last_page = -1;
 	gint res = 0;
@@ -594,9 +594,8 @@ void set_ms_page(guint8 ms_page)
 	}
 	if ((ms_page > firmware->ro_above) || (last_page > firmware->ro_above))
 		goto skip_change;
-	//	printf("last page %i, ms_page %i, memcpy results for last page %i, memcmp results for current page %i\n",last_page, ms_page, memcmp(ecu_data_last[last_page],ecu_data[last_page],sizeof(gint)*firmware->page_params[last_page]->length),memcmp(ecu_data_last[ms_page],ecu_data[ms_page],sizeof(gint)*firmware->page_params[ms_page]->length));
 
-	if (((ms_page != last_page) && (((memcmp(ecu_data_last[last_page],ecu_data[last_page],sizeof(gint)*firmware->page_params[last_page]->length) != 0)) || ((memcmp(ecu_data_last[ms_page],ecu_data[ms_page],sizeof(gint)*firmware->page_params[ms_page]->length) != 0)))))
+	if (((ms_page != last_page) && (((memcmp(ecu_data_last[last_page],ecu_data[last_page],firmware->page_params[last_page]->length) != 0)) || ((memcmp(ecu_data_last[ms_page],ecu_data[ms_page],firmware->page_params[ms_page]->length) != 0)))))
 	{
 		g_static_mutex_unlock(&serio_mutex);
 		burn_ecu_flash();

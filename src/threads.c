@@ -528,14 +528,14 @@ void *thread_dispatcher(gpointer data)
  \param queue_update (gboolean), if true queues a gui update, used to prevent
  a horrible stall when doing an ECU restore or batch load...
  */
-void send_to_ecu(GtkWidget *widget, gint can_id, gint page, gint offset, gint value, gboolean queue_update)
+void send_to_ecu(GtkWidget *widget, gint canID, gint page, gint offset, gint value, gboolean queue_update)
 {
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending can_id %i, page %i, offset %i, value %i \n",can_id,page,offset,value));
+		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending canID %i, page %i, offset %i, value %i \n",canID,page,offset,value));
 	output = g_new0(Output_Data, 1);
-	output->can_id = can_id;
+	output->canID = canID;
 	output->page = page;
 	output->offset = offset;
 	output->value = value;
@@ -548,22 +548,22 @@ void send_to_ecu(GtkWidget *widget, gint can_id, gint page, gint offset, gint va
 
 /*!
  \brief chunk_write() gets called to send a block of values to the ECU.
- \param can_id (gint) can identifier (0-14)
+ \param canID (gint) can identifier (0-14)
  \param page (gint) page in which the value refers to.
  \param offset (gint) offset from the beginning of the page that this data
  refers to.
  \param len (gint) length of block to sent
- \param data (guchar) the block of data to be sent
+ \param data (guint8) the block of data to be sent
  a horrible stall when doing an ECU restore or batch load...
  */
-void chunk_write(gint can_id, gint page, gint offset, gint len, guchar * data)
+void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 {
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, len %i, data %p\n",page,offset,len,data));
 	output = g_new0(Output_Data, 1);
-	output->can_id = can_id;
+	output->canID = canID;
 	output->page = page;
 	output->offset = offset;
 	output->len = len;

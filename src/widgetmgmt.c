@@ -85,7 +85,6 @@ void populate_master(GtkWidget *widget, gpointer user_data)
 
 	g_free(prefix);
 	g_free(fullname);
-//	g_free(name);
 }
 
 

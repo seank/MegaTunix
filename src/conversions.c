@@ -14,6 +14,7 @@
 #include <assert.h>
 #include <config.h>
 #include <conversions.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <dep_processor.h>
@@ -214,10 +215,11 @@ gfloat convert_after_upload(GtkWidget * widget)
 	gfloat return_value = 0.0;
 	gchar * conv_expr = NULL;
 	void *evaluator = NULL;
-	extern gint **ecu_data;
 	gint tmpi = 0;
 	gint page = -1;
 	gint offset = -1;
+	gint canID = 0;
+	DataSize size = 0;
 	gboolean ul_complex = FALSE;
 	gint i = 0;
 	gint table_num = -1;
@@ -244,6 +246,8 @@ gfloat convert_after_upload(GtkWidget * widget)
 
 	page = (gint)g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint)g_object_get_data(G_OBJECT(widget),"offset");
+	size = (DataSize)g_object_get_data(G_OBJECT(widget),"size");
+	canID = (gint)g_object_get_data(G_OBJECT(widget),"canID");
 	if (g_object_get_data(G_OBJECT(widget),"multi_expr_keys"))
 	{
 		if (!g_object_get_data(G_OBJECT(widget),"ul_eval_hash"))
@@ -320,9 +324,11 @@ gfloat convert_after_upload(GtkWidget * widget)
 
 	}
 	if (g_object_get_data(G_OBJECT(widget),"lookuptable"))
-		tmpi = lookup_data(G_OBJECT(widget),ecu_data[page][offset]);
+		tmpi = lookup_data(G_OBJECT(widget),get_ecu_data(canID,page,offset,size));
 	else
-		tmpi = ecu_data[page][offset];
+	{
+		tmpi = get_ecu_data(canID,page,offset,size);
+	}
 
 
 	if (!evaluator)

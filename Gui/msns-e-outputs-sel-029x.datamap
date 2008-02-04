@@ -1,9 +1,16 @@
-# MegaSquirtnSpark-Extra 029x User Outputs
-
 [global]
 description=Object data map for MSnS-Extra 029x User Outputs mapping
 tab_name=_Output Mapping
 id_prefix=output_mapping_
+groups=defaults
+
+#----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=0
+size=_U08_
 
 #----- Buttons ---------------------------------------------------------------
 

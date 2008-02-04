@@ -21,6 +21,7 @@ megatunix_SOURCES = \
 	core_gui.c \
 	dashboard.c \
 	dataio.c \
+	datamgmt.c \
 	datalogging_gui.c \
 	debugging.c \
 	dep_loader.c \

@@ -26,7 +26,7 @@ void send_to_ecu(GtkWidget *, gint, gint, gint, gint, gboolean);
 void thread_update_logbar(gchar *, gchar *, gchar *, gboolean, gboolean);
 void thread_update_widget(gchar *, WidgetType, gchar *);
 gboolean queue_function(gchar * );
-void chunk_write(gint, gint, gint, gint, guchar *);
+void chunk_write(gint, gint, gint, gint, guint8 *);
 		
 /* Prototypes */
 

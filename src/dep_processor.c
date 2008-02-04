@@ -15,9 +15,11 @@
 
 #include <config.h>
 #include <configfile.h>
+#include <datamgmt.h>
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <structures.h>
 
 
 /*!
@@ -36,11 +38,12 @@ gboolean check_dependancies(GObject *object )
 	gint bitmask = 0;
 	gint bitshift = 0;
 	gint bitval = 0;
+	DataSize size = 0;
+	gint canID = 0;
 	gchar ** deps = NULL;
 	gchar * tmpbuf = NULL;
 	gint type = 0;
 	gint num_deps = 0;
-	extern gint **ecu_data;
 
 	num_deps = (gint)g_object_get_data(object,"num_deps");
 	deps = g_object_get_data(object,"deps");
@@ -64,6 +67,16 @@ gboolean check_dependancies(GObject *object )
 //			printf("offset %i\n",offset);
 			g_free(tmpbuf);
 
+			tmpbuf = g_strdup_printf("%s_canID",deps[i]);
+			canID = (gint)g_object_get_data(object,tmpbuf);
+//			printf("offset %i\n",offset);
+			g_free(tmpbuf);
+
+			tmpbuf = g_strdup_printf("%s_size",deps[i]);
+			size = (DataSize)g_object_get_data(object,tmpbuf);
+//			printf("offset %i\n",offset);
+			g_free(tmpbuf);
+
 			tmpbuf = g_strdup_printf("%s_bitshift",deps[i]);
 			bitshift = (gint)g_object_get_data(object,tmpbuf);
 //			printf("bitshift %i\n",bitshift);
@@ -79,7 +92,7 @@ gboolean check_dependancies(GObject *object )
 //			printf("bitval %i\n",bitval);
 			g_free(tmpbuf);
 
-			if (!(((ecu_data[page][offset]) & bitmask) >> bitshift) == bitval)	
+			if (!(((get_ecu_data(canID,page,offset,size)) & bitmask) >> bitshift) == bitval)	
 			{
 //				printf("dep_proc returning FALSE\n");
 				return FALSE;

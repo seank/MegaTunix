@@ -897,7 +897,6 @@ void trace_update(gboolean redraw_all)
 	static gulong sig_id = 0;
 	static GtkWidget *scale = NULL;
 	extern GHashTable *dynamic_widgets;
-	extern GObject *global_data;
 
 	pixmap = lv_data->pixmap;
 
@@ -1321,7 +1320,6 @@ EXPORT void finish_logviewer(void)
 {
 	GtkWidget * widget = NULL;
 	extern GHashTable *dynamic_widgets;
-	extern GObject *global_data;
 
 	lv_data = g_new0(Logview_Data,1);
 	lv_data->traces = g_hash_table_new(g_str_hash,g_str_equal);

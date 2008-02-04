@@ -111,6 +111,7 @@ struct _Firmware_Details
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
+	gint canID;		/*! CanID for this firmware.. */
         gint rtvars_size;       /*! Size of Realtime vars datablock */
         gint memblock_size;     /*! Size of Raw_Memory datablock */
 	gint capabilities;	/*! Enum list of capabilities*/
@@ -129,6 +130,9 @@ struct _Firmware_Details
 	Page_Params **page_params;/*! special vars per page */
 	Table_Params **table_params;/*! details each table */
 	Req_Fuel_Params **rf_params;/*! req_fuel params */
+	guint8 **ecu_data;	/* ECU data arrays, 2 levels */
+	guint8 **ecu_data_last;	/* ECU data arrays, 2 levels */
+	guint8 **ecu_data_backup;	/* ECU data arrays, 2 levels */
 };
 
 
@@ -277,7 +281,6 @@ struct _Log_Info
  */
 struct _Page_Params
 {
-	gint can_id;		/*! CanBus ID (if can enabled) */
 	gint length;		/*! How big this page is... */
 	gint truepgnum;		/*! True pagenumber to send */
 	gint is_spark;		/*! does this require alt write cmd? */
@@ -298,7 +301,6 @@ struct _Page_Params
  */
 struct _Table_Params
 {
-	gint can_id;		/*! CanBus identifier */
 	gboolean is_fuel;	/*! If true next 7 params must exist */
 	gint dtmode_offset;	/*! DT mode offset (msns-e ONLY) */
 	gint dtmode_page;	/*! DT mode page (msns-e ONLY) */
@@ -311,6 +313,7 @@ struct _Table_Params
 	gint reqfuel_offset;	/*! Where reqfuel value is located */
 	gint x_page;		/*! what page the rpm (X axis) resides in */
 	gint x_base;		/*! where rpm table starts (X axis) */
+	DataSize x_size;	/*! enumeration size for the var */
 	gint x_bincount;	/*! how many RPM bins (X axis) */
 	gchar *table_name;	/*! Name for the 3D Table editor title */
 	gboolean x_multi_source;/*! uses multiple keyed sources? */
@@ -331,6 +334,7 @@ struct _Table_Params
 
 	gint y_page;		/*! what page the load (Y axis) resides in */
 	gint y_base;		/*! where load table starts  (Y Axis) */
+	DataSize y_size;	/*! enumeration size for the var */
 	gint y_bincount;	/*! how many load bins (Y axis) */
 	gboolean y_multi_source;/*! uses multiple keyed sources? */
 	gchar *y_source_key;	/* text name of variable we find to determine
@@ -350,6 +354,7 @@ struct _Table_Params
 
 	gint z_page;		/*! what page the vetable resides in */
 	gint z_base;		/*! where the vetable starts */
+	DataSize z_size;	/*! enumeration size for the var */
 	gboolean z_multi_source;/*! uses multiple keyed sources? */
 	gchar *z_source_key;	/* text name of variable we find to determine
 				 * the correct key for z_multi_hash
@@ -502,12 +507,13 @@ struct _Io_Cmds
  */
 struct _Output_Data
 {
-	gint can_id;		/*! CAN Module ID (MS-II ONLY) */
+	gint canID;		/*! CAN Module ID (MS-II ONLY) */
 	gint page;		/*! Page in ECU */
 	gint offset;		/*! Offset in block */
 	gint value;		/*! Value to send */
+	DataSize size;		/*! Size of single write data */
 	gint len;		/*! Length of chunk write block */
-	guchar *data;		/*! Block of data for chunk write */
+	guint8 *data;		/*! Block of data for chunk write */
 	gboolean queue_update;	/*! If true queues a member widget update */
 	WriteMode mode;		/*! Write mode enum */
 };
@@ -560,7 +566,7 @@ struct _Group
 	gint num_keys;		/* How many keys we hold */
 	gint num_keytypes;	/* How many keytypes we hold */
 	gint page;		/* page of this group of data */
-	gint can_id;		/* can_id of this group of data */
+	gint canID;		/* can_id of this group of data */
 };
 
 
@@ -639,11 +645,14 @@ struct _Ve_View_3D
 	gint x_base;
 	gint x_page;
 	gint x_bincount;
+	DataSize x_size;
 	gint y_base;
 	gint y_page;
 	gint y_bincount;
+	DataSize y_size;
 	gint z_base;
 	gint z_page;
+	DataSize z_size;
 	gchar *table_name;
 	gint table_num;
 	gboolean tracking_focus;
@@ -793,7 +802,7 @@ struct _CmdLineArgs
 struct _Drain_Data
 {
 	gint page;	
-	gint can_id;
+	gint canID;
 };
 
 #endif

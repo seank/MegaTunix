@@ -4,9 +4,15 @@
 description=Object data map for Boost Tables
 tab_name=_Boost Tables
 id_prefix=BT_
-groups=load,rpm,table_1,table_2,table_3
+groups=defaults,load,rpm,table_1,table_2,table_3
 
 #----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=7
+size=_U08_
 
 [load]
 keys=page,raw_lower,raw_upper,dl_conv_expr,ul_conv_expr,is_float,precision,dl_type,handler,use_color,tooltip

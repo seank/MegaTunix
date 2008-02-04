@@ -13,6 +13,7 @@
 
 #include <config.h>
 #include <comms.h>
+#include <datamgmt.h>
 #include <datalogging_gui.h>
 #include <defines.h>
 #include <debugging.h>
@@ -269,10 +270,13 @@ gboolean all_table_export(GIOChannel *iochannel)
 	gint y_base = 0;
 	gint z_base = 0;
 	gint x_base = 0;
+	DataSize y_size = 0;
+	DataSize z_size = 0;
+	DataSize x_size = 0;
 	gint x_bincount = 0;
 	gint y_bincount = 0;
-	extern gint ** ecu_data;
 	extern Firmware_Details *firmware;
+	gint canID = firmware->canID;
 	GIOStatus status;
 	GString *output = NULL;
 
@@ -289,6 +293,9 @@ gboolean all_table_export(GIOChannel *iochannel)
 		z_base = firmware->table_params[table]->z_base;
 		y_base = firmware->table_params[table]->y_base;
 		x_base = firmware->table_params[table]->x_base;
+		z_size = firmware->table_params[table]->z_size;
+		y_size = firmware->table_params[table]->y_size;
+		x_size = firmware->table_params[table]->x_size;
 		y_bincount = firmware->table_params[table]->y_bincount;
 		x_bincount = firmware->table_params[table]->x_bincount;
 
@@ -309,11 +316,11 @@ gboolean all_table_export(GIOChannel *iochannel)
 		output = g_string_append(output, g_strdup_printf("VE Table RPM Range              [%2i]\n",x_bincount));
 
 		for (i=0;i<x_bincount;i++)
-			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,ecu_data[x_page][x_base+i]));
+			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size)));
 
 		output = g_string_append(output, g_strdup_printf("VE Table Load Range (MAP)       [%2i]\n",y_bincount));
 		for (i=0;i<y_bincount;i++)
-			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,ecu_data[y_page][y_base+i]));
+			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size)));
 
 		output = g_string_append(output, g_strdup_printf("VE Table                        [%3i][%3i]\n",x_bincount,y_bincount));
 		output = g_string_append(output, "           ");
@@ -331,9 +338,9 @@ gboolean all_table_export(GIOChannel *iochannel)
 			for (j=0;j<y_bincount;j++)
 			{
 				if (j == 0)
-					output = g_string_append (output,g_strdup_printf("  %3d",ecu_data[z_page][index+z_base]));
+					output = g_string_append (output,g_strdup_printf("  %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
 				else
-					output = g_string_append (output,g_strdup_printf("   %3d",ecu_data[z_page][index+z_base]));
+					output = g_string_append (output,g_strdup_printf("   %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
 				index++;
 			}
 			output = g_string_append(output,"\n");
@@ -380,12 +387,15 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 	gint y_base = 0;
 	gint z_base = 0;
 	gint x_base = 0;
+	gint y_size = 0;
+	gint z_size = 0;
+	gint x_size = 0;
 	gint x_bincount = 0;
 	gint y_bincount = 0;
-	extern gint ** ecu_data;
 	extern Firmware_Details *firmware;
 	GIOStatus status;
 	GString *output = NULL;
+	gint canID = firmware->canID;
 
 
 	/* For Page 0.... */
@@ -399,6 +409,9 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 	z_base = firmware->table_params[table]->z_base;
 	y_base = firmware->table_params[table]->y_base;
 	x_base = firmware->table_params[table]->x_base;
+	z_size = firmware->table_params[table]->z_size;
+	y_size = firmware->table_params[table]->y_size;
+	x_size = firmware->table_params[table]->x_size;
 	y_bincount = firmware->table_params[table]->y_bincount;
 	x_bincount = firmware->table_params[table]->x_bincount;
 
@@ -419,11 +432,11 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 	output = g_string_append(output, g_strdup_printf("VE Table RPM Range              [%2i]\n",x_bincount));
 
 	for (i=0;i<x_bincount;i++)
-		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,ecu_data[x_page][x_base+i]));
+		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size)));
 
 	output = g_string_append(output, g_strdup_printf("VE Table Load Range (MAP)       [%2i]\n",y_bincount));
 	for (i=0;i<y_bincount;i++)
-		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,ecu_data[y_page][y_base+i]));
+		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size)));
 
 	output = g_string_append(output, g_strdup_printf("VE Table                        [%3i][%3i]\n",x_bincount,y_bincount));
 	output = g_string_append(output, "           ");
@@ -441,9 +454,9 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 		for (j=0;j<y_bincount;j++)
 		{
 			if (j == 0)
-				output = g_string_append (output,g_strdup_printf("  %3d",ecu_data[z_page][index+z_base]));
+				output = g_string_append (output,g_strdup_printf("  %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
 			else
-				output = g_string_append (output,g_strdup_printf("   %3d",ecu_data[z_page][index+z_base]));
+				output = g_string_append (output,g_strdup_printf("   %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
 			index++;
 		}
 		output = g_string_append(output,"\n");
@@ -1100,16 +1113,16 @@ void dealloc_vex_struct(Vex_Import *vex)
 void feed_import_data_to_ecu(Vex_Import *vex)
 {
 	gint i = 0;
-	extern gint ** ecu_data;
-	extern gint ** ecu_data_last;
-	extern gint ** ecu_data_backup;
-	guchar *data = NULL;
+	extern Firmware_Details *firmware;
+	guint8 **ecu_data = firmware->ecu_data;
+	guint8 **ecu_data_backup = firmware->ecu_data_backup;
+	guint8 *data = NULL;
 	gint total = 0;
-	gint can_id = 0;
+	gint canID = 0;
 	gint page = -1;
 	gint base = 0;
+	DataSize size = 0;
 	gint table = -1;
-	extern Firmware_Details *firmware;
 
 	/* Since we assume the page is where the table is this can cause
 	 * major problems with some firmwares that use two tables inside
@@ -1139,67 +1152,70 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	/* Backup the ALL pages of data first... */
 	for (i=0;i<firmware->total_pages;i++)
 	{
-		memset((void *)ecu_data_backup[i], 0, sizeof(gint)*firmware->page_params[i]->length);
-		memcpy(ecu_data_backup[i], ecu_data[i],sizeof(gint)*firmware->page_params[i]->length);
+		memset((void *)ecu_data_backup[i], 0, firmware->page_params[i]->length);
+		memcpy(ecu_data_backup[i], ecu_data[i],firmware->page_params[i]->length);
 	}
 
-	can_id = firmware->table_params[table]->can_id;
+	canID = firmware->canID;
 	page = firmware->table_params[table]->x_page;
 	base = firmware->table_params[table]->x_base;
+	size = firmware->table_params[table]->x_size;
 	if (firmware->chunk_support)
 	{
 		total = (vex->total_x_bins);
-		data = g_new0(guchar, total);
+		data = g_new0(guint8, total);
 		for (i=0;i<total;i++)
 			data[i]=(guchar)vex->x_bins[i];
-		chunk_write(can_id,page,base,total,data);
+		chunk_write(canID,page,base,total,data);
 	}
 	else
 	{
 		for (i=0;i<vex->total_x_bins;i++)
 		{
-			if (vex->x_bins[i] != ecu_data_last[page][base+i])
-				send_to_ecu(NULL,can_id,page,base+i,vex->x_bins[i], TRUE);
+			if (vex->x_bins[i] != get_ecu_data_last(canID,page,base+i,size))
+				send_to_ecu(NULL,canID,page,base+i,vex->x_bins[i], TRUE);
 		}
 	}
 
-	can_id = firmware->table_params[table]->can_id;
+	canID = firmware->canID;
 	page = firmware->table_params[table]->y_page;
 	base = firmware->table_params[table]->y_base;
+	size = firmware->table_params[table]->y_size;
 	if (firmware->chunk_support)
 	{
 		total = (vex->total_y_bins);
 		data = g_new0(guchar, total);
 		for (i=0;i<total;i++)
 			data[i]=(guchar)vex->y_bins[i];
-		chunk_write(can_id,page,base,total,data);
+		chunk_write(canID,page,base,total,data);
 	}
 	else
 	{
 		for (i=0;i<vex->total_y_bins;i++)
 		{
-			if (vex->y_bins[i] != ecu_data_last[page][base+i])
-				send_to_ecu(NULL,can_id,page,base+i,vex->y_bins[i], TRUE);
+			if (vex->y_bins[i] != get_ecu_data_last(canID,page,base+i,size))
+				send_to_ecu(NULL,canID,page,base+i,vex->y_bins[i], TRUE);
 		}
 	}
 
-	can_id = firmware->table_params[table]->can_id;
+	canID = firmware->canID;
 	page = firmware->table_params[table]->z_page;
 	base = firmware->table_params[table]->z_base;
+	size = firmware->table_params[table]->z_size;
 	if (firmware->chunk_support)
 	{
 		total = (vex->total_y_bins)*(vex->total_x_bins);
 		data = g_new0(guchar, total);
 		for (i=0;i<total;i++)
 			data[i]=(guchar)vex->tbl_bins[i];
-		chunk_write(can_id,page,base,total,data);
+		chunk_write(canID,page,base,total,data);
 	}
 	else
 	{
 		for (i=0;i<((vex->total_y_bins)*(vex->total_x_bins));i++)
 		{
-			if (vex->tbl_bins[i] != ecu_data_last[page][base+i])
-				send_to_ecu(NULL,can_id,page,base+i,vex->tbl_bins[i], TRUE);
+			if (vex->tbl_bins[i] != get_ecu_data_last(canID,page,base+i,size))
+				send_to_ecu(NULL,canID,page,base+i,vex->tbl_bins[i], TRUE);
 		}
 	}
 	io_cmd(IO_BURN_MS_FLASH,NULL);
@@ -1214,15 +1230,15 @@ void feed_import_data_to_ecu(Vex_Import *vex)
  */
 void revert_to_previous_data()
 {
-	gint can_id=0;
+	gint canID=0;
 	gint page=0;
 	gint offset=0;
 	gint total = 0;
 	guchar *data = NULL;
 	/* Called to back out a load of a VEtable from VEX import */
-	extern gint ** ecu_data;
-	extern gint ** ecu_data_backup;
 	extern Firmware_Details *firmware;
+	guint8 **ecu_data = firmware->ecu_data;
+	guint8 **ecu_data_backup = firmware->ecu_data_backup;
 	extern GHashTable *dynamic_widgets;
 
 	for (page=0;page<firmware->total_pages;page++)
@@ -1232,22 +1248,22 @@ void revert_to_previous_data()
 			total = firmware->page_params[page]->length;
 			data = g_new0(guchar,total);
 			for (offset=0;offset<total;offset++)
-				data[offset]=ecu_data_backup[page][offset];
-			chunk_write(can_id,page,0,total,data);
+				data[offset]=get_ecu_data_backup(canID,page,offset,MTX_U08);
+			chunk_write(canID,page,0,total,data);
 
 		}
 		else
 		{
 			for (offset = 0;offset<firmware->page_params[page]->length;offset++)
 			{
-				if (ecu_data_backup[page][offset] != ecu_data[page][offset])
+				if (get_ecu_data_backup(canID,page,offset,MTX_U08) != get_ecu_data(canID,page,offset,MTX_U08))
 				{
-					ecu_data[page][offset] = ecu_data_backup[page][offset];
-					send_to_ecu(NULL,can_id,page,offset,ecu_data_backup[page][offset], FALSE);
+					set_ecu_data(canID,page,offset,MTX_U08,get_ecu_data_backup(canID,page,offset,MTX_U08));
+					send_to_ecu(NULL,canID,page,offset,ecu_data_backup[page][offset], FALSE);
 				}
 			}
 		}
-		memcpy(ecu_data[page], ecu_data_backup[page], sizeof(gint)*firmware->page_params[page]->length);
+		memcpy(ecu_data[page], ecu_data_backup[page],firmware->page_params[page]->length);
 	}
 	io_cmd(IO_UPDATE_VE_CONST,NULL);
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"tools_undo_vex_button"),FALSE);

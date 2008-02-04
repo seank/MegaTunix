@@ -3,6 +3,15 @@
 [global]
 description=Object data map for MSnS-E Error status...
 tab_name=_Error Status
+groups=defaults
+
+#----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=0
+size=_U08_
 
 #----- Widgets ---------------------------------------------------------------
 

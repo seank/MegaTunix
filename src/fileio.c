@@ -15,6 +15,7 @@
 #include <apicheck.h>
 #include <config.h>
 #include <configfile.h>
+#include <datamgmt.h>
 #include <datalogging_gui.h>
 #include <debugging.h>
 #include <enums.h>
@@ -120,7 +121,8 @@ void backup_all_ecu_settings(gchar *filename)
 	gchar * section = NULL;
 	gint i = 0;
 	gint x = 0;
-	extern gint **ecu_data;
+	gint canID = 0;
+	DataSize size = MTX_U08;	 /* <<<<< BAD BAD BAD >>>>> */
 	GString *string = NULL;
 
 	cfgfile = cfg_open_file(filename);
@@ -138,7 +140,7 @@ void backup_all_ecu_settings(gchar *filename)
 		cfg_write_int(cfgfile,section,"num_variables",firmware->page_params[i]->length);
 		for(x=0;x<firmware->page_params[i]->length;x++)
 		{
-			string = g_string_append(string,g_strdup_printf("%i",ecu_data[i][x]));
+			string = g_string_append(string,g_strdup_printf("%i",get_ecu_data(canID,i,x,size)));
 			if (x < (firmware->page_params[i]->length-1))
 				string = g_string_append(string,",");
 		}
@@ -169,7 +171,8 @@ void restore_all_ecu_settings(gchar *filename)
 	extern Firmware_Details *firmware;
 	ConfigFile *cfgfile;
 	gchar * section = NULL;
-	gint can_id = 0;
+	gint canID = firmware->canID;
+	DataSize size = MTX_U08;
 	gint page = 0;
 	gint offset = 0;
 	gint tmpi = 0;
@@ -180,7 +183,6 @@ void restore_all_ecu_settings(gchar *filename)
 	gchar **keys = NULL;
 	gint num_keys = 0;
 	gint dload_val = 0;
-	extern gint **ecu_data_last;
 
 	cfgfile = cfg_open_file(filename);
 	if (cfgfile)
@@ -234,7 +236,7 @@ void restore_all_ecu_settings(gchar *filename)
 					data = g_new0(guchar, firmware->page_params[page]->length);
 					for (offset=0;offset<num_keys;offset++)
 						data[offset]=(guchar)atoi(keys[offset]);
-					chunk_write(can_id,page,0,num_keys,data);
+					chunk_write(canID,page,0,num_keys,data);
 
 				}
 				else
@@ -242,10 +244,10 @@ void restore_all_ecu_settings(gchar *filename)
 					for (offset=0;offset<num_keys;offset++)
 					{
 						dload_val = atoi(keys[offset]);
-						if (dload_val != ecu_data_last[page][offset])
+						if (dload_val != get_ecu_data_last(canID,page,offset,size))
 						{
 							//					printf("writing data for page %i, offset %i\n",page,offset);
-							send_to_ecu(NULL,can_id,page,offset,dload_val, FALSE);
+							send_to_ecu(NULL,canID,page,offset,dload_val, FALSE);
 						}
 					}
 				}

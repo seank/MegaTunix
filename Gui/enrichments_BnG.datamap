@@ -3,6 +3,15 @@
 [global]
 description=Object data map for Std B&G Enrichments
 tab_name=_Enrichments
+groups=defaults
+
+#----- Groups ----------------------------------------------------------------
+
+[defaults]
+keys=page,size
+key_types=_INT_,_ENUM_
+page=0
+size=_U08_
 
 #----- Buttons ---------------------------------------------------------------
 

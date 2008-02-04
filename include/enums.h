@@ -413,7 +413,7 @@ typedef enum
 	MTX_S16,
 	MTX_U32,
 	MTX_S32,
-}TestArgType;
+}DataSize;
 
 typedef enum
 {

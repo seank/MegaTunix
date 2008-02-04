@@ -146,7 +146,7 @@ gboolean load_gui_tabs(void)
 				if (!g_object_get_data(G_OBJECT(global_data),"tabs_are_hidden"))
 				{
 					g_object_set_data(G_OBJECT(global_data),"tabs_are_hidden",GINT_TO_POINTER(TRUE));
-					gtk_label_set_markup(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"main_status_label")),"<big>NOTE: Tabs are hidden</big>");
+					gtk_label_set_markup(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"main_status_label")),"<big>NOTE: <b>SOME</b> Tabs are hidden</big>");
 				}
 
 			}
@@ -369,7 +369,6 @@ gint bind_group_data(GtkWidget *widget, GHashTable *groups, gchar *groupname)
 				break;
 			case MTX_STRING:
 				g_object_set_data(G_OBJECT(widget),group->keys[i],g_strdup(g_object_get_data(group->object,group->keys[i])));
-//				printf("setting %s on widget %s\n",group->keys[i],glade_get_widget_name(widget));
 				if (g_object_get_data(G_OBJECT(widget),"tooltip") != NULL)
 					gtk_tooltips_set_tip(tip,widget,(gchar *)g_object_get_data(G_OBJECT(widget),"tooltip"),NULL);
 				if (g_object_get_data(G_OBJECT(group->object), "bind_to_list"))
@@ -445,6 +444,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	gchar * initializer = NULL;
 	GdkColor color;
 	extern GObject *global_data;
+	extern gint temp_units;
 	extern GtkTooltips *tip;
 	extern GList ***ve_widgets;
 	extern Firmware_Details *firmware;
@@ -489,6 +489,11 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		return;
 	}
 	page = -1;
+	/* Bind the data in the "defaults" group per tab to EVERY var in that
+	 * tab
+	 */
+	bind_group_data(widget,groups,"defaults");
+
 	if (cfg_read_string(cfgfile,section,"group",&tmpbuf))
 	{
 		page = bind_group_data(widget,groups,tmpbuf);
@@ -501,7 +506,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
 
 	}
-	/* Bind widgets to lists if thy have the bind_to_list flag set...
+	/* Bind widgets to lists if they have the bind_to_list flag set...
 	*/
 	tmpbuf = NULL;
 	if (cfg_read_string(cfgfile,section,"bind_to_list",&tmpbuf))
@@ -549,7 +554,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		g_free(tmpbuf);
 	}
 
-	/* If this widget (a label) has "set_lanel" we set the label on it
+	/* If this widget (a label) has "set_label" we set the label on it
 	*/
 	if (cfg_read_string(cfgfile,section,"set_label",&tmpbuf))
 	{
@@ -557,11 +562,11 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		g_free(tmpbuf);
 	}
 
-	/* If this widget is temp dependant, set the curren units on it 
+	/* If this widget is temp dependant, set the current units on it 
 	*/
 	if (cfg_read_string(cfgfile,section,"temp_dep",&tmpbuf))
 	{
-		g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(FAHRENHEIT));
+		g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(temp_units));
 		g_free(tmpbuf);
 	}
 
