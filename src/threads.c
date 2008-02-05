@@ -531,14 +531,20 @@ void *thread_dispatcher(gpointer data)
 void send_to_ecu(GtkWidget *widget, gint canID, gint page, gint offset, gint value, gboolean queue_update)
 {
 	Output_Data *output = NULL;
+	DataSize size = 0;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending canID %i, page %i, offset %i, value %i \n",canID,page,offset,value));
+	if (GTK_IS_WIDGET(widget))
+		size = (DataSize)g_object_get_data(G_OBJECT(widget),"size");
+	else
+		size = MTX_U08;	// BAD ssumption
 	output = g_new0(Output_Data, 1);
 	output->canID = canID;
 	output->page = page;
 	output->offset = offset;
 	output->value = value;
+	output->size = size;
 	output->mode = MTX_SIMPLE_WRITE;
 	output->queue_update = queue_update;
 	io_cmd(IO_WRITE_DATA,output);

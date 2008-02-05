@@ -203,9 +203,8 @@ void writeto_ecu(Io_Message *message)
 	gint value = output->value;
 	gint canID = output->canID;
 	DataSize size = output->size;
-	gint highbyte = 0;
-	gint lowbyte = 0;
-	gboolean twopart = 0;
+	//gint highbyte = 0;
+	//gint lowbyte = 0;
 	gint res = 0;
 	gint count = 0;
 	gchar * err_text = NULL;
@@ -270,17 +269,6 @@ void writeto_ecu(Io_Message *message)
 		return;
 	}
 
-	if ((value > 255) && (output->mode == MTX_SIMPLE_WRITE))
-	{
-		if (dbg_lvl & SERIAL_WR)
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tLarge value being sent: %i, to page %i, offset %i\n",value,page,offset));
-
-		highbyte = (value & 0xff00) >> 8;
-		lowbyte = value & 0x00ff;
-		twopart = TRUE;
-		if (dbg_lvl & SERIAL_WR)
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tHighbyte: %i, Lowbyte %i\n",highbyte,lowbyte));
-	}
 	if ((value < 0) && (output->mode == MTX_SIMPLE_WRITE))
 	{
 		if (dbg_lvl & (SERIAL_WR|CRITICAL))
@@ -289,7 +277,6 @@ void writeto_ecu(Io_Message *message)
 		g_static_mutex_unlock(&mutex);
 		return;
 	}
-
 
 	g_static_mutex_unlock(&serio_mutex);
 	if ((firmware->multi_page ) && (message->need_page_change)) 
@@ -300,13 +287,13 @@ void writeto_ecu(Io_Message *message)
 
 	if (output->mode == MTX_SIMPLE_WRITE)
 	{
-		if (twopart)
+		if ((value > 255) && (value < 65536))
 		{
 			count = 3;
 			lbuff = g_new0(char,count);
 			lbuff[0]=offset;
-			lbuff[1]=highbyte;
-			lbuff[2]=lowbyte;
+			lbuff[1]=(value & 0xff00) >> 8; // Highbyte
+			lbuff[2]=value & 0x00ff;	// Lowbyte
 			if (dbg_lvl & SERIAL_WR)
 				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 16 bit value to ECU\n"));
 		}

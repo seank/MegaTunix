@@ -142,6 +142,8 @@ void set_ecu_data(gint canID, gint page, gint offset, DataSize size, gint new)
 			data[offset+2] = (guint8)((guint32)new >> 8);
 			data[offset+1] = (guint8)((guint32)new >> 16);
 			data[offset] = (guint8)((guint32)new >> 24);
+		default:
+			printf("ERROR< attempted set of data with NO SIZE defined\n");
 	}
 }
  

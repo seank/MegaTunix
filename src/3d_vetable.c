@@ -1336,6 +1336,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gint y_base = 0;
 	gint x_base = 0;
 	gint z_base = 0;
+	DataSize y_size = 0;
+	DataSize x_size = 0;
+	DataSize z_size = 0;
 	gint dload_val = 0;
 	gint canID = 0;
 	gboolean cur_state = FALSE;
@@ -1360,6 +1363,10 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	x_page = ve_view->x_page;
 	y_page = ve_view->y_page;
 	z_page = ve_view->z_page;
+
+	x_size = ve_view->x_size;
+	y_size = ve_view->y_size;
+	z_size = ve_view->z_size;
 
 	// Spark requires a divide by 2.84 to convert from ms units to degrees
 
@@ -1409,9 +1416,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 				dbg_func(g_strdup("\t\"Page Up\"\n"));
 
 			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
-			if (get_ecu_data(canID,z_page,offset,ve_view->z_size) <= 245)
+			if (get_ecu_data(canID,z_page,offset,z_size) <= 245)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,ve_view->z_size) + 10;
+				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
 				update_widgets = TRUE;
 			}
 			break;                          
@@ -1425,9 +1432,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 				dbg_func(g_strdup("\t\"PLUS\"\n"));
 
 			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
-			if (get_ecu_data(canID,z_page,offset,ve_view->z_size) < 255)
+			if (get_ecu_data(canID,z_page,offset,z_size) < 255)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,ve_view->z_size) + 1;
+				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
 				update_widgets = TRUE;
 			}
 			break;                          
@@ -1436,9 +1443,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 				dbg_func(g_strdup("\t\"Page Down\"\n"));
 
 			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
-			if (get_ecu_data(canID,z_page,offset,ve_view->z_size) >= 10)
+			if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,ve_view->z_size) - 10;
+				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
 				update_widgets = TRUE;
 			}
 			break;                                                  
@@ -1452,9 +1459,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 				dbg_func(g_strdup("\t\"MINUS\"\n"));
 
 			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
-			if (get_ecu_data(canID,z_page,offset,ve_view->z_size) > 0)
+			if (get_ecu_data(canID,z_page,offset,z_size) > 0)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,ve_view->z_size) - 1;
+				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
 				update_widgets = TRUE;
 			}
 			break;                                                  
@@ -1480,7 +1487,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 		if (dbg_lvl & OPENGL)
 			dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n\tupdating widget data in ECU\n"));
 
-		send_to_ecu(widget,canID,z_page,offset,dload_val, TRUE);
+		send_to_ecu(NULL,canID,z_page,offset,dload_val, TRUE);
 		forced_update = TRUE;
 	}
 
