@@ -247,7 +247,7 @@ void restore_all_ecu_settings(gchar *filename)
 						if (dload_val != get_ecu_data_last(canID,page,offset,size))
 						{
 							//					printf("writing data for page %i, offset %i\n",page,offset);
-							send_to_ecu(NULL,canID,page,offset,dload_val, FALSE);
+							send_to_ecu(canID,page,offset,size,dload_val, FALSE);
 						}
 					}
 				}

@@ -1336,8 +1336,6 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gint y_base = 0;
 	gint x_base = 0;
 	gint z_base = 0;
-	DataSize y_size = 0;
-	DataSize x_size = 0;
 	DataSize z_size = 0;
 	gint dload_val = 0;
 	gint canID = 0;
@@ -1364,8 +1362,6 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	y_page = ve_view->y_page;
 	z_page = ve_view->z_page;
 
-	x_size = ve_view->x_size;
-	y_size = ve_view->y_size;
 	z_size = ve_view->z_size;
 
 	// Spark requires a divide by 2.84 to convert from ms units to degrees
@@ -1487,7 +1483,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 		if (dbg_lvl & OPENGL)
 			dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n\tupdating widget data in ECU\n"));
 
-		send_to_ecu(NULL,canID,z_page,offset,dload_val, TRUE);
+		send_to_ecu(canID,z_page,offset,z_size,dload_val, TRUE);
 		forced_update = TRUE;
 	}
 

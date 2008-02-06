@@ -58,9 +58,7 @@ gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 {
 	Output_Data *data = (Output_Data *)value;
 	/* called per element from the hash table to drain and send to ECU */
-	data->mode = MTX_SIMPLE_WRITE;
-	data->queue_update = TRUE;
-	io_cmd(IO_WRITE_DATA,data);
-//	send_to_ecu(NULL, data->canID, data->page, data->offset, data->value, TRUE);
+	send_to_ecu(data->canID, data->page, data->offset, data->size, data->value, data->queue_update);
+	g_free(data);
 	return TRUE;
 }

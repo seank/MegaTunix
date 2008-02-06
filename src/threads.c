@@ -526,18 +526,36 @@ void *thread_dispatcher(gpointer data)
  \param queue_update (gboolean), if true queues a gui update, used to prevent
  a horrible stall when doing an ECU restore or batch load...
  */
-void send_to_ecu(GtkWidget *widget, gint canID, gint page, gint offset, gint value, gboolean queue_update)
+void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, gboolean queue_update)
 {
 	Output_Data *output = NULL;
-	DataSize size = 0;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending canID %i, page %i, offset %i, value %i \n",canID,page,offset,value));
-	if (GTK_IS_WIDGET(widget))
-		size = (DataSize)g_object_get_data(G_OBJECT(widget),"size");
-	else
-		size = MTX_U08;	// BAD ssumption
+
+	switch (size)
+	{
+		case MTX_CHAR:
+		case MTX_S08:
+		case MTX_U08:
+		case MTX_S16:
+		case MTX_U16:
+		case MTX_S32:
+		case MTX_U32:
+			break;
+		default:
+			printf("ERROR!!! Size undefined for var at canID %i, page %i, offset %i\n",canID,page,offset);
+	}
 	output = g_new0(Output_Data, 1);
+	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+	g_object_ref(output->object);
+	gtk_object_sink(GTK_OBJECT(output->object));
+	g_object_set_data(G_OBJECT(output->object),"canID", GINT_TO_POINTER(canID));
+	g_object_set_data(G_OBJECT(output->object),"page", GINT_TO_POINTER(page));
+	g_object_set_data(G_OBJECT(output->object),"offset", GINT_TO_POINTER(offset));
+	g_object_set_data(G_OBJECT(output->object),"value", GINT_TO_POINTER(value));
+	g_object_set_data(G_OBJECT(output->object),"size", GINT_TO_POINTER(size));
+	g_object_set_data(G_OBJECT(output->object),"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
 	output->canID = canID;
 	output->page = page;
 	output->offset = offset;
@@ -567,6 +585,15 @@ void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, len %i, data %p\n",page,offset,len,data));
 	output = g_new0(Output_Data, 1);
+	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+	g_object_ref(output->object);
+	gtk_object_sink(GTK_OBJECT(output->object));
+	g_object_set_data(G_OBJECT(output->object),"canID", GINT_TO_POINTER(canID));
+	g_object_set_data(G_OBJECT(output->object),"page", GINT_TO_POINTER(page));
+	g_object_set_data(G_OBJECT(output->object),"offset", GINT_TO_POINTER(offset));
+	g_object_set_data(G_OBJECT(output->object),"len", GINT_TO_POINTER(len));
+	g_object_set_data(G_OBJECT(output->object),"data", (gpointer)data);
+	g_object_set_data(G_OBJECT(output->object),"mode", GINT_TO_POINTER(MTX_CHUNK_WRITE));
 	output->canID = canID;
 	output->page = page;
 	output->offset = offset;

@@ -457,7 +457,6 @@ void check_req_fuel_limits(gint table_num)
 	gchar * g_name = NULL;
 	gchar * name = NULL;
 	GtkWidget *widget = NULL;
-	GObject *object = NULL;
 	union config11 cfg11;
 	extern gboolean paused_handlers;
 	extern GHashTable ** interdep_vars;
@@ -587,19 +586,10 @@ void check_req_fuel_limits(gint table_num)
 		else
 			dload_val = (int)(12000.0/((double)num_cyls));
 
-		object = g_hash_table_lookup(dynamic_widgets,"rpmk_object");
-		if (!G_IS_OBJECT(object))
-		{
-			object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-			g_object_ref(object);
-			gtk_object_sink(GTK_OBJECT(object));
-			g_object_set_data(G_OBJECT(object),"size",GINT_TO_POINTER(MTX_U16));
-			register_widget("rpmk_object",GTK_WIDGET(object));
-		}
-		send_to_ecu(GTK_WIDGET(object), canID, page, rpmk_offset, dload_val, TRUE);
+		send_to_ecu(canID, page, rpmk_offset, MTX_U16, dload_val, TRUE);
 
 		offset = firmware->table_params[table_num]->reqfuel_offset;
-		send_to_ecu(widget, canID, page, offset, rf_per_squirt, TRUE);
+		send_to_ecu(canID, page, offset, MTX_U08, rf_per_squirt, TRUE);
 		/* Call handler to empty interdependant hash table */
 		g_hash_table_foreach_remove(interdep_vars[page],drain_hashtable,NULL);
 		//g_free(data);

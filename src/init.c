@@ -732,12 +732,18 @@ Table_Params * initialize_table_params(void)
  */
 void dealloc_message(Io_Message * message)
 {
+	Output_Data *data;
         if (message->out_str)
                 g_free(message->out_str);
         if (message->funcs)
                 g_array_free(message->funcs,TRUE);
         if (message->payload)
+	{
+		data = (Output_Data *)message->payload;
+		if (GTK_IS_OBJECT(data->object))
+			gtk_object_destroy(GTK_OBJECT(data->object));
                 g_free(message->payload);
+	}
         g_free(message);
 	message = NULL;
 }

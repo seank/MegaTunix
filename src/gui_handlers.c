@@ -546,7 +546,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	if (dl_type == IMMEDIATE)
 	{
 		dload_val = convert_before_download(widget,dload_val);
-		send_to_ecu(widget, canID, page, offset, dload_val, TRUE);
+		send_to_ecu(canID, page, offset, size, dload_val, TRUE);
 	}
 	return TRUE;
 }
@@ -738,7 +738,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 1);	/* Set xlong_trig */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp,  TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp,  TRUE);
 				tmpf -= 45.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
@@ -747,7 +747,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);;
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 0);	/* Set long_trig */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp, TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp, TRUE);
 				tmpf -= 22.5;
 				dload_val = convert_before_download(widget,tmpf);
 			}
@@ -755,7 +755,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			{
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp, TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp, TRUE);
 				dload_val = convert_before_download(widget,tmpf);
 			}
 
@@ -776,7 +776,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 2);	/* Set +90 */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp, TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp, TRUE);
 				tmpf -= 90.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
@@ -785,7 +785,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 1);	/* Set +45 */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp, TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp, TRUE);
 				tmpf -= 45.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
@@ -793,7 +793,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			{
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp,  TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp,  TRUE);
 				dload_val = convert_before_download(widget,tmpf);
 			}
 
@@ -811,7 +811,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 		 *                  * and wasting time.
 		 *                                   */
 		if (dload_val != get_ecu_data(canID,page,offset,size))
-			send_to_ecu(widget, canID, page, offset, dload_val, TRUE);
+			send_to_ecu(canID, page, offset, size, dload_val, TRUE);
 	}
 
 	gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
@@ -1259,7 +1259,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 1);	/* Set xlong_trig */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp,  TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp,  TRUE);
 				value -= 45.0;
 				dload_val = convert_before_download(widget,value);
 			}
@@ -1268,7 +1268,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
 				tmp = tmp | (1 << 0);	/* Set long_trig */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp, TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp, TRUE);
 				value -= 22.5;
 				dload_val = convert_before_download(widget,value);
 			}
@@ -1276,7 +1276,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			{
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
-				send_to_ecu(widget, canID, page, spconfig_offset, tmp, TRUE);
+				send_to_ecu(canID, page, spconfig_offset, size, tmp, TRUE);
 				dload_val = convert_before_download(widget,value);
 			}
 
@@ -1297,7 +1297,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 2);	/* Set +90 */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp, TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp, TRUE);
 				value -= 90.0;
 				dload_val = convert_before_download(widget,value);
 			}
@@ -1306,7 +1306,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
 				tmp = tmp | (1 << 1);	/* Set +45 */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp, TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp, TRUE);
 				value -= 45.0;
 				dload_val = convert_before_download(widget,value);
 			}
@@ -1314,7 +1314,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			{
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
-				send_to_ecu(widget, canID, page, oddfire_bit_offset, tmp,  TRUE);
+				send_to_ecu(canID, page, oddfire_bit_offset, size, tmp,  TRUE);
 				dload_val = convert_before_download(widget,value);
 			}
 
@@ -1342,7 +1342,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 		 * and wasting time.
 		 */
 		if (dload_val != get_ecu_data(canID,page,offset,size))
-			send_to_ecu(widget, canID, page, offset, dload_val, TRUE);
+			send_to_ecu(canID, page, offset, size, dload_val, TRUE);
 	}
 	gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
 	return TRUE;
@@ -2068,7 +2068,7 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			retval = FALSE;
 	}
 	if (retval)
-		send_to_ecu(widget,canID, page,offset,dload_val, TRUE);
+		send_to_ecu(canID, page, offset, size, dload_val, TRUE);
 
 	return retval;
 }

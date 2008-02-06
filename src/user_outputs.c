@@ -283,6 +283,7 @@ void cell_edited(GtkCellRendererText *cell,
 	gint page = 0;
 	gchar *key = NULL;
 	gchar *hash_key = NULL;
+	DataSize size = 0;
 	gboolean is_float = FALSE;
 	MultiExpr *multi = NULL;
 	GHashTable *hash = NULL;
@@ -291,6 +292,7 @@ void cell_edited(GtkCellRendererText *cell,
 	column = (gint) g_object_get_data (G_OBJECT (cell), "column");
 	canID = (gint) g_object_get_data(G_OBJECT(model),"canID");
 	page = (gint) g_object_get_data(G_OBJECT(model),"page");
+	size = (DataSize) g_object_get_data(G_OBJECT(model),"size");
 	src_offset = (gint) g_object_get_data(G_OBJECT(model),"src_offset");
 	lim_offset = (gint) g_object_get_data(G_OBJECT(model),"lim_offset");
 	hys_offset = (gint) g_object_get_data(G_OBJECT(model),"hys_offset");
@@ -394,14 +396,14 @@ void cell_edited(GtkCellRendererText *cell,
 	switch (column)
 	{
 		case COL_HYS:
-			send_to_ecu(NULL, canID, page, hys_offset, result, TRUE);
+			send_to_ecu(canID, page, hys_offset, MTX_U08, result, TRUE);
 			break;
 		case COL_ULIMIT:
-			send_to_ecu(NULL, canID, page, ulimit_offset, result, TRUE);
+			send_to_ecu(canID, page, ulimit_offset, MTX_U08, result, TRUE);
 			break;
 		case COL_ENTRY:
-			send_to_ecu(NULL, canID, page, src_offset, rt_offset, TRUE);
-			send_to_ecu(NULL, canID, page, lim_offset, result, TRUE);
+			send_to_ecu(canID, page, src_offset, MTX_U08, rt_offset, TRUE);
+			send_to_ecu(canID, page, lim_offset, MTX_U08, result, TRUE);
 			break;
 	}
 	g_timeout_add(500,(GtkFunction)deferred_model_update,(GtkWidget *)view);

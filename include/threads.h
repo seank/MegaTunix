@@ -22,7 +22,7 @@ void io_cmd(Io_Command, gpointer);	/* Send message down the queue */
 void *thread_dispatcher(gpointer);	/* thread that processes messages */
 void *restore_update(gpointer);		/* Thread to update tools status.. */
 void start_restore_monitor(void);	/* Thread jumpstarter */
-void send_to_ecu(GtkWidget *, gint, gint, gint, gint, gboolean);
+void send_to_ecu(gint, gint, gint, DataSize, gint, gboolean);
 void thread_update_logbar(gchar *, gchar *, gchar *, gboolean, gboolean);
 void thread_update_widget(gchar *, WidgetType, gchar *);
 gboolean queue_function(gchar * );

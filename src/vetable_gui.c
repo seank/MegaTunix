@@ -135,7 +135,7 @@ void rescale_table(GtkWidget *widget)
 
 					g_free(tmpbuf);
 
-					send_to_ecu(tmpwidget, canID, page, offset, (gint)value, TRUE);
+					send_to_ecu(canID, page, offset, size, (gint)value, TRUE);
 					gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 					widget_grab(tmpwidget,NULL,GINT_TO_POINTER(TRUE));
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(scaler),100.0);
@@ -287,7 +287,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						g_free(tmpbuf);
 
 						if (!firmware->chunk_support)
-							send_to_ecu(tmpwidget, canID, page, offset, (gint)value, TRUE);
+							send_to_ecu(canID, page, offset, size, (gint)value, TRUE);
 						data[i] = (guchar)value;
 						gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 						if (use_color)

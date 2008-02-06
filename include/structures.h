@@ -507,6 +507,7 @@ struct _Io_Cmds
  */
 struct _Output_Data
 {
+	GObject *object;	/*! Opaque object for data storage */
 	gint canID;		/*! CAN Module ID (MS-II ONLY) */
 	gint page;		/*! Page in ECU */
 	gint offset;		/*! Offset in block */

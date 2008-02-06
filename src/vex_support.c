@@ -1173,7 +1173,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 		for (i=0;i<vex->total_x_bins;i++)
 		{
 			if (vex->x_bins[i] != get_ecu_data_last(canID,page,base+i,size))
-				send_to_ecu(NULL,canID,page,base+i,vex->x_bins[i], TRUE);
+				send_to_ecu(canID,page,base+i,size, vex->x_bins[i], TRUE);
 		}
 	}
 
@@ -1194,7 +1194,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 		for (i=0;i<vex->total_y_bins;i++)
 		{
 			if (vex->y_bins[i] != get_ecu_data_last(canID,page,base+i,size))
-				send_to_ecu(NULL,canID,page,base+i,vex->y_bins[i], TRUE);
+				send_to_ecu(canID,page,base+i,size,vex->y_bins[i], TRUE);
 		}
 	}
 
@@ -1215,7 +1215,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 		for (i=0;i<((vex->total_y_bins)*(vex->total_x_bins));i++)
 		{
 			if (vex->tbl_bins[i] != get_ecu_data_last(canID,page,base+i,size))
-				send_to_ecu(NULL,canID,page,base+i,vex->tbl_bins[i], TRUE);
+				send_to_ecu(canID,page,base+i,size,vex->tbl_bins[i], TRUE);
 		}
 	}
 	io_cmd(IO_BURN_MS_FLASH,NULL);
@@ -1259,7 +1259,7 @@ void revert_to_previous_data()
 				if (get_ecu_data_backup(canID,page,offset,MTX_U08) != get_ecu_data(canID,page,offset,MTX_U08))
 				{
 					set_ecu_data(canID,page,offset,MTX_U08,get_ecu_data_backup(canID,page,offset,MTX_U08));
-					send_to_ecu(NULL,canID,page,offset,ecu_data_backup[page][offset], FALSE);
+					send_to_ecu(canID,page,offset,MTX_U08,ecu_data_backup[page][offset], FALSE);
 				}
 			}
 		}
