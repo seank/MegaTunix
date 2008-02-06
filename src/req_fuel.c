@@ -28,6 +28,7 @@
 #include <serialio.h>
 #include <structures.h>
 #include <threads.h>
+#include <widgetmgmt.h>
 
 extern GdkColor red;
 extern GdkColor black;
@@ -439,7 +440,7 @@ void check_req_fuel_limits(gint table_num)
 	gint offset = 0;
 	gint canID = 0;
 	gint page = -1;
-	DataSize size = MTX_U08;	/* <<<<<< BAD BAD >>>>>>> */
+	DataSize size = MTX_U08;
 	gint rpmk_offset = 0;
 	gint num_squirts = 0;
 	gint num_cyls = 0;
@@ -451,17 +452,18 @@ void check_req_fuel_limits(gint table_num)
 	gint last_num_inj = -1;
 	gint last_divider= -1;
 	gint last_alternate = -1;
-	Drain_Data *data = NULL;
 	gfloat rf_total = 0.0;
 	gfloat last_rf_total = 0.0;
 	gchar * g_name = NULL;
 	gchar * name = NULL;
 	GtkWidget *widget = NULL;
+	GObject *object = NULL;
 	union config11 cfg11;
 	extern gboolean paused_handlers;
 	extern GHashTable ** interdep_vars;
 	extern GHashTable *dynamic_widgets;
 	extern Firmware_Details *firmware;
+	canID = firmware->canID;
 
 	/* F&H Dualtable required Fuel calc
 	 *
@@ -585,16 +587,22 @@ void check_req_fuel_limits(gint table_num)
 		else
 			dload_val = (int)(12000.0/((double)num_cyls));
 
-		send_to_ecu(NULL, canID, page, rpmk_offset, dload_val, TRUE);
+		object = g_hash_table_lookup(dynamic_widgets,"rpmk_object");
+		if (!G_IS_OBJECT(object))
+		{
+			object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+			g_object_ref(object);
+			gtk_object_sink(GTK_OBJECT(object));
+			g_object_set_data(G_OBJECT(object),"size",GINT_TO_POINTER(MTX_U16));
+			register_widget("rpmk_object",GTK_WIDGET(object));
+		}
+		send_to_ecu(GTK_WIDGET(object), canID, page, rpmk_offset, dload_val, TRUE);
 
 		offset = firmware->table_params[table_num]->reqfuel_offset;
 		send_to_ecu(widget, canID, page, offset, rf_per_squirt, TRUE);
 		/* Call handler to empty interdependant hash table */
-		data = g_new0(Drain_Data,1);
-		data->page = page;
-		data->canID = canID;
-		g_hash_table_foreach_remove(interdep_vars[page],drain_hashtable,GINT_TO_POINTER(page));
-		g_free(data);
+		g_hash_table_foreach_remove(interdep_vars[page],drain_hashtable,NULL);
+		//g_free(data);
 
 	}
 	g_free(g_name);

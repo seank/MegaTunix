@@ -402,6 +402,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	gint dl_type = -1;
 	gint handler = 0;
 	gint table_num = -1;
+	Output_Data *q_data = NULL;
 	gchar * swap_list = NULL;
 	gchar * set_labels = NULL;
 	gchar * table_2_update = NULL;
@@ -480,9 +481,15 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
+				q_data = g_new0(Output_Data, 1);
+				q_data->canID = canID;
+				q_data->page = page;
+				q_data->offset = offset;
+				q_data->value = dload_val;
+				q_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						GINT_TO_POINTER(dload_val));
+						q_data);
 				check_req_fuel_limits(table_num);
 			}
 			else
@@ -495,9 +502,15 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
+				q_data = g_new0(Output_Data, 1);
+				q_data->canID = canID;
+				q_data->page = page;
+				q_data->offset = offset;
+				q_data->value = dload_val;
+				q_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						GINT_TO_POINTER(dload_val));
+						q_data);
 				check_req_fuel_limits(table_num);
 			}
 			break;
@@ -1006,7 +1019,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gint dload_val = -1;
 	gint canID = 0;
 	gint page = -1;
-	gint size = -1;
+	DataSize size = -1;
 	gint bitmask = -1;
 	gint bitshift = -1;
 	gint spconfig_offset = 0;
@@ -1020,6 +1033,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gfloat value = 0.0;
 	gchar *tmpbuf = NULL;
 	GtkWidget * tmpwidget = NULL;
+	Output_Data *q_data = NULL;
 	extern gint realtime_id;
 	extern gint lv_zoom;
 	Reqd_Fuel *reqd_fuel = NULL;
@@ -1048,7 +1062,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	canID = (gint) g_object_get_data(G_OBJECT(widget),"canID");
 	page = (gint) g_object_get_data(G_OBJECT(widget),"page");
 	offset = (gint) g_object_get_data(G_OBJECT(widget),"offset");
-	size = (gint) g_object_get_data(G_OBJECT(widget),"size");
+	size = (DataSize) g_object_get_data(G_OBJECT(widget),"size");
 	bitmask = (gint) g_object_get_data(G_OBJECT(widget),"bitmask");
 	bitshift = (gint) g_object_get_data(G_OBJECT(widget),"bitshift");
 	temp_dep = (gboolean)g_object_get_data(G_OBJECT(widget),"temp_dep");
@@ -1137,9 +1151,15 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				dload_val = (gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
+				q_data = g_new0(Output_Data, 1);
+				q_data->canID = canID;
+				q_data->page = page;
+				q_data->offset = divider_offset;
+				q_data->value = dload_val;
+				q_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
-						GINT_TO_POINTER(dload_val));
+						q_data);
 				err_flag = FALSE;
 				set_reqfuel_color(BLACK,table_num);
 				check_req_fuel_limits(table_num);
@@ -1169,17 +1189,29 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = tmp | ((tmpi-1) << bitshift);
 				dload_val = tmp;
 				//printf("new num_cyls is %i, new data is %i\n",tmpi,tmp);
+				q_data = g_new0(Output_Data, 1);
+				q_data->canID = canID;
+				q_data->page = page;
+				q_data->offset = offset;
+				q_data->value = dload_val;
+				q_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						GINT_TO_POINTER(dload_val));
+						q_data);
 
 				dload_val = 
 					(gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
+				q_data = g_new0(Output_Data, 1);
+				q_data->canID = canID;
+				q_data->page = page;
+				q_data->offset = divider_offset;
+				q_data->value = dload_val;
+				q_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
-						GINT_TO_POINTER(dload_val));
+						q_data);
 
 				err_flag = FALSE;
 				set_reqfuel_color(BLACK,table_num);	
@@ -1199,9 +1231,16 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			tmp = tmp & ~bitmask;	/*clears top 4 bits */
 			tmp = tmp | ((tmpi-1) << bitshift);
 			dload_val = tmp;
+
+			q_data = g_new0(Output_Data, 1);
+			q_data->canID = canID;
+			q_data->page = page;
+			q_data->offset = offset;
+			q_data->value = dload_val;
+			q_data->size = MTX_U08;
 			g_hash_table_insert(interdep_vars[page],
 					GINT_TO_POINTER(offset),
-					GINT_TO_POINTER(dload_val));
+					q_data);
 
 			check_req_fuel_limits(table_num);
 			break;
@@ -1318,7 +1357,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
  */
 void update_ve_const()
 {
-	gint canID = 0;  /* <<<< BAD BAD BAD >>>> */
+	gint canID = 0;  
 	gint page = 0;
 	gint offset = 0;
 	DataSize size = MTX_U08;
@@ -1329,6 +1368,7 @@ void update_ve_const()
 	union config12 cfg12;
 	extern Firmware_Details *firmware;
 	extern volatile gboolean leaving;
+	canID = firmware->canID;
 
 	if (leaving)
 		return;

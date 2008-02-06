@@ -51,13 +51,16 @@ void set_widget_active(gpointer widget, gpointer state)
  \brief drain_hashtable() is called to send all the dat from a hashtable to
  the ECU
  \param offset (gpointer) offset in ecu_data this value goes to
- \param value (gpointer) the value to send
- \param page (gpointer) the page to send
+ \param value (gpointer) pointer to Output_Data Struct
+ \param page (gpointer) unused.
  */
 gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 {
-	Drain_Data *data = (Drain_Data *)user_data;
+	Output_Data *data = (Output_Data *)value;
 	/* called per element from the hash table to drain and send to ECU */
-	send_to_ecu(NULL, data->canID, data->page, (gint)offset,(gint)value, TRUE);
+	data->mode = MTX_SIMPLE_WRITE;
+	data->queue_update = TRUE;
+	io_cmd(IO_WRITE_DATA,data);
+//	send_to_ecu(NULL, data->canID, data->page, data->offset, data->value, TRUE);
 	return TRUE;
 }

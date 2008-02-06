@@ -523,8 +523,6 @@ void *thread_dispatcher(gpointer data)
  \param offset (gint) offset from the beginning of the page that this data
  refers to.
  \param value (gint) the value that should be sent to the ECU At page.offset
- for being an MSnEDIS/MSnSpark ignition variable (alternate command for 
- sending the data to the ECU.)
  \param queue_update (gboolean), if true queues a gui update, used to prevent
  a horrible stall when doing an ECU restore or batch load...
  */

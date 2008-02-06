@@ -795,14 +795,4 @@ struct _CmdLineArgs
 };
 
 
-/*!
- * \brief _Drain_Data struct is a container to hold the extra params for the
- * hash table data drainer.
- */
-struct _Drain_Data
-{
-	gint page;	
-	gint canID;
-};
-
 #endif

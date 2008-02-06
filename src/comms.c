@@ -287,7 +287,19 @@ void writeto_ecu(Io_Message *message)
 
 	if (output->mode == MTX_SIMPLE_WRITE)
 	{
-		if ((value > 255) && (value < 65536))
+		if ((value > 65536))
+		{
+			count = 5;
+			lbuff = g_new0(char,count);
+			lbuff[0]=offset;
+			lbuff[1]=(value & 0xff000000) >> 24; // Highbyte
+			lbuff[2]=(value & 0xff0000) >> 16;	// Secondhigh
+			lbuff[3]=(value & 0xff00) >> 8; // secondlow
+			lbuff[4]=value & 0x00ff;	// Lowbyte
+			if (dbg_lvl & SERIAL_WR)
+				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 32 bit value to ECU\n"));
+		}
+		else if ((value > 255) && (value < 65536))
 		{
 			count = 3;
 			lbuff = g_new0(char,count);
