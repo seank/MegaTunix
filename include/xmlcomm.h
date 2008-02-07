@@ -29,6 +29,10 @@ void load_potential_args(PotentialArg *, xmlNode *);
 void process_commands_section(GHashTable *, xmlNode *);
 void load_command_args(Command *, xmlNode *);
 
+void load_command_section(Command *, xmlNode *);
+void load_cmd_arguments(Command *, xmlNode *);
+void load_arg_attrs(PotentialArg *, xmlNode *);
+
 
 
 /* Prototypes */

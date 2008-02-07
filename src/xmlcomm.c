@@ -137,7 +137,7 @@ void process_commands_section(GHashTable *commands_hash, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"cmd") == 0)
 			{
 				cmd = g_new0(Command, 1);
-				load_command_args(cmd, cur_node);
+				load_command_section(cmd, cur_node);
 				g_hash_table_insert(commands_hash,g_strdup(cmd->name),cmd);
 			}
 		}
@@ -181,14 +181,14 @@ void load_potential_args(PotentialArg *arg, xmlNode *node)
 }
 
 
-void load_command_args(Command *cmd, xmlNode *node)
+void load_command_section(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar *tmpbuf = NULL;
 
 	if (!node->children)
 	{
-		printf("ERROR, load_command_args, xml node is empty!!\n");
+		printf("ERROR, load_command_section, xml node is empty!!\n");
 		return;
 	}
 	cur_node = node->children;
@@ -207,10 +207,73 @@ void load_command_args(Command *cmd, xmlNode *node)
 				load_string_from_xml(cur_node,&tmpbuf);
 				cmd->type = translate_string(tmpbuf);
 			}
+			if (g_strcasecmp((gchar *)cur_node->name,"arguments") == 0)
+				load_cmd_arguments(cmd,cur_node);
 
 		}
 		cur_node = cur_node->next;
 
 	}
 }
+
+
+void load_cmd_arguments(Command *cmd, xmlNode *node)
+{
+	xmlNode *cur_node = NULL;
+	cmd->arg_sequence = g_array_new(FALSE,TRUE,sizeof(PotentialArg *));
+	PotentialArg *arg = NULL;
+
+	arg = g_new0(PotentialArg, 1);
+
+	if (!node->children)
+	{
+		printf("ERROR, load_cmd_arguments, xml node is empty!!\n");
+		return;
+	}
+	cur_node = node->children;
+	while (cur_node->next)
+	{
+		if (cur_node->type == XML_ELEMENT_NODE)
+		{
+			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
+			{
+				load_string_from_xml(cur_node,&arg->name);
+				if (cur_node->children)
+					load_arg_attrs(arg,cur_node);
+			}
+		}
+		cur_node = cur_node->next;
+	}
+	g_array_append_val(cmd->arg_sequence,arg);
+}
+
+
+void load_arg_attrs(PotentialArg *arg, xmlNode *node)
+{
+	xmlNode *cur_node = NULL;
+	gchar *tmpbuf = NULL;
+
+	if (!node->children)
+	{
+		printf("ERROR, load_arg_attrs, xml node is empty!!\n");
+		return;
+	}
+	cur_node = node->children;
+	while (cur_node->next)
+	{
+		if (cur_node->type == XML_ELEMENT_NODE)
+		{
+			if (g_strcasecmp((gchar *)cur_node->name,"count") == 0)
+				load_integer_from_xml(cur_node,&arg->count);
+			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
+			{
+				load_string_from_xml(cur_node,&tmpbuf);
+				arg->size = translate_string(tmpbuf);
+			}
+		}
+		cur_node = cur_node->next;
+	}
+}
+
+
 

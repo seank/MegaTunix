@@ -805,6 +805,7 @@ struct _PotentialArg
 	gchar *name;		/* Potential arg name */
 	gchar *desc;		/* Description */
 	gchar *internal_name;	/* Internal name used for linking */
+	gint count;		/* Number of elements to xfer */
 	DataSize size;		/* Size of data */
 };
 
@@ -820,7 +821,8 @@ struct _Command
 	gchar *desc;		/* Command Description */
 	gchar *base;		/* Base command charactor(s) */
 	CmdType type;		/* Command type enumeration */
-	GArray *arguments;	/* Argument list array of PotentialArgs */
+	GArray *arg_sequence;	/* Argument list array of PotentialArgs */
 };
+
 
 #endif
