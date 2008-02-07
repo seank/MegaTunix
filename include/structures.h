@@ -13,7 +13,6 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
-/* Constants/Enrichments Gui Adjustment Structures */
 
 #ifndef __STRUCTURES_H__
 #define __STRUCTURES_H__
@@ -58,7 +57,8 @@ typedef struct _TTMon_Data TTMon_Data;
 typedef struct _MultiExpr MultiExpr;
 typedef struct _MultiSource MultiSource;
 typedef struct _CmdLineArgs CmdLineArgs;
-typedef struct _Drain_Data Drain_Data;
+typedef struct _PotentialArg PotentialArg;
+typedef struct _Command Command;
 
 /*! 
  \brief _Serial_Params holds all variables related to the state of the serial
@@ -795,5 +795,32 @@ struct _CmdLineArgs
 	gchar *autolog_basename;/* Autolog base filename */
 };
 
+
+/*!
+ * \brief _PotentialArgs struct holds information read from the 
+ * communications XML, one PotentialArg per command
+ */
+struct _PotentialArg
+{
+	gchar *name;		/* Potential arg name */
+	gchar *desc;		/* Description */
+	gchar *internal_name;	/* Internal name used for linking */
+	DataSize size;		/* Size of data */
+};
+
+
+/*!
+ * \brief _Command struct holds information read from the 
+ * communications XML, describing each possible command. Their names
+ * are used as internal keys to link firmware stuf to the XML definitions.
+ */
+struct _Command
+{
+	gchar *name;		/* Command Name */
+	gchar *desc;		/* Command Description */
+	gchar *base;		/* Base command charactor(s) */
+	CmdType type;		/* Command type enumeration */
+	GArray *arguments;	/* Argument list array of PotentialArgs */
+};
 
 #endif

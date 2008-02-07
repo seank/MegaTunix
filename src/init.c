@@ -71,6 +71,8 @@ gboolean *tracking_focus = NULL;
 void init(void)
 {
 	/* defaults */
+	GHashTable *table = NULL;
+	GHashTable *commands = NULL;
 	gboolean *hidden_list = NULL;
 	gint i = 0;
 
@@ -91,6 +93,10 @@ void init(void)
 	g_object_set_data(global_data,"main_y_origin",GINT_TO_POINTER(120));
 	g_object_set_data(global_data,"hidden_list",hidden_list);
 	g_object_set_data(global_data,"baudrate",GINT_TO_POINTER(9600));
+	table = g_hash_table_new(g_str_hash,g_str_equal);
+	g_object_set_data(global_data,"potential_arguments",table);
+	commands = g_hash_table_new(g_str_hash,g_str_equal);
+	g_object_set_data(global_data,"commands_hash",commands);
 
 	/* initialize all global variables to known states */
 #ifdef __WIN32__

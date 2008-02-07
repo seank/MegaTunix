@@ -69,7 +69,9 @@ headers = \
 	visibility.h \
 	warmwizard_gui.h \
 	widgetmgmt.h \
-	winserialio.h 
+	winserialio.h \
+	xmlbase.h \
+	xmlcomm.h 
 
 
 EXTRA_DIST=$(headers)

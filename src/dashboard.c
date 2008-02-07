@@ -25,6 +25,7 @@
 #include <rtv_processor.h>
 #include <structures.h>
 #include <widgetmgmt.h>
+#include <xmlbase.h>
 
 
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
@@ -297,40 +298,6 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 		g_free(xml_name);
 		g_free(datasource);
 	}
-
-}
-
-void load_integer_from_xml(xmlNode *node, gint *dest)
-{
-	if (!node->children)
-	{
-		printf("ERROR, load_integer_from_xml, xml node is empty!!\n");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-	*dest = (gint)g_ascii_strtod((gchar*)node->children->content,NULL);
-
-}
-
-void load_string_from_xml(xmlNode *node, gchar **dest)
-{
-	if (!node->children) /* EMPTY node, thus, clear the var on the gauge */
-	{
-		if (*dest)
-			g_free(*dest);
-		*dest = g_strdup("");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-
-	if (*dest)
-		g_free(*dest);
-	if (node->children->content)
-		*dest = g_strdup((gchar*)node->children->content);
-	else
-		*dest = g_strdup("");
 
 }
 

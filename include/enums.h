@@ -246,6 +246,8 @@ typedef enum
 	WRITE_CMD,
 	NULL_CMD,
 	INTERROGATION,
+	SILENT,
+	NOISY,
 }CmdType;
 
 typedef enum
