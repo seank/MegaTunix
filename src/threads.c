@@ -500,6 +500,8 @@ void *thread_dispatcher(gpointer data)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tnull_command requested\n"));
 				break;
 
+			default:
+				break;
 
 		}
 		/* Send rest of message back up to main context for gui
