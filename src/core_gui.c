@@ -295,15 +295,15 @@ void finalize_core_gui(GladeXML * xml)
 	widget = glade_xml_get_widget(xml,"active_port_entry");
 	register_widget("active_port_entry",widget);
 
-	/* Active COMM Port label */
-	widget = glade_xml_get_widget(xml,"active_port_label");
-	register_widget("active_port_label",widget);
-
 	/* Autodetect Checkbutton */
 	widget = glade_xml_get_widget(xml,"serial_autodetect_cbutton");
 	register_widget("serial_autodetect_cbutton",widget);
 	g_object_set_data(G_OBJECT(widget),"handler",GINT_TO_POINTER(COMM_AUTODETECT));
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(widget),(gboolean)g_object_get_data(G_OBJECT(global_data),"autodetect_port"));
+
+	/* Fill in comm port entry if in manual mode */
+	if (!(gboolean)g_object_get_data(G_OBJECT(global_data),"autodetect_port"))
+		gtk_entry_set_text(GTK_ENTRY(glade_xml_get_widget(xml,"active_port_entry")),g_object_get_data(G_OBJECT(global_data),"override_port"));
 
 	/* COMMS Tab Read delay subtable */
 	ebox = glade_xml_get_widget(xml,"read_delay_ebox");

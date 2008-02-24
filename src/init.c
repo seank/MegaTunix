@@ -99,11 +99,13 @@ void init(void)
 	g_object_set_data(global_data,"commands_hash",commands);
 
 	/* initialize all global variables to known states */
+	g_object_set_data(G_OBJECT(global_data),"autodetect_port",GINT_TO_POINTER(TRUE));
+	g_free(g_object_get_data(G_OBJECT(global_data),"potential_ports"));
 #ifdef __WIN32__
-	g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup("COM1"));
+	g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup("COM1"));
 	g_object_set_data(G_OBJECT(global_data),"potential_ports",g_strdup("COM1,COM2,COM3,COM4,COM5,COM6,COM7,COM8,COM9"));
 #else
-	g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup("/dev/ttyS0"));
+	g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup("/dev/ttyS0"));
 	 g_object_set_data(G_OBJECT(global_data),"potential_ports", g_strdup("/dev/ttyUSB0,/dev/ttyS0,/dev/ttyUSB1,/dev/ttyS1,/dev/ttyUSB2,/dev/ttyS2,/dev/ttyUSB3,/dev/ttyS3,/tmp/virtual-serial"));
 #endif
 	serial_params->fd = 0; /* serial port file-descriptor */
@@ -164,7 +166,10 @@ gboolean read_config(void)
 		cfg_read_int(cfgfile, "Global", "Temp_Scale", &temp_units);
 		cfg_read_int(cfgfile, "Global", "dbg_lvl", &dbg_lvl);
 		if (cfg_read_string(cfgfile, "Dashboards", "dash_1_name", &tmpbuf))
+		{
+			g_free(g_object_get_data(global_data,"dash_1_name"));
 			g_object_set_data(global_data,"dash_1_name",g_strdup(tmpbuf));
+		}
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_1_x_origin", &tmpi))
 			g_object_set_data(global_data,"dash_1_x_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_1_y_origin", &tmpi))
@@ -172,7 +177,10 @@ gboolean read_config(void)
 		if (cfg_read_float(cfgfile, "Dashboards", "dash_1_size_ratio", &tmpf))
 			g_object_set_data(global_data,"dash_1_size_ratio",g_memdup(&tmpf,sizeof(gfloat)));
 		if (cfg_read_string(cfgfile, "Dashboards", "dash_2_name", &tmpbuf))
+		{
+			g_free(g_object_get_data(global_data,"dash_2_name"));
 			g_object_set_data(global_data,"dash_2_name",g_strdup(tmpbuf));
+		}
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_2_x_origin", &tmpi))
 			g_object_set_data(global_data,"dash_2_x_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_2_y_origin", &tmpi))
@@ -214,23 +222,15 @@ gboolean read_config(void)
 			g_free(tmpbuf);
 		}
 
-		if(cfg_read_string(cfgfile, "Serial", "port_name", &tmpbuf))
-		{
-			/* Handle the case where it's already defined,  
-			 * but we have a user override.  Prevents a memory
-			 * leak.
-			 */
-			g_object_set_data(G_OBJECT(global_data),"default_serial_port",g_strdup(tmpbuf));
-			g_free(tmpbuf);
-		}
-				
 		if (cfg_read_string(cfgfile, "Serial", "potential_ports", &tmpbuf))
 		{
+			g_free(g_object_get_data(G_OBJECT(global_data),"potential_ports"));
 			g_object_set_data(G_OBJECT(global_data),"potential_ports",g_strdup(tmpbuf));
 			g_free(tmpbuf);
 		}
 		if (cfg_read_string(cfgfile, "Serial", "override_port", &tmpbuf))
 		{
+			g_free(g_object_get_data(G_OBJECT(global_data),"override_port"));
 			g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup(tmpbuf));
 			g_free(tmpbuf);
 		}
@@ -434,12 +434,10 @@ void save_config(void)
 	}
 	cfg_write_int(cfgfile, "DataLogger", "preferred_delimiter", preferred_delimiter);
 	if (serial_params->port_name)
-		cfg_write_string(cfgfile, "Serial", "port_name", 
+		cfg_write_string(cfgfile, "Serial", "override_port", 
 				serial_params->port_name);
 	cfg_write_string(cfgfile, "Serial", "potential_ports", 
 				(gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports"));
-	cfg_write_string(cfgfile, "Serial", "override_port", 
-				(gchar *)g_object_get_data(G_OBJECT(global_data),"override_port"));
 	cfg_write_boolean(cfgfile, "Serial", "autodetect_port", 
 				(gboolean)g_object_get_data(G_OBJECT(global_data),"autodetect_port"));
 	cfg_write_int(cfgfile, "Serial", "read_wait", 

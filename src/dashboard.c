@@ -114,6 +114,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	/* Store global info about this dash */
 	prefix = g_strdup_printf("dash_%i",(gint)data);
 	key = g_strdup_printf("%s_name",prefix);
+	g_free(g_object_get_data(global_data,key));
 	g_object_set_data(global_data,key, g_strdup(filename));
 	g_free(key);
 	/* retrieve coord info from global store */
@@ -290,6 +291,7 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 		mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),filename);
 		gtk_widget_set_size_request(gauge,width,height);
 		g_free(filename);
+		g_free(g_object_get_data(G_OBJECT(gauge),"datasource"));
 		g_object_set_data(G_OBJECT(gauge),"datasource",g_strdup(datasource));
 		g_object_set_data(G_OBJECT(gauge),"orig_width",GINT_TO_POINTER(width));
 		g_object_set_data(G_OBJECT(gauge),"orig_height",GINT_TO_POINTER(height));
@@ -666,7 +668,6 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 {
 	extern GHashTable *dash_gauges;
 	GtkWidget *label = NULL;
-	gchar *tmpbuf = NULL;
 	extern GObject *global_data;
 
 	if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
@@ -677,23 +678,9 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 	{
 		gtk_label_set_text(GTK_LABEL(label),"Choose a Dashboard File");
 		if ((gint)data == 1)
-		{
-			tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
-			if (tmpbuf)
-			{
-				g_free(tmpbuf);
-				g_object_set_data(global_data,"dash_1_name",NULL);
-			}
-		}
+			g_free(g_object_get_data(global_data,"dash_1_name"));
 		if ((gint)data == 2)
-		{
-			tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
-			if (tmpbuf)
-			{
-				g_free(tmpbuf);
-				g_object_set_data(global_data,"dash_2_name",NULL);
-			}
-		}
+			g_free(g_object_get_data(global_data,"dash_2_name"));
 	}
 	if (dash_gauges)
 		g_hash_table_foreach_remove(dash_gauges,remove_dashcluster,data);
@@ -747,6 +734,7 @@ EXPORT void create_gauge(GtkWidget *widget)
 		mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),filename);
 		g_free(filename);
 	}
+	g_free(g_object_get_data(G_OBJECT(gauge),"datasource"));
 	g_object_set_data(G_OBJECT(gauge),"datasource",g_object_get_data(G_OBJECT(widget),"datasource"));
 	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
 	table_num = (gint)g_ascii_strtod(tmpbuf,NULL);

@@ -161,7 +161,6 @@ void toggle_serial_control_lines()
  */
 void setup_serial_params(gint baudrate)
 {
-	guint baud = 0;
 	if (serial_params->open == FALSE)
 		return;
 	//printf("setup_serial_params entered\n");
@@ -169,6 +168,7 @@ void setup_serial_params(gint baudrate)
 #ifdef __WIN32__
 	win32_setup_serial_params(baudrate);
 #else
+	guint baud = 0;
 	/* Save serial port status */
 	tcgetattr(serial_params->fd,&serial_params->oldtio);
 
@@ -357,33 +357,34 @@ void *serial_repair_thread(gpointer data)
 			{
 				//printf("File %s, doesn't exist\n",vector[i]);
 
-				//Wait 100 ms to avoid deadlocking
-				usleep(100000);
+				//Wait 250 ms to avoid deadlocking
+				g_usleep(250000);
 				continue;
 			}
+			g_usleep(250000);
 			if (open_serial(vector[i]))
 			{
 				setup_serial_params(9600);
-				if (!comms_test())
-				{
-					setup_serial_params(115200);
-					if (!comms_test())
-					{  
-						close_serial();
-						usleep(10000);
-						continue;
-					}
-					else
-					{	/* We have a winner !!  Abort loop */
-						serial_is_open = TRUE;
-						break;
-					}
-
-				}
-				else
+				if (comms_test())
 				{	/* We have a winner !!  Abort loop */
 					serial_is_open = TRUE;
 					break;
+				}
+				else
+				{
+					setup_serial_params(115200);
+					if (comms_test())
+					{	/* We have a winner !!  
+						   Abort loop */
+						serial_is_open = TRUE;
+						break;
+					}
+					else
+					{  
+						close_serial();
+						g_usleep(250000);
+						continue;
+					}
 				}
 			}
 		}

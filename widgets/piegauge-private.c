@@ -233,8 +233,6 @@ void gdk_update_pie_gauge_position (MtxPieGauge *gauge)
 {
 #ifndef HAVE_CAIRO
 	GtkWidget *widget = NULL;
-	gfloat xc = 0.0;
-	gfloat yc = 0.0;
 	gfloat tmpf = 0.0;
 	gfloat needle_pos = 0.0;
 	gchar * message = NULL;

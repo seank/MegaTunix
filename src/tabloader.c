@@ -459,6 +459,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	{
 		return;
 	}
+	g_free(g_object_get_data(G_OBJECT(widget),"name"));
 	g_object_set_data(G_OBJECT(widget),"name",g_strdup(section));
 	if(cfg_read_string(cfgfile,section,"keys",&tmpbuf))
 	{

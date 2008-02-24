@@ -35,7 +35,7 @@ void win32_open_comm_port()
  \brief win32_setup_serial_params() sets up the serial port attributes for win32
  by setting things basically for 8N1, no flow, no escapes, etc....
  */
-void win32_setup_serial_params(gint baudrate)
+void win32_setup_serial_params(gint baud)
 {
 #ifdef __WIN32__
 	DCB dcb;
@@ -50,9 +50,9 @@ void win32_setup_serial_params(gint baudrate)
 	/* Populate struct with defaults from windows */
 	GetCommState((HANDLE) _get_osfhandle(serial_params->fd), &dcb);
 
-	if (baudrate == 9600)
+	if (baud == 9600)
 		dcb.BaudRate = CBR_9600;
-	else if (baudrate == 115200)
+	else if (baud == 115200)
 		dcb.BaudRate = CBR_115200;
 	dcb.ByteSize = 8;
 	dcb.Parity   = NOPARITY;        // NOPARITY and friends are
@@ -97,9 +97,10 @@ void win32_setup_serial_params(gint baudrate)
  tries to toggle the hardware control lines for users of Bluetooth devices 
  when the loose a link.  This function is subject to removal.
  */
+#ifdef __WIN32__
+/*
 void win32_toggle_serial_control_lines()
 {
-#ifdef __WIN32__
 	DCB olddcb;
 	DCB dcb;
 	COMMTIMEOUTS timeouts;
@@ -113,7 +114,7 @@ void win32_toggle_serial_control_lines()
 	olddcb.DCBlength = sizeof(dcb);
 	dcb.DCBlength = sizeof(dcb);
 
-	/* Populate struct with defaults from windows */
+	// Populate struct with defaults from windows 
 	GetCommState((HANDLE) _get_osfhandle(serial_params->fd), &olddcb);
 	memcpy (&dcb, &olddcb, sizeof(dcb));
 
@@ -143,7 +144,7 @@ void win32_toggle_serial_control_lines()
 			dbg_func(g_strdup(__FILE__": win32_setup_serial_params()\n\tERROR setting serial attributes\n"));
 	}
 
-	/* Set timeout params in a fashion that mimics linux behavior */
+	// Set timeout params in a fashion that mimics linux behavior 
 	timeouts.ReadIntervalTimeout         = 0;
 	timeouts.ReadTotalTimeoutConstant    = 100;
 	timeouts.ReadTotalTimeoutMultiplier  = 0;
@@ -151,7 +152,7 @@ void win32_toggle_serial_control_lines()
 	timeouts.WriteTotalTimeoutConstant   = 0;
 	SetCommTimeouts((HANDLE) _get_osfhandle (serial_params->fd) ,&timeouts);
 
-	Sleep (500); /* wait half second */
+	Sleep (500); // wait half second 
 	// Set the port properties back to megatunix defaults
 	if(SetCommState((HANDLE) _get_osfhandle (serial_params->fd) ,&olddcb) == 0)
 	{
@@ -159,14 +160,15 @@ void win32_toggle_serial_control_lines()
 			dbg_func(g_strdup(__FILE__": win32_setup_serial_params()\n\tERROR setting serial attributes\n"));
 	}
 
-	Sleep (10000); /* wait 5 seconds for device to relink */
+	Sleep (5000); // wait 5 seconds for device to relink 
 	return;
-#endif
 }
+*/
+#endif
 
 
 /*!
- \brief win32_fluch_serial() is used to flush the serial port.  It effectively
+ \brief win32_flush_serial() is used to flush the serial port.  It effectively
  does the same thing as "tcflush()". and a wrapper function is used to call
  this or tcflush depending what OS we are compiled for.
  \param fd (integer) filedescriptor to flush

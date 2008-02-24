@@ -225,6 +225,7 @@ gboolean comm_port_override(GtkEditable *editable)
 
 	port = gtk_editable_get_chars(editable,0,-1);
 	gtk_widget_modify_text(GTK_WIDGET(editable),GTK_STATE_NORMAL,&black);
+	g_free(g_object_get_data(G_OBJECT(global_data),"override_port"));
 	g_object_set_data(G_OBJECT(global_data),"override_port",g_strdup(port));
 	g_free(port);
 	return TRUE;
@@ -352,6 +353,7 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 			case COMM_AUTODETECT:
 				g_object_set_data(G_OBJECT(global_data),"autodetect_port", GINT_TO_POINTER(FALSE));
 				gtk_entry_set_editable(GTK_ENTRY(g_hash_table_lookup(dynamic_widgets,"active_port_entry")),TRUE);
+				gtk_entry_set_text(GTK_ENTRY(g_hash_table_lookup(dynamic_widgets,"active_port_entry")),g_object_get_data(G_OBJECT(global_data),"override_port"));
 				toggle_groups_linked(widget,FALSE);
 				break;
 			case TRACKING_FOCUS:

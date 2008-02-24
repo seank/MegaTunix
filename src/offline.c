@@ -220,6 +220,7 @@ gchar * present_firmware_choices()
 			g_free(tmpbuf);
 			gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,TRUE,0);
 			button = gtk_radio_button_new(group);
+			g_free(g_object_get_data(G_OBJECT(button),"filename"));
 			g_object_set_data(G_OBJECT(button),"filename",g_strdup(filenames[i]));
 			g_object_set_data(G_OBJECT(button),"handler",
 					GINT_TO_POINTER(OFFLINE_FIRMWARE_CHOICE));
@@ -270,6 +271,7 @@ gchar * present_firmware_choices()
 			g_free(tmpbuf);
 			gtk_box_pack_start(GTK_BOX(hbox),label,FALSE,TRUE,0);
 			button = gtk_radio_button_new(group);
+			g_free(g_object_get_data(G_OBJECT(button),"filename"));
 			g_object_set_data(G_OBJECT(button),"filename",g_strdup(filenames[i]));
 			g_object_set_data(G_OBJECT(button),"handler",
 					GINT_TO_POINTER(OFFLINE_FIRMWARE_CHOICE));

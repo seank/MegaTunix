@@ -192,6 +192,7 @@ read_again:
 			// ATTEMPTED FIX FOR GLIB 2.10
 			array = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
 			g_object_set_data(G_OBJECT(object),"data_array",(gpointer)array);
+			g_free(g_object_get_data(G_OBJECT(object),"lview_name"));
 			g_object_set_data(G_OBJECT(object),"lview_name",g_strdup(g_strstrip(fields[i])));
 			g_array_append_val(log_info->log_list,object);
 		}

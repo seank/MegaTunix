@@ -453,6 +453,7 @@ void gdk_update_gauge_position (MtxGaugeFace *gauge)
 	gchar * message = NULL;
 	gchar * tmpbuf = NULL;
 	gint lwidth = 0;
+	gfloat val = 0.0;
 	MtxAlertRange* range = NULL;
 	PangoRectangle logical_rect;
 
