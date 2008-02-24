@@ -12,6 +12,7 @@
  */
 
 #include <config.h>
+#include <xmlbase.h>
 #include <dashboard.h>
 #include <debugging.h>
 #include <defines.h>
@@ -25,7 +26,6 @@
 #include <rtv_processor.h>
 #include <structures.h>
 #include <widgetmgmt.h>
-#include <xmlbase.h>
 
 
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
@@ -228,9 +228,9 @@ void load_geometry(GtkWidget *dash, xmlNode *node)
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"width") == 0)
-				load_integer_from_xml(cur_node,&width);
+				generic_xml_gint_import(cur_node,&width);
 			if (g_strcasecmp((gchar *)cur_node->name,"height") == 0)
-				load_integer_from_xml(cur_node,&height);
+				generic_xml_gint_import(cur_node,&height);
 		}
 		cur_node = cur_node->next;
 
@@ -267,17 +267,17 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 	while (cur_node->next) { if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"width") == 0)
-				load_integer_from_xml(cur_node,&width);
+				generic_xml_gint_import(cur_node,&width);
 			if (g_strcasecmp((gchar *)cur_node->name,"height") == 0)
-				load_integer_from_xml(cur_node,&height);
+				generic_xml_gint_import(cur_node,&height);
 			if (g_strcasecmp((gchar *)cur_node->name,"x_offset") == 0)
-				load_integer_from_xml(cur_node,&x_offset);
+				generic_xml_gint_import(cur_node,&x_offset);
 			if (g_strcasecmp((gchar *)cur_node->name,"y_offset") == 0)
-				load_integer_from_xml(cur_node,&y_offset);
+				generic_xml_gint_import(cur_node,&y_offset);
 			if (g_strcasecmp((gchar *)cur_node->name,"gauge_xml_name") == 0)
-				load_string_from_xml(cur_node,&xml_name);
+				generic_xml_gchar_import(cur_node,&xml_name);
 			if (g_strcasecmp((gchar *)cur_node->name,"datasource") == 0)
-				load_string_from_xml(cur_node,&datasource);
+				generic_xml_gchar_import(cur_node,&datasource);
 		}
 		cur_node = cur_node->next;
 

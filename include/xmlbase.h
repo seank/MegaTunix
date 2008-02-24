@@ -11,8 +11,8 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
-#ifndef __DASHBOARD_H__
-#define __DASHBOARD_H__
+#ifndef __XMLBASE_H__
+#define __XMLBASE_H__
 
 #include <defines.h>
 #include <gtk/gtk.h>
@@ -21,8 +21,18 @@
 
 
 /* Prototypes */
-void load_integer_from_xml(xmlNode *, gint *);
-void load_string_from_xml(xmlNode *, gchar **);
+
+// import funcs
+void generic_xml_gint_import(xmlNode *, gpointer);
+void generic_xml_gchar_import(xmlNode *, gpointer);
+void generic_xml_gfloat_import(xmlNode *, gpointer);
+void generic_xml_color_import(xmlNode *, gpointer);
+
+// export funcs
+void generic_xml_gint_export(xmlNode *, gchar *, gint *);
+void generic_xml_gchar_export(xmlNode *, gchar *, gchar **);
+void generic_xml_gfloat_export(xmlNode *, gchar *, gfloat *);
+void generic_xml_color_export(xmlNode *, gchar *, GdkColor *);
 /* Prototypes */
 
 #endif

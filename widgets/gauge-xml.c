@@ -18,6 +18,7 @@
 #include <getfiles.h>
 #include <gauge-private.h>
 #include <stdio.h>
+#include <xmlbase.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
@@ -200,80 +201,23 @@ void mtx_gauge_face_export_xml(MtxGaugeFace * gauge, gchar * filename)
 
 void mtx_gauge_color_import(MtxGaugeFace *gauge,xmlNode *node,gpointer dest)
 {
-	xmlNode *cur_node = NULL;
-	GdkColor *color = NULL;
-
-	if (!node->children)
-	{
-		printf("ERROR, mtx_gauge_color_import, xml node is empty!!\n");
-		return;
-	}
-	color = (GdkColor *)dest;
-	cur_node = node->children;
-	while (cur_node->next)
-	{
-		if (cur_node->type == XML_ELEMENT_NODE)
-		{
-		 if (g_strcasecmp((gchar *)cur_node->name,"red") == 0)
-			 mtx_gauge_gint_import(gauge,cur_node,&color->red);
-		 if (g_strcasecmp((gchar *)cur_node->name,"green") == 0)
-			 mtx_gauge_gint_import(gauge,cur_node,&color->green);
-		 if (g_strcasecmp((gchar *)cur_node->name,"blue") == 0)
-			 mtx_gauge_gint_import(gauge,cur_node,&color->blue);
-		}
-		cur_node = cur_node->next;
-	}
+	generic_xml_color_import(node,dest);
 }
 
 
 void mtx_gauge_gfloat_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
-	if (!node->children)
-	{
-		printf("ERROR, mtx_gauge_gfloat_import, xml node is empty!!\n");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-	gfloat * var = NULL;
-	var = dest;
-	*var = g_ascii_strtod((gchar*)node->children->content,NULL);
+	generic_xml_gfloat_import(node,dest);
 }
 
 void mtx_gauge_gint_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
-	if (!node->children)
-	{
-		printf("ERROR, mtx_gauge_gint_import, xml node is empty!!\n");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-	gint * var = NULL;
-	var = dest;
-	*var = (gint)g_ascii_strtod((gchar*)node->children->content,NULL);
+	generic_xml_gint_import(node,dest);
 }
 
 void mtx_gauge_gchar_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
-	gchar ** var = (gchar **)dest;
-	if (!node->children) /* EMPTY node, thus, clear the var on the gauge */
-	{
-		if (*var)
-			g_free(*var);
-		*var = g_strdup("");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-
-	if (*var)
-		g_free(*var);
-	if (node->children->content)
-		*var = g_strdup((gchar*)node->children->content);
-	else
-		*var = g_strdup("");
-
+	generic_xml_gchar_import(node,dest);
 }
 
 
@@ -644,7 +588,6 @@ void mtx_gauge_color_range_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxColorRange *range = NULL;
 	xmlNodePtr node = NULL;
-	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->c_ranges->len;i++)
 	{
@@ -667,13 +610,7 @@ void mtx_gauge_color_range_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
-		generic_color_export(child,&range->color);
-/*		tmpbuf = g_strdup_printf("%i %i %i", 
-				range->color.red, 
-				range->color.green, 
-				range->color.blue); 
-*/
+		generic_xml_color_export(node,"color",&range->color);
 
 	}
 }
@@ -685,7 +622,6 @@ void mtx_gauge_alert_range_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxAlertRange *range = NULL;
 	xmlNodePtr node = NULL;
-	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->a_ranges->len;i++)
 	{
@@ -708,8 +644,7 @@ void mtx_gauge_alert_range_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
-		generic_color_export(child,&range->color);
+		generic_xml_color_export(node,"color",&range->color);
 	}
 }
 
@@ -720,7 +655,6 @@ void mtx_gauge_text_block_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxTextBlock *tblock = NULL;
 	xmlNodePtr node = NULL;
-	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->t_blocks->len;i++)
 	{
@@ -747,8 +681,7 @@ void mtx_gauge_text_block_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "y_pos",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
-		generic_color_export(child,&tblock->color);
+		generic_xml_color_export(node,"color",&tblock->color);
 	}
 }
 
@@ -759,7 +692,6 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxTickGroup *tgroup = NULL;
 	xmlNodePtr node = NULL;
-	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->tick_groups->len;i++)
 	{
@@ -782,15 +714,13 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "text_inset",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "text_color",NULL);
-		generic_color_export(child,&tgroup->text_color);
+		generic_xml_color_export(node,"text_color",&tgroup->text_color);
 
 		tmpbuf = g_strdup_printf("%i",tgroup->num_maj_ticks);
 		xmlNewChild(node, NULL, BAD_CAST "num_maj_ticks",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "maj_tick_color",NULL);
-		generic_color_export(child,&tgroup->maj_tick_color);
+		generic_xml_color_export(node,"maj_tick_color",&tgroup->maj_tick_color);
 
 		tmpbuf = g_strdup_printf("%f",tgroup->maj_tick_inset);
 		xmlNewChild(node, NULL, BAD_CAST "maj_tick_inset",
@@ -808,8 +738,7 @@ void mtx_gauge_tick_group_export(MtxDispatchHelper * helper)
 		xmlNewChild(node, NULL, BAD_CAST "num_min_ticks",
 				BAD_CAST tmpbuf);
 		g_free(tmpbuf);
-		child = xmlNewChild(node, NULL, BAD_CAST "min_tick_color",NULL);
-		generic_color_export(child,&tgroup->min_tick_color);
+		generic_xml_color_export(node,"min_tick_color",&tgroup->min_tick_color);
 
 		tmpbuf = g_strdup_printf("%f",tgroup->min_tick_inset);
 		xmlNewChild(node, NULL, BAD_CAST "min_tick_inset",
@@ -969,14 +898,13 @@ void mtx_gauge_polygon_export(MtxDispatchHelper * helper)
 	gchar * tmpbuf = NULL;
 	MtxPolygon *poly = NULL;
 	xmlNodePtr node = NULL;
-	xmlNodePtr child = NULL;
 
 	for (i=0;i<helper->gauge->polygons->len;i++)
 	{
 		poly = g_array_index(helper->gauge->polygons,MtxPolygon *, i);
 		node = xmlNewChild(helper->root_node, NULL, BAD_CAST "polygon",NULL );
-		child = xmlNewChild(node, NULL, BAD_CAST "color",NULL);
-		generic_color_export(child,&poly->color);
+		generic_xml_color_export(node,"color",&poly->color);
+
 		tmpbuf = g_strdup_printf("%i",poly->filled);
 		xmlNewChild(node, NULL, BAD_CAST "filled",
 				BAD_CAST tmpbuf);
@@ -1016,57 +944,23 @@ void mtx_gauge_polygon_export(MtxDispatchHelper * helper)
 
 void mtx_gauge_color_export(MtxDispatchHelper * helper)
 {
-	xmlNodePtr node = NULL;
-	GdkColor *color = helper->src;
-	node = xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,NULL);
-	generic_color_export(node,color);
-			
-}
-
-
-void generic_color_export(xmlNode *parent,GdkColor *color)
-{
-	gchar * tmpbuf =  NULL;
-	tmpbuf = g_strdup_printf("%i",color->red); 
-	xmlNewChild(parent, NULL, BAD_CAST "red",BAD_CAST tmpbuf);
-	g_free(tmpbuf);
-	tmpbuf = g_strdup_printf("%i",color->green); 
-	xmlNewChild(parent, NULL, BAD_CAST "green",BAD_CAST tmpbuf);
-	g_free(tmpbuf);
-	tmpbuf = g_strdup_printf("%i",color->blue); 
-	xmlNewChild(parent, NULL, BAD_CAST "blue",BAD_CAST tmpbuf);
-	g_free(tmpbuf);
+	generic_xml_color_export(helper->root_node,helper->element_name,helper->src);
 }
 
 
 void mtx_gauge_gfloat_export(MtxDispatchHelper * helper)
 {
-	gchar * tmpbuf = NULL;
-	gfloat *val = (gfloat *)helper->src;
-	tmpbuf = g_strdup_printf("%f",*val);
-	xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,
-			BAD_CAST tmpbuf);
-	g_free(tmpbuf);
+	generic_xml_gfloat_export(helper->root_node,helper->element_name,helper->src);
 }
 
 void mtx_gauge_gint_export(MtxDispatchHelper * helper)
 {
-	gchar * tmpbuf = NULL;
-	gint *val = (gint *)helper->src;
-	tmpbuf = g_strdup_printf("%i",*val);
-	xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,
-			BAD_CAST tmpbuf);
-	g_free(tmpbuf);
+	generic_xml_gint_export(helper->root_node,helper->element_name,helper->src);
 }
 
 void mtx_gauge_gchar_export(MtxDispatchHelper * helper)
 {
-	/* If the dat t oexport is NOT null export it otherwise export and
-	 * empty var */
-	if (*(gchar **)(helper->src))
-		xmlNewChild(helper->root_node, NULL, BAD_CAST helper->element_name,BAD_CAST *(gchar **)(helper->src));
-	else
-		return;
+	generic_xml_gchar_export(helper->root_node,helper->element_name,helper->src);
 }
 
 

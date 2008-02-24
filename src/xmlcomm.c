@@ -163,14 +163,14 @@ void load_potential_args(PotentialArg *arg, xmlNode *node)
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"name") == 0)
-				load_string_from_xml(cur_node,&arg->name);
+				generic_xml_gchar_import(cur_node,&arg->name);
 			if (g_strcasecmp((gchar *)cur_node->name,"desc") == 0)
-				load_string_from_xml(cur_node,&arg->desc);
+				generic_xml_gchar_import(cur_node,&arg->desc);
 			if (g_strcasecmp((gchar *)cur_node->name,"internal_name") == 0)
-				load_string_from_xml(cur_node,&arg->internal_name);
+				generic_xml_gchar_import(cur_node,&arg->internal_name);
 			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
 			{
-				load_string_from_xml(cur_node,&tmpbuf);
+				generic_xml_gchar_import(cur_node,&tmpbuf);
 				arg->size = translate_string(tmpbuf);
 			}
 
@@ -197,14 +197,14 @@ void load_command_section(Command *cmd, xmlNode *node)
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"name") == 0)
-				load_string_from_xml(cur_node,&cmd->name);
+				generic_xml_gchar_import(cur_node,&cmd->name);
 			if (g_strcasecmp((gchar *)cur_node->name,"desc") == 0)
-				load_string_from_xml(cur_node,&cmd->desc);
+				generic_xml_gchar_import(cur_node,&cmd->desc);
 			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
-				load_string_from_xml(cur_node,&cmd->base);
+				generic_xml_gchar_import(cur_node,&cmd->base);
 			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
 			{
-				load_string_from_xml(cur_node,&tmpbuf);
+				generic_xml_gchar_import(cur_node,&tmpbuf);
 				cmd->type = translate_string(tmpbuf);
 			}
 			if (g_strcasecmp((gchar *)cur_node->name,"arguments") == 0)
@@ -237,7 +237,7 @@ void load_cmd_arguments(Command *cmd, xmlNode *node)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
 			{
-				load_string_from_xml(cur_node,&arg->name);
+				generic_xml_gchar_import(cur_node,&arg->name);
 				if (cur_node->children)
 					load_arg_attrs(arg,cur_node);
 			}
@@ -264,10 +264,10 @@ void load_arg_attrs(PotentialArg *arg, xmlNode *node)
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"count") == 0)
-				load_integer_from_xml(cur_node,&arg->count);
+				generic_xml_gint_import(cur_node,&arg->count);
 			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
 			{
-				load_string_from_xml(cur_node,&tmpbuf);
+				generic_xml_gchar_import(cur_node,&tmpbuf);
 				arg->size = translate_string(tmpbuf);
 			}
 		}

@@ -8,6 +8,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <xml.h>
+#include <xmlbase.h>
 
 
 #if defined(LIBXML_TREE_ENABLED) && defined(LIBXML_OUTPUT_ENABLED)
@@ -102,9 +103,9 @@ void load_geometry(GtkWidget *dash, xmlNode *node)
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"width") == 0)
-				load_integer_from_xml(cur_node,&width);
+				generic_xml_gint_import(cur_node,&width);
 			if (g_strcasecmp((gchar *)cur_node->name,"height") == 0)
-				load_integer_from_xml(cur_node,&height);
+				generic_xml_gint_import(cur_node,&height);
 		}
 		cur_node = cur_node->next;
 
@@ -135,17 +136,17 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 	while (cur_node->next) { if (cur_node->type == XML_ELEMENT_NODE)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"width") == 0)
-				load_integer_from_xml(cur_node,&width);
+				generic_xml_gint_import(cur_node,&width);
 			if (g_strcasecmp((gchar *)cur_node->name,"height") == 0)
-				load_integer_from_xml(cur_node,&height);
+				generic_xml_gint_import(cur_node,&height);
 			if (g_strcasecmp((gchar *)cur_node->name,"x_offset") == 0)
-				load_integer_from_xml(cur_node,&x_offset);
+				generic_xml_gint_import(cur_node,&x_offset);
 			if (g_strcasecmp((gchar *)cur_node->name,"y_offset") == 0)
-				load_integer_from_xml(cur_node,&y_offset);
+				generic_xml_gint_import(cur_node,&y_offset);
 			if (g_strcasecmp((gchar *)cur_node->name,"gauge_xml_name") == 0)
-				load_string_from_xml(cur_node,&xml_name);
+				generic_xml_gchar_import(cur_node,&xml_name);
 			if (g_strcasecmp((gchar *)cur_node->name,"datasource") == 0)
-				load_string_from_xml(cur_node,&datasource);
+				generic_xml_gchar_import(cur_node,&datasource);
 		}
 		cur_node = cur_node->next;
 
@@ -169,39 +170,6 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 
 }
 
-void load_integer_from_xml(xmlNode *node, gint *dest)
-{
-	if (!node->children)
-	{
-		printf("ERROR, load_integer_from_xml, xml node is empty!!\n");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-	*dest = (gint)g_ascii_strtod((gchar*)node->children->content,NULL);
-
-}
-
-void load_string_from_xml(xmlNode *node, gchar **dest)
-{
-	if (!node->children) /* EMPTY node, thus, clear the var on the gauge */
-	{
-		if (*dest)
-			g_free(*dest);
-		*dest = g_strdup("");
-		return;
-	}
-	if (!(node->children->type == XML_TEXT_NODE))
-		return;
-
-	if (*dest)
-		g_free(*dest);
-	if (node->children->content)
-		*dest = g_strdup((gchar*)node->children->content);
-	else
-		*dest = g_strdup("");
-
-}
 
 void clear_dashboard(GtkWidget *widget)
 {
@@ -252,14 +220,8 @@ void export_dash_xml(gchar * filename)
 	dash = glade_xml_get_widget(main_xml,"dashboard");
 
 	node = xmlNewChild(root_node,NULL,BAD_CAST "dash_geometry", NULL);
-	//tmpbuf = g_strdup_printf("%i",gtk_widget_get_toplevel(dash)->allocation.width);
-	tmpbuf = g_strdup_printf("%i",dash->allocation.width);
-	xmlNewChild(node, NULL, BAD_CAST "width", BAD_CAST tmpbuf);
-	g_free(tmpbuf);
-	//tmpbuf = g_strdup_printf("%i",gtk_widget_get_toplevel(dash)->allocation.height);
-	tmpbuf = g_strdup_printf("%i",dash->allocation.height);
-	xmlNewChild(node, NULL, BAD_CAST "height", BAD_CAST tmpbuf);
-	g_free(tmpbuf);
+	generic_xml_gint_export(node,"width",&dash->allocation.width);
+	generic_xml_gint_export(node,"height",&dash->allocation.height);
 
 	children = GTK_FIXED(dash)->children;
 	for(i=0;i<g_list_length(GTK_FIXED(dash)->children);i++)
@@ -267,26 +229,19 @@ void export_dash_xml(gchar * filename)
 		child = g_list_nth_data(GTK_FIXED(dash)->children,i);
 		node = xmlNewChild(root_node,NULL,BAD_CAST "gauge", NULL);
 
-		tmpbuf = g_strdup_printf("%i",child->widget->allocation.width);
-		xmlNewChild(node, NULL, BAD_CAST "width", BAD_CAST tmpbuf);
-		tmpbuf = g_strdup_printf("%i",child->widget->allocation.height);
-		xmlNewChild(node, NULL, BAD_CAST "height", BAD_CAST tmpbuf);
-		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i",child->x);
-		xmlNewChild(node, NULL, BAD_CAST "x_offset", BAD_CAST tmpbuf);
-		g_free(tmpbuf);
-		tmpbuf = g_strdup_printf("%i",child->y);
-		xmlNewChild(node, NULL, BAD_CAST "y_offset", BAD_CAST tmpbuf);
-		g_free(tmpbuf);
+		generic_xml_gint_export(node,"width",&child->widget->allocation.width);
+		generic_xml_gint_export(node,"height",&child->widget->allocation.height);
+		generic_xml_gint_export(node,"x_offset",&child->x);
+		generic_xml_gint_export(node,"y_offset",&child->y);
 		tmpbuf = g_strrstr(mtx_gauge_face_get_xml_filename(MTX_GAUGE_FACE(child->widget)),"Gauges");
 		vector = g_strsplit(tmpbuf,PSEP,2);
 		
-		xmlNewChild(node, NULL, BAD_CAST "gauge_xml_name", BAD_CAST vector[1]);
+		generic_xml_gchar_export(node,"gauge_xml_name",&vector[1]);
 		g_strfreev(vector);
 		state = gtk_combo_box_get_active_iter(GTK_COMBO_BOX(g_object_get_data(G_OBJECT(child->widget),"combo")),&iter);
 		model = gtk_combo_box_get_model(GTK_COMBO_BOX(g_object_get_data(G_OBJECT(child->widget),"combo")));
 		gtk_tree_model_get(model,&iter,2,&iname,-1);
-		xmlNewChild(node, NULL, BAD_CAST "datasource", BAD_CAST iname);
+		generic_xml_gchar_export(node,"datasource",&iname);
 	}
 	xmlSaveFormatFileEnc(filename, doc, "utf-8", 1);
 

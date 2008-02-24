@@ -71,8 +71,7 @@ megatunix_SOURCES = \
 	warmwizard_gui.c \
 	widgetmgmt.c \
 	winserialio.c \
-	xmlbase.c \
-	xmlcomm.c
+	xmlcomm.c 
 
 megatunix_DEPENDENCIES = @WIN32_RESOURCES@  ../widgets/libmtxgauge.la ../mtxcommon/libmtxcommon.la ../mtxmatheval/libmtxmatheval.la
 
