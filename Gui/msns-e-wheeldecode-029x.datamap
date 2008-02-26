@@ -2,7 +2,7 @@
 description=Object data map for MSnS-Extra Wheel Decoder
 tab_name=Ignition/_Wheel
 id_prefix=WD_
-groups=defaultstriggers,trig_ret,oddfire
+groups=defaults,triggers,trig_ret,oddfire
 
 #----- Groups ----------------------------------------------------------------
 
