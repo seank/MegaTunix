@@ -1,14 +1,6 @@
 snapshotsdir = $(datadir)/MegaTunix/$(SNAPSHOTS_DATA_DIR)
 
 snapshots_files = 	\
-		BnG-2.986 \
-		MS-Projection-0.81 \
-		MSnEDIS-3.008 \
-		MSnS-E-029q+-Series \
-		MSnS-Extra-HighRes-09a \
-		MSnSpark-3.0.1 \
-		Rover-3.0.x 
-
 
 snapshots_DATA = $(snapshots_files)
 
