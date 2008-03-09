@@ -24,6 +24,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <rtv_processor.h>
+#include <string.h>
 #include <structures.h>
 #include <widgetmgmt.h>
 
@@ -602,23 +603,27 @@ void initialize_dashboards()
 	extern GHashTable *dynamic_widgets;
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_1_label");
-	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
-	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (g_ascii_strcasecmp(tmpbuf,"") != 0))
+	if (g_object_get_data(global_data,"dash_1_name") != NULL)
+		tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
+	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 	{
 		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
 		gtk_label_set_text(GTK_LABEL(label),tmpstr);
 		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(1));
+		tmpbuf = NULL;
 	}
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_2_label");
-	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
-	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (g_ascii_strcasecmp(tmpbuf,"") != 0))
+	if (g_object_get_data(global_data,"dash_2_name") != NULL)
+		tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
+	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 	{
 		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
 		gtk_label_set_text(GTK_LABEL(label),tmpstr);
 		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(2));
+		tmpbuf = NULL;
 	}
 }
 
@@ -678,9 +683,15 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 	{
 		gtk_label_set_text(GTK_LABEL(label),"Choose a Dashboard File");
 		if ((gint)data == 1)
+		{
 			g_free(g_object_get_data(global_data,"dash_1_name"));
+			g_object_set_data(global_data,"dash_1_name",NULL);
+		}
 		if ((gint)data == 2)
+		{
 			g_free(g_object_get_data(global_data,"dash_2_name"));
+			g_object_set_data(global_data,"dash_2_name",NULL);
+		}
 	}
 	if (dash_gauges)
 		g_hash_table_foreach_remove(dash_gauges,remove_dashcluster,data);

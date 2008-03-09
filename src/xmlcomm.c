@@ -26,12 +26,6 @@
 extern gint dbg_lvl;
 
 
-/*!
- \brief load_dashboard() loads the specified dashboard configuration file
- and initializes the dash.
- \param  chooser, the fileshooser that triggered the signal
- \param data, user date
- */
 void load_comm_xml(gchar *filename, gpointer data)
 {
 	//extern GObject * global_data;
@@ -173,10 +167,8 @@ void load_potential_args(PotentialArg *arg, xmlNode *node)
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				arg->size = translate_string(tmpbuf);
 			}
-
 		}
 		cur_node = cur_node->next;
-
 	}
 }
 
@@ -209,10 +201,8 @@ void load_command_section(Command *cmd, xmlNode *node)
 			}
 			if (g_strcasecmp((gchar *)cur_node->name,"arguments") == 0)
 				load_cmd_arguments(cmd,cur_node);
-
 		}
 		cur_node = cur_node->next;
-
 	}
 }
 

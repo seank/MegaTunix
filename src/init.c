@@ -165,10 +165,12 @@ gboolean read_config(void)
 		cfg_read_boolean(cfgfile, "Global", "Tooltips", &tips_in_use);
 		cfg_read_int(cfgfile, "Global", "Temp_Scale", &temp_units);
 		cfg_read_int(cfgfile, "Global", "dbg_lvl", &dbg_lvl);
-		if (cfg_read_string(cfgfile, "Dashboards", "dash_1_name", &tmpbuf))
+		cfg_read_string(cfgfile, "Dashboards", "dash_1_name", &tmpbuf);
+		if ((tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 		{
 			g_free(g_object_get_data(global_data,"dash_1_name"));
 			g_object_set_data(global_data,"dash_1_name",g_strdup(tmpbuf));
+			g_free(tmpbuf);
 		}
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_1_x_origin", &tmpi))
 			g_object_set_data(global_data,"dash_1_x_origin",GINT_TO_POINTER(tmpi));
@@ -176,10 +178,12 @@ gboolean read_config(void)
 			g_object_set_data(global_data,"dash_1_y_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_float(cfgfile, "Dashboards", "dash_1_size_ratio", &tmpf))
 			g_object_set_data(global_data,"dash_1_size_ratio",g_memdup(&tmpf,sizeof(gfloat)));
-		if (cfg_read_string(cfgfile, "Dashboards", "dash_2_name", &tmpbuf))
+		cfg_read_string(cfgfile, "Dashboards", "dash_2_name", &tmpbuf);
+		if ((tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 		{
 			g_free(g_object_get_data(global_data,"dash_2_name"));
 			g_object_set_data(global_data,"dash_2_name",g_strdup(tmpbuf));
+			g_free(tmpbuf);
 		}
 		if (cfg_read_int(cfgfile, "Dashboards", "dash_2_x_origin", &tmpi))
 			g_object_set_data(global_data,"dash_2_x_origin",GINT_TO_POINTER(tmpi));
@@ -310,8 +314,8 @@ void save_config(void)
 	cfg_write_boolean(cfgfile, "Global", "Tooltips", tips_in_use);
 	cfg_write_int(cfgfile, "Global", "Temp_Scale", temp_units);
 	cfg_write_int(cfgfile, "Global", "dbg_lvl", dbg_lvl);
-	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
-	if (tmpbuf)
+	tmpbuf = g_object_get_data(global_data,"dash_1_name");
+	if ((tmpbuf) && (strlen(tmpbuf) != 0 ))
 	{
 		cfg_write_string(cfgfile, "Dashboards", "dash_1_name", tmpbuf);
 		widget =  g_hash_table_lookup(dynamic_widgets,tmpbuf);
@@ -330,6 +334,7 @@ void save_config(void)
 				cfg_write_float(cfgfile, "Dashboards", "dash_1_size_ratio", ratio);
 			}
 		}
+		tmpbuf = NULL;
 	}
 	else
 	{
@@ -338,8 +343,8 @@ void save_config(void)
 		cfg_remove_key(cfgfile, "Dashboards", "dash_1_y_origin");
 		cfg_remove_key(cfgfile, "Dashboards", "dash_1_size_ratio");
 	}
-	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
-	if (tmpbuf)
+	tmpbuf = g_object_get_data(global_data,"dash_2_name");
+	if ((tmpbuf) && (strlen(tmpbuf) != 0 ))
 	{
 		cfg_write_string(cfgfile, "Dashboards", "dash_2_name", tmpbuf);
 		widget =  g_hash_table_lookup(dynamic_widgets,tmpbuf);
@@ -358,6 +363,7 @@ void save_config(void)
 				cfg_write_float(cfgfile, "Dashboards", "dash_2_size_ratio", ratio);
 			}
 		}
+		tmpbuf = NULL;
 	}
 	else
 	{

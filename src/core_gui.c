@@ -26,6 +26,7 @@
 #include <logo.h>
 #include <menu_handlers.h>
 #include <stdlib.h>
+#include <string.h>
 #include <structures.h>
 #include <tabloader.h>
 #include <tuning_gui.h>
@@ -199,7 +200,7 @@ void finalize_core_gui(GladeXML * xml)
 	cbutton = glade_xml_get_widget(xml,"dash1_cbutton");
 	g_signal_connect(G_OBJECT(cbutton),"toggled",G_CALLBACK(remove_dashboard),GINT_TO_POINTER(1));
 	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
-	if ((tmpbuf) && (g_ascii_strcasecmp(tmpbuf,"") !=0))
+	if ((tmpbuf) && (strlen(tmpbuf) != 0))
 		gtk_button_set_label(GTK_BUTTON(button),tmpbuf);
 	else
 		gtk_button_set_label(GTK_BUTTON(button),"Choose a Dashboard File");
@@ -222,7 +223,7 @@ void finalize_core_gui(GladeXML * xml)
 	cbutton = glade_xml_get_widget(xml,"dash2_cbutton");
 	g_signal_connect(G_OBJECT(cbutton),"toggled",G_CALLBACK(remove_dashboard),GINT_TO_POINTER(2));
 	tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
-	if ((tmpbuf) && (g_ascii_strcasecmp(tmpbuf,"") !=0))
+	if ((tmpbuf) && (strlen(tmpbuf) != 0))
 		gtk_button_set_label(GTK_BUTTON(button),tmpbuf);
 	else
 		gtk_button_set_label(GTK_BUTTON(button),"Choose a Dashboard File");
