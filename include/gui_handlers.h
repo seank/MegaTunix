@@ -41,6 +41,7 @@ void switch_labels(gpointer , gpointer );
 void swap_labels(gchar *, gboolean );
 void toggle_groups_linked(GtkWidget *, gboolean);
 void prompt_to_save(void);
+gboolean prompt_r_u_sure(void);
 /* Prototypes */
 
 #endif

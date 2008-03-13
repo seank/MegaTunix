@@ -15,8 +15,10 @@
 #define __ARGS_H__
 
 #include <gtk/gtk.h>
+#include <structures.h>
 
 /* Prototypes */
+CmdLineArgs * init_args(void);
 void handle_args(gint, gchar ** );
 /* Prototypes */
 

@@ -53,12 +53,14 @@ gboolean load_gui_tabs(void)
 	gchar * tmpbuf = NULL;
 	GladeXML *xml = NULL;
 	gchar * tab_name = NULL;
-	GtkWidget * label = NULL;
+	GtkWidget *label = NULL;
 	GtkWidget *topframe = NULL;
 	GHashTable *groups = NULL;
 	BindGroup *bindgroup = NULL;
 	GtkWidget *child = NULL;
-	GtkWidget * notebook;
+	GtkWidget *notebook = NULL;
+	GtkWidget *item = NULL;
+	extern GdkColor red;
 	extern volatile gboolean leaving;
 	extern GHashTable *dynamic_widgets;
 	extern GObject *global_data;
@@ -143,11 +145,8 @@ gboolean load_gui_tabs(void)
 				label = gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),child);
 				gtk_widget_hide(child);
 				gtk_widget_hide(label);
-				if (!g_object_get_data(G_OBJECT(global_data),"tabs_are_hidden"))
-				{
-					g_object_set_data(G_OBJECT(global_data),"tabs_are_hidden",GINT_TO_POINTER(TRUE));
-					gtk_label_set_markup(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"main_status_label")),"<big>NOTE: <b>SOME</b> Tabs are hidden</big>");
-				}
+				item = g_hash_table_lookup(dynamic_widgets,"show_tab_visibility_menuitem");
+				 gtk_widget_modify_text(GTK_BIN(item)->child,GTK_STATE_NORMAL,&red);
 
 			}
 			if (cfg_read_string(cfgfile,"global","post_function",&tmpbuf))

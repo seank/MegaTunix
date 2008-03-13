@@ -61,12 +61,12 @@ int setup_gui()
 	GladeXML *xml = NULL;
 	gint tabcount = 0;
 	gboolean *hidden_list;
-	extern CmdLineArgs *args;
 	gint x = 0;
 	gint y = 0;
 	gint w = 0;
 	gint h = 0;
 	extern GObject *global_data;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 
 	fname = g_build_filename(GUI_DATA_DIR,"main.glade",NULL);
 	filename = get_file(g_strdup(fname),NULL);
@@ -162,9 +162,9 @@ void finalize_core_gui(GladeXML * xml)
 	gtk_label_set_text(GTK_LABEL(label),tmpbuf);
 	g_free(tmpbuf);
 
-	/* Main status label at base of UI */
-	widget = glade_xml_get_widget(xml,"main_status_label");
-	register_widget("main_status_label",widget);
+	/* Info status label at base of UI */
+	widget = glade_xml_get_widget(xml,"info_label");
+	register_widget("info_label",widget);
 
 	/* Load Main MegaTunix logo */
 	alignment = glade_xml_get_widget(xml,"logo_alignment");
@@ -174,6 +174,11 @@ void finalize_core_gui(GladeXML * xml)
 
 	/* Set about tab identifier */
 	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"about_frame")),"tab_ident",GINT_TO_POINTER(ABOUT_TAB));
+
+	/* Tab visibility menuitem */
+	widget = glade_xml_get_widget(xml,"show_tab_visibility_menuitem");
+	register_widget("show_tab_visibility_menuitem",widget);
+	gtk_widget_set_sensitive(widget,TRUE);
 
 	/* General Tab, Tooltips */
 	button = glade_xml_get_widget(xml,"tooltips_cbutton");

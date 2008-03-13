@@ -100,11 +100,16 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	gboolean tmp = TRUE;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-	extern CmdLineArgs *args;
 	gint count = 0;
+	extern GObject *global_data;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 
 	if (!args->be_quiet)
+	{
+		if(!prompt_r_u_sure())
+			return;
 		prompt_to_save();
+	}
 
 	if (leaving)
 		return;
@@ -2435,6 +2440,48 @@ void prompt_to_save(void)
 	if (result == GTK_RESPONSE_YES)
 		select_file_for_ecu_backup(NULL,NULL);
 	gtk_widget_destroy (dialog);
+
+}
+
+
+/*!
+ * \brief prompts user for yes/no to quit
+ */
+gboolean prompt_r_u_sure(void)
+{
+	gint result = 0;
+	extern volatile gboolean offline;
+	GtkWidget *dialog = NULL;
+	extern GtkWidget *main_window;
+	GtkWidget *label = NULL;
+	GtkWidget *hbox = NULL;
+	GdkPixbuf *pixbuf = NULL;
+	GtkWidget *image = NULL;
+
+	dialog = gtk_dialog_new_with_buttons("Quiet MegaTunix yes/no ",
+			GTK_WINDOW(main_window),GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_STOCK_YES,GTK_RESPONSE_YES,
+			GTK_STOCK_NO,GTK_RESPONSE_NO,
+			NULL);
+	hbox = gtk_hbox_new(FALSE,0);
+	gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog)->vbox),hbox,TRUE,TRUE,10);
+	pixbuf = gtk_widget_render_icon (hbox,GTK_STOCK_DIALOG_QUESTION,GTK_ICON_SIZE_DIALOG,NULL);
+	image = gtk_image_new_from_pixbuf(pixbuf);
+	gtk_box_pack_start(GTK_BOX(hbox),image,TRUE,TRUE,10);
+	label = gtk_label_new("Are you sure you want to quit?");
+	gtk_label_set_line_wrap(GTK_LABEL(label),TRUE);
+	gtk_box_pack_start(GTK_BOX(hbox),label,TRUE,TRUE,10);
+	gtk_widget_show_all(hbox);
+
+	gtk_window_set_transient_for(GTK_WINDOW(gtk_widget_get_toplevel(dialog)),GTK_WINDOW(main_window));
+
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
+	g_object_unref(pixbuf);
+	gtk_widget_destroy (dialog);
+
+	if (result == GTK_RESPONSE_YES)
+		return TRUE;
+	else return FALSE;
 
 }
 

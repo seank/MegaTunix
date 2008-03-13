@@ -357,11 +357,11 @@ void *serial_repair_thread(gpointer data)
 			{
 				//printf("File %s, doesn't exist\n",vector[i]);
 
-				//Wait 250 ms to avoid deadlocking
-				g_usleep(250000);
+				//Wait 100 ms to avoid deadlocking
+				g_usleep(100000);
 				continue;
 			}
-			g_usleep(250000);
+			g_usleep(100000);
 			if (open_serial(vector[i]))
 			{
 				setup_serial_params(9600);
@@ -382,7 +382,7 @@ void *serial_repair_thread(gpointer data)
 					else
 					{  
 						close_serial();
-						g_usleep(250000);
+						g_usleep(100000);
 						continue;
 					}
 				}

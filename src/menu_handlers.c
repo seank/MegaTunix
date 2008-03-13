@@ -53,11 +53,10 @@ void setup_menu_handlers()
 	extern GObject *global_data;
 	extern volatile gboolean leaving;
 
+
 	xml = (GladeXML *)g_object_get_data(global_data,"main_xml");
 	if ((!xml) || (leaving))
 		return;
-	item = glade_xml_get_widget(xml,"show_tab_visibility_menuitem");
-	gtk_widget_set_sensitive(item,TRUE);
 	
 	for (i=0;i< (sizeof(items)/sizeof(items[0]));i++)
 	{

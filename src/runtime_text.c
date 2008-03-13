@@ -55,11 +55,11 @@ void load_rt_text()
 	gint major = 0;
 	gint minor = 0;
 	extern GObject *global_data;
-	extern CmdLineArgs *args;
 	extern volatile gboolean leaving;
 	extern gboolean tabs_loaded;
 	extern gboolean rtvars_loaded;
 	extern Firmware_Details *firmware;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 
 	if ((!tabs_loaded) || (!firmware) || (leaving))
 		return;

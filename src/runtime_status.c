@@ -63,7 +63,7 @@ void load_status(void)
 	GtkWidget * frame;
 	GtkWidget * table;
 	extern GObject *global_data;
-	extern CmdLineArgs *args;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 	GdkColor color;
 
 

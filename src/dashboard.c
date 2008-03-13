@@ -85,7 +85,6 @@ void load_dashboard(gchar *filename, gpointer data)
 	g_signal_connect (G_OBJECT (window), "destroy_event",
 			G_CALLBACK (dummy), NULL);
 	ebox = gtk_event_box_new();
-	//gtk_event_box_set_visible_window(GTK_EVENT_BOX(ebox), FALSE);
 	gtk_container_add(GTK_CONTAINER(window),ebox);
 
 	gtk_widget_add_events(GTK_WIDGET(ebox),GDK_POINTER_MOTION_MASK|
@@ -599,8 +598,11 @@ void initialize_dashboards()
 	GtkWidget * label = NULL;
 	gchar * tmpbuf = NULL;
 	gchar * tmpstr = NULL;
+	gboolean nodash1 = TRUE;
+	gboolean nodash2 = TRUE;
 	extern GObject *global_data;
 	extern GHashTable *dynamic_widgets;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_1_label");
 	if (g_object_get_data(global_data,"dash_1_name") != NULL)
@@ -612,6 +614,7 @@ void initialize_dashboards()
 		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(1));
 		tmpbuf = NULL;
+		nodash1 = FALSE;
 	}
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_2_label");
@@ -624,7 +627,15 @@ void initialize_dashboards()
 		g_free(tmpstr);
 		load_dashboard(g_strdup(tmpbuf),GINT_TO_POINTER(2));
 		tmpbuf = NULL;
+		nodash2 = FALSE;
 	}
+	/* Case to handle when no default dashboards are set, but the user
+	 * choose to run with no main gui (thus can't quit or select a dash)
+	 * So we force the dash chooser
+	 */
+	if ((nodash1) && (nodash2) && (args->hide_maingui))
+		present_dash_filechooser(NULL,GINT_TO_POINTER(1));
+
 }
 
 
@@ -656,9 +667,12 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 	{
 		if (dash_gauges)
 			g_hash_table_foreach_remove(dash_gauges,remove_dashcluster,data);
-		label = g_object_get_data(G_OBJECT(widget),"label");
-		if (GTK_IS_LABEL(label))
-			gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
+		if (GTK_IS_WIDGET(widget))
+		{
+			label = g_object_get_data(G_OBJECT(widget),"label");
+			if (GTK_IS_LABEL(label))
+				gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
+		}
 		load_dashboard(filename,data);
 	}
 

@@ -39,10 +39,11 @@ GThread * thread_dispatcher_id = NULL;
 gboolean ready = FALSE;
 gint dispatcher_id = -1;
 gboolean gl_ability = FALSE;
-Serial_Params *serial_params;
-Io_Cmds *cmds;
-GAsyncQueue *io_queue;
-GAsyncQueue *dispatch_queue;
+Serial_Params *serial_params = NULL;
+Io_Cmds *cmds = NULL;
+GAsyncQueue *io_queue = NULL;
+GAsyncQueue *dispatch_queue = NULL;
+GObject *global_data = NULL;
 
 /*!
  \brief main() is the typical main function in a C program, it performs
@@ -68,6 +69,8 @@ gint main(gint argc, gchar ** argv)
 
 	gtk_set_locale();
 
+	global_data = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+	handle_args(argc,argv);
 
 	/* Allocate memory  */
 	serial_params = g_malloc0(sizeof(Serial_Params));
@@ -75,7 +78,6 @@ gint main(gint argc, gchar ** argv)
 
 	open_debug();	/* Open debug log */
 	init();			/* Initialize global vars */
-	handle_args(argc,argv);
 	make_megasquirt_dirs();	/* Create config file dirs if missing */
 	/* Build table of strings to enum values */
 	build_string_2_enum_table();

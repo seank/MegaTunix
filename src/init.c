@@ -52,13 +52,12 @@ extern GtkWidget *main_window;
 extern gint dbg_lvl;
 extern Serial_Params *serial_params;
 /* Support up to "x" page firmware.... */
-CmdLineArgs *args = NULL;
 GList ***ve_widgets = NULL;
 GList **tab_gauges = NULL;
 GHashTable **interdep_vars = NULL;
 GHashTable *widget_group_states = NULL;
 GHashTable *sources_hash = NULL;
-GObject *global_data = NULL;
+extern GObject *global_data;
 gint *algorithm = NULL;
 gboolean *tracking_focus = NULL;
 
@@ -76,7 +75,6 @@ void init(void)
 	gboolean *hidden_list = NULL;
 	gint i = 0;
 
-	global_data = g_object_new(GTK_TYPE_INVISIBLE,NULL);
 	interval_min = 5;	/* 5 millisecond minimum interval delay */
 	interval_step = 5;	/* 5 ms steps */
 	interval_max = 1000;	/* 1000 millisecond maximum interval delay */
@@ -123,15 +121,6 @@ void init(void)
 	temp_units = FAHRENHEIT;/* Use SAE units by default */
 	preferred_delimiter = TAB;
 
-	args = g_new0(CmdLineArgs, 1);
-	args->be_quiet = FALSE;
-	args->autolog_dump = FALSE;
-	args->hide_rttext = FALSE;
-	args->hide_status = FALSE;
-	args->hide_maingui = FALSE;
-	args->autolog_minutes = 5;
-	args->autolog_dump_dir = NULL;
-	args->autolog_basename = NULL;
 
 	if (!widget_group_states)
 		widget_group_states = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,NULL);

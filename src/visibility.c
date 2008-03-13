@@ -61,6 +61,7 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 			printf("ERROR, glade element not found!\n");
 
 		rows = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
+		g_object_set_data(G_OBJECT(global_data),"notebook_rows",GINT_TO_POINTER(rows));
 		table = glade_xml_get_widget(xml,"tab_visibility_table");
 		gtk_table_resize(GTK_TABLE(table),rows,2);
 
@@ -92,8 +93,15 @@ gboolean hide_tab(GtkWidget *widget, gpointer data)
 	GtkWidget *child;
 	GtkWidget *label;
 	GtkWidget *notebook;
+	GtkWidget *item = NULL;
 	GladeXML *main_xml = NULL;
+	extern GdkColor red;
+	extern GdkColor black;
+	extern GHashTable *dynamic_widgets;
 	gint index = (gint)data;
+	gint total = (gint)g_object_get_data(G_OBJECT(global_data),"notebook_rows");
+	gint i = 0;
+	gboolean hidden = FALSE;
 	gint *hidden_list;
 
 	main_xml = (GladeXML *)g_object_get_data(global_data,"main_xml");
@@ -115,6 +123,17 @@ gboolean hide_tab(GtkWidget *widget, gpointer data)
 		gtk_widget_show(label);
 		hidden_list[index] = FALSE;
 	}
+
+	for (i=0;i<total;i++)
+	{
+		if (hidden_list[i])
+			hidden = TRUE;
+	}
+	item = g_hash_table_lookup(dynamic_widgets,"show_tab_visibility_menuitem");
+	if (hidden)
+		 gtk_widget_modify_text(GTK_BIN(item)->child,GTK_STATE_NORMAL,&red);
+	else
+		 gtk_widget_modify_text(GTK_BIN(item)->child,GTK_STATE_NORMAL,&black);
 	return TRUE;
 }
 

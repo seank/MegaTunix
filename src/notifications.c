@@ -218,7 +218,8 @@ void  update_logbar(
  */
 EXPORT void conn_warning(void)
 {
-	extern CmdLineArgs *args;
+	extern GObject *global_data;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 	gchar *buff = NULL;
 	if ((args->be_quiet) || (warning_present))
 		return;
@@ -247,7 +248,8 @@ EXPORT void kill_conn_warning()
  */
 void warn_user(gchar *message)
 {
-	extern CmdLineArgs *args;
+	extern GObject *global_data;
+	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 	if (args->be_quiet)
 		return;
 
@@ -312,12 +314,22 @@ void set_title(gchar * text)
 	extern GtkWidget *main_window;
 	gchar * tmpbuf = NULL;
 	extern volatile gboolean leaving;
+	extern GHashTable *dynamic_widgets;
+	static GtkWidget *info_label = NULL;
 
 	if ((!main_window) || (leaving))
 		return;
+	if (!info_label)
+		info_label = (GtkWidget *)g_hash_table_lookup(dynamic_widgets,"info_label");
 	tmpbuf = g_strconcat("MegaTunix ",VERSION,",   ",text,NULL);
 
 	gtk_window_set_title(GTK_WINDOW(main_window),tmpbuf);
 	g_free(tmpbuf);
+	if (GTK_IS_WIDGET(info_label))
+	{
+		tmpbuf = g_markup_printf_escaped("<big>%s</big>",text);
+		gtk_label_set_markup(GTK_LABEL(info_label),tmpbuf);
+		g_free(tmpbuf);
+	}
 	g_free(text);
 }
