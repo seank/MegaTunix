@@ -31,6 +31,7 @@
 
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
 extern gint dbg_lvl;
+static gboolean timer_active = FALSE;
 
 
 /*!
@@ -51,6 +52,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	gint x = 0;
 	gint y = 0;
 	gfloat * ratio = NULL;
+	extern GdkColor black;
 	extern GObject * global_data;
 	extern GtkWidget * main_window;
 	xmlDoc *doc = NULL;
@@ -78,7 +80,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	gtk_window_set_decorated(GTK_WINDOW(window),FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(main_window));
 
-	g_signal_connect (G_OBJECT (window), "configure_event",
+	g_signal_connect(G_OBJECT (window), "configure_event",
 			G_CALLBACK (dash_configure_event), NULL);
 	g_signal_connect (G_OBJECT (window), "delete_event",
 			G_CALLBACK (dummy), NULL);
@@ -99,6 +101,7 @@ void load_dashboard(gchar *filename, gpointer data)
 
 	dash = gtk_fixed_new();
 	gtk_fixed_set_has_window(GTK_FIXED(dash),TRUE);
+	gtk_widget_modify_bg(GTK_WIDGET(dash),GTK_STATE_NORMAL,&black);
 	g_object_set_data(G_OBJECT(window),"dash",dash);
 	gtk_container_add(GTK_CONTAINER(ebox),dash);
 
@@ -139,7 +142,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	else
 		gtk_window_set_default_size(GTK_WINDOW(window), width,height);
 	gtk_widget_show_all(window);
-	dash_shape_combine(dash);
+	dash_shape_combine(dash,TRUE);
 }
 
 gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
@@ -187,12 +190,17 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 		gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x,ratio*child_y);
 		gtk_widget_set_size_request(gauge,child_w*ratio,child_h*ratio);
 	}
-
-	dash_shape_combine(dash);
+	dash_shape_combine(dash,FALSE);
+	if (!timer_active)
+	{
+		g_timeout_add(4000,hide_dash_resizers,dash);
+		timer_active = TRUE;
+	}
 
 	g_signal_handlers_unblock_by_func(G_OBJECT(widget),G_CALLBACK(dash_configure_event),NULL);
 	return FALSE;
 }
+
 
 void load_elements(GtkWidget *dash, xmlNode *a_node)
 {
@@ -383,7 +391,7 @@ void update_dash_gauge(gpointer key, gpointer value, gpointer user_data)
 }
 
 
-void dash_shape_combine(GtkWidget *dash)
+void dash_shape_combine(GtkWidget *dash, gboolean hide_resizers)
 {
 	GtkFixedChild *child = NULL;
 	gint x = 0;
@@ -395,7 +403,7 @@ void dash_shape_combine(GtkWidget *dash)
 	gint radius = 0;
 	gint i = 0;
 	GList *children = NULL;
-	GdkGC *gc = NULL;
+	GdkGC *gc1 = NULL;
 	GdkColormap *colormap = NULL;
 	GdkColor black;
 	GdkColor white;
@@ -414,19 +422,27 @@ void dash_shape_combine(GtkWidget *dash)
 	gdk_colormap_alloc_color(colormap, &black,TRUE,TRUE);
 	gdk_color_parse ("white", & white);
 	gdk_colormap_alloc_color(colormap, &white,TRUE,TRUE);
-	gc = gdk_gc_new (bitmap);
-	gdk_gc_set_foreground (gc, &black);
-	gdk_draw_rectangle(bitmap,gc,TRUE,0,0,width,height);
+	gc1 = gdk_gc_new (bitmap);
+	gdk_gc_set_foreground (gc1, &black);
+	gdk_draw_rectangle(bitmap,gc1,TRUE,0,0,width,height);
 
-	gdk_gc_set_foreground (gc, &white);
-	gdk_draw_rectangle(bitmap,gc,TRUE,width-8,0,8,8);
-	gdk_draw_rectangle(bitmap,gc,TRUE,0,0,8,8);
-	gdk_draw_rectangle(bitmap,gc,TRUE,0,height-8,8,8);
-	gdk_draw_rectangle(bitmap,gc,TRUE,width-8,height-8,8,8);
+	if (hide_resizers == FALSE)
+	{
+		gdk_gc_set_foreground (gc1, &white);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,width-16,0,16,16);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,0,0,16,16);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,0,height-16,16,16);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,width-16,height-16,16,16);
 
+		gdk_gc_set_foreground (gc1, &black);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,width-16,3,13,13);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,3,3,13,13);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,3,height-16,13,13);
+		gdk_draw_rectangle(bitmap,gc1,TRUE,width-16,height-16,13,13);
+	}
 
+	gdk_gc_set_foreground (gc1, &white);
 	children = GTK_FIXED(dash)->children;
-
 	for (i=0;i<g_list_length(children);i++)
 	{
 		child = g_list_nth_data(children,i);
@@ -439,7 +455,7 @@ void dash_shape_combine(GtkWidget *dash)
 		xc = x+w/2;
 		yc = y+h/2;
 		gdk_draw_arc (bitmap,
-				gc,
+				gc1,
 				TRUE,     // filled
 				xc-radius,
 				yc-radius,
@@ -447,7 +463,6 @@ void dash_shape_combine(GtkWidget *dash)
 				2*radius,
 				0,        // angle 1
 				360*64);  // angle 2: full circle
-
 	}
 	if (GTK_IS_WINDOW(gtk_widget_get_toplevel(dash)))
 	{
@@ -474,7 +489,7 @@ void dash_shape_combine(GtkWidget *dash)
 		gdk_window_shape_combine_mask(dash->window,bitmap,0,0);
 	}
 	g_object_unref(colormap);
-	g_object_unref(gc);
+	g_object_unref(gc1);
 	g_object_unref(bitmap);
 	g_static_mutex_unlock(&mutex);
 	return;
@@ -482,7 +497,13 @@ void dash_shape_combine(GtkWidget *dash)
 
 gboolean dash_motion_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
 {
-//	printf("motion detected\n");
+	GtkWidget *dash = GTK_BIN(widget)->child;
+	if (!timer_active)
+	{
+		dash_shape_combine(dash,FALSE);
+		g_timeout_add(4000,hide_dash_resizers,dash);
+		timer_active = TRUE;
+	}
 	return TRUE;
 }
 
@@ -541,26 +562,26 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
 //		printf("dash button event\n");
-		if (event->x > (widget->allocation.width-8))
+		if (event->x > (widget->allocation.width-16))
 		{
 			/* Upper portion */
-			if (event->y < 8)
+			if (event->y < 16)
 				edge = GDK_WINDOW_EDGE_NORTH_EAST;
 			/* Lower portion */
-			else if (event->y > (widget->allocation.height-8))
+			else if (event->y > (widget->allocation.height-16))
 				edge = GDK_WINDOW_EDGE_SOUTH_EAST;
 			else
 				edge = -1;
 		}
 		/* Left Side of window */
-		else if (event->x < 8)
+		else if (event->x < 16)
 		{
 			/* If it's in the middle portion */
 			/* Upper portion */
-			if (event->y < 8)
+			if (event->y < 16)
 				edge = GDK_WINDOW_EDGE_NORTH_WEST;
 			/* Lower portion */
-			else if (event->y > (widget->allocation.height-8))
+			else if (event->y > (widget->allocation.height-16))
 				edge = GDK_WINDOW_EDGE_SOUTH_WEST;
 			else
 				edge = -1;
@@ -791,4 +812,12 @@ void update_tab_gauges()
 			mtx_gauge_face_set_value(MTX_GAUGE_FACE(gauge),current);
 	}
 
+}
+
+
+gboolean hide_dash_resizers(gpointer data)
+{
+	dash_shape_combine(data,TRUE);
+	timer_active = FALSE;
+	return FALSE;
 }

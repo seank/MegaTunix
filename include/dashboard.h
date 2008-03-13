@@ -28,7 +28,7 @@ void load_geometry(GtkWidget *, xmlNode *);
 void load_gauge(GtkWidget *, xmlNode *);
 void update_dash_gauge(gpointer , gpointer , gpointer );
 void link_dash_datasources(GtkWidget *,gpointer);
-void dash_shape_combine(GtkWidget *);
+void dash_shape_combine(GtkWidget *, gboolean);
 gboolean dash_motion_event(GtkWidget *, GdkEventMotion *, gpointer );
 gboolean dash_button_event(GtkWidget *, GdkEventButton *, gpointer );
 gboolean dash_key_event(GtkWidget *, GdkEventKey *, gpointer );
@@ -37,6 +37,7 @@ gboolean present_dash_filechooser(GtkWidget *, gpointer );
 gboolean remove_dashcluster(gpointer, gpointer , gpointer );
 gboolean dummy(GtkWidget *,gpointer );
 EXPORT void create_gauge(GtkWidget *);
+gboolean hide_dash_resizers(gpointer );
 void update_tab_gauges(void);
 /* Prototypes */
 

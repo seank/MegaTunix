@@ -154,8 +154,7 @@ gboolean read_config(void)
 		cfg_read_boolean(cfgfile, "Global", "Tooltips", &tips_in_use);
 		cfg_read_int(cfgfile, "Global", "Temp_Scale", &temp_units);
 		cfg_read_int(cfgfile, "Global", "dbg_lvl", &dbg_lvl);
-		cfg_read_string(cfgfile, "Dashboards", "dash_1_name", &tmpbuf);
-		if ((tmpbuf != NULL) && (strlen(tmpbuf) != 0))
+		if ((cfg_read_string(cfgfile, "Dashboards", "dash_1_name", &tmpbuf)) && (strlen(tmpbuf) != 0))
 		{
 			g_free(g_object_get_data(global_data,"dash_1_name"));
 			g_object_set_data(global_data,"dash_1_name",g_strdup(tmpbuf));
@@ -167,8 +166,7 @@ gboolean read_config(void)
 			g_object_set_data(global_data,"dash_1_y_origin",GINT_TO_POINTER(tmpi));
 		if (cfg_read_float(cfgfile, "Dashboards", "dash_1_size_ratio", &tmpf))
 			g_object_set_data(global_data,"dash_1_size_ratio",g_memdup(&tmpf,sizeof(gfloat)));
-		cfg_read_string(cfgfile, "Dashboards", "dash_2_name", &tmpbuf);
-		if ((tmpbuf != NULL) && (strlen(tmpbuf) != 0))
+		if ((cfg_read_string(cfgfile, "Dashboards", "dash_2_name", &tmpbuf)) && (strlen(tmpbuf) != 0))
 		{
 			g_free(g_object_get_data(global_data,"dash_2_name"));
 			g_object_set_data(global_data,"dash_2_name",g_strdup(tmpbuf));
