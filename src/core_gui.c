@@ -178,7 +178,6 @@ void finalize_core_gui(GladeXML * xml)
 	/* Tab visibility menuitem */
 	widget = glade_xml_get_widget(xml,"show_tab_visibility_menuitem");
 	register_widget("show_tab_visibility_menuitem",widget);
-	gtk_widget_set_sensitive(widget,TRUE);
 
 	/* General Tab, Tooltips */
 	button = glade_xml_get_widget(xml,"tooltips_cbutton");

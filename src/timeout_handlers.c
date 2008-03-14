@@ -26,7 +26,7 @@
 
 gint realtime_id = 0;
 gint playback_id = 0;
-static gint toothmon_id = 0;
+gint toothmon_id = 0;
 static gint trigmon_id = 0;
 static gboolean restart_realtime = FALSE;
 
@@ -90,7 +90,10 @@ void start_tickler(TicklerType type)
 				realtime_id = 0;
 			}
 			if (toothmon_id == 0)
-				toothmon_id = g_timeout_add(400,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+			{
+				signal_toothtrig_read(TOOTHMON_TICKLER);
+				toothmon_id = g_timeout_add(3000,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+			}
 			else
 			{
 				if (dbg_lvl & CRITICAL)
@@ -112,7 +115,10 @@ void start_tickler(TicklerType type)
 				realtime_id = 0;
 			}
 			if (trigmon_id == 0)
+			{
+				signal_toothtrig_read(TRIGMON_TICKLER);
 				trigmon_id = g_timeout_add(500,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TRIGMON_TICKLER));
+			}
 			else
 			{
 				if (dbg_lvl & CRITICAL)

@@ -21,6 +21,7 @@
 #include <glib/gprintf.h>
 #include <math.h>
 #include <t-logger.h>
+#include <timeout_handlers.h>
 #include <logviewer_gui.h>
 #include <rtv_processor.h>
 #include <structures.h>
@@ -147,12 +148,17 @@ void crunch_trigtooth_data(gint page)
 	gint cap_idx = 0;
 	gfloat ratio = 0.0;
 	gfloat current = 0.0;
+	gfloat suggested_sample_time= 0.0;
+	gint min_sampling_time = 0;
+	gint sample_time = 0;
+	extern gint toothmon_id;
 	gint lower = 0;
 	gint upper = 0;
 	gint missing = 0;
 	gushort total = 0;
 	gint position = get_ecu_data(canID,page,CTR,size);
 	gint index = 0;
+	static gint last_sample_time = 500;
 
 /*
 	g_printf("Counter position on page %i is %i\n",page,position);
@@ -243,9 +249,7 @@ void crunch_trigtooth_data(gint page)
 		else 
 			missing = upper - 1;
 		for (i=1;i<cap_idx;i++)
-		{
 			printf("read %i trigger times followed by %i missing, thus %i-%i wheel\n",captures[i]-captures[i-1],missing,missing+captures[i]-captures[i-1],missing);
-		}
 		for (i=0;i<cap_idx;i++)
 			printf("Missing teeth at index %i\n",captures[i]);
 
@@ -266,6 +270,20 @@ void crunch_trigtooth_data(gint page)
 	printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
 	lookup_current_value("rpm",&current);
 	printf("Current RPM %f\n",current);
+	printf ("Teeth per second is %f\n",1.0/(((float)min*ttm_data->units)/1000000.0));
+	suggested_sample_time = 186000/((1.0/(((float)min*ttm_data->units)/1000000.0)));
+	if (suggested_sample_time < 0)
+		suggested_sample_time = 0;
+	min_sampling_time = 500; /* milliseconds */
+
+	sample_time = suggested_sample_time < min_sampling_time ? min_sampling_time : suggested_sample_time;
+
+	printf("Suggested Sampling time is %f ms.\n",suggested_sample_time);
+	printf("Sampling time should be %i ms.\n",sample_time);
+
+		g_source_remove(toothmon_id);
+		toothmon_id = g_timeout_add(sample_time,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+
 
 	/* vertical scale calcs:
 	 * PROBLEM:  max_time can be anywhere from 0-65535, need to 
