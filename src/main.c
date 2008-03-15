@@ -29,7 +29,6 @@
 #include <main.h>
 #include <serialio.h>
 #include <stringmatch.h>
-#include <structures.h>
 #include <threads.h>
 #include <timeout_handlers.h>
 
@@ -70,6 +69,8 @@ gint main(gint argc, gchar ** argv)
 	gtk_set_locale();
 
 	global_data = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+	g_object_ref(global_data);
+	gtk_object_sink(GTK_OBJECT(global_data));
 	handle_args(argc,argv);
 
 	/* Allocate memory  */
@@ -91,9 +92,9 @@ gint main(gint argc, gchar ** argv)
 
 	/* Startup the serial General I/O handler.... */
 	thread_dispatcher_id = g_thread_create(thread_dispatcher,
-			NULL, // Thread args
-			TRUE, // Joinable
-			NULL); //GError Pointer
+			NULL, /* Thread args */
+			TRUE, /* Joinable */
+			NULL); /*GError Pointer */
 
 	dispatcher_id = g_timeout_add(10,(GtkFunction)dispatcher,NULL);
 

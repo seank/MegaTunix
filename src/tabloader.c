@@ -17,6 +17,7 @@
 #include <debugging.h>
 #include <dep_loader.h>
 #include <enums.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <glade/glade.h>
 #include <gmodule.h>
@@ -28,7 +29,6 @@
 #include <rtv_map_loader.h>
 #include <string.h>
 #include <stringmatch.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <tag_loader.h>
 #include <widgetmgmt.h>
@@ -301,10 +301,8 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 			group->page = tmpi;
 
 		group->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-		// ATTEMPTED FIX FOR GLIB 2.10
 		g_object_ref(group->object);
 		gtk_object_sink(GTK_OBJECT(group->object));
-		// ATTEMPTED FIX FOR GLIB 2.10
 
 		/* If this widget has a "depend_on" tag we need to 
 		 * load the dependency information and store it for 
@@ -396,7 +394,7 @@ void bind_to_lists(GtkWidget * widget, gchar * lists)
 	GList *tmp_list = NULL;
 	gint i = 0;
 
-	//printf("Widget %s is being bound to lists \"%s\"\n",(gchar *)glade_get_widget_name(widget),lists);
+	/*printf("Widget %s is being bound to lists \"%s\"\n",(gchar *)glade_get_widget_name(widget),lists);*/
 	tmpvector = parse_keys(lists,&bind_num_keys,",");
 
 	/* This looks convoluted,  but it allows for an arbritrary 

@@ -18,12 +18,13 @@
 #include <enums.h>
 #include <errno.h>
 #include <fileio.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <glib.h>
 #include <gui_handlers.h>
 #include <math.h>
 #include <notifications.h>
-#include <structures.h>
+#include <rtv_map_loader.h>
 #include <sys/types.h>
 #include <timeout_handlers.h>
 #include <unistd.h>
@@ -79,13 +80,12 @@ void populate_dlog_choices()
 	vbox = g_hash_table_lookup(dynamic_widgets,"dlog_logable_vars_vbox1");
 	table_rows = ceil((float)rtv_map->derived_total/(float)TABLE_COLS);
 	table = gtk_table_new(table_rows,TABLE_COLS,TRUE);
-	//	logables_table = table;
 	gtk_table_set_row_spacings(GTK_TABLE(table),5);
 	gtk_table_set_col_spacings(GTK_TABLE(table),5);
 	gtk_container_set_border_width(GTK_CONTAINER(table),0);
 	gtk_box_pack_start(GTK_BOX(vbox),table,FALSE,FALSE,0);
 
-	// Update status of the delimiter buttons...
+	/* Update status of the delimiter buttons... */
 
 	switch (preferred_delimiter)
 	{
@@ -120,11 +120,12 @@ void populate_dlog_choices()
 			gtk_tooltips_set_tip(tip,button,tooltip,NULL);
 		g_free(tooltip);
 
-		// Bind button to the object, Done so that we can set the state
-		// of the buttons from elsewhere... 
+		/* Bind button to the object, Done so that we can set the state
+		 * of the buttons from elsewhere... 
+		 */
 		g_object_set_data(G_OBJECT(object),"dlog_button",
 				(gpointer)button);
-		// Bind object to the button 
+		/* Bind object to the button */
 		g_object_set_data(G_OBJECT(button),"object",
 				(gpointer)object);
 		g_signal_connect(G_OBJECT(button),"toggled",
@@ -349,7 +350,7 @@ void run_datalog(void)
 		value = g_array_index(history, gfloat, current_index);
 		if ((gboolean)g_object_get_data(object,"is_float"))
 		{
-//			printf("value %.3f\n",value);
+			/*printf("value %.3f\n",value); */
 			tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%.3f",value);
 			g_string_append(output,tmpbuf);
 		}

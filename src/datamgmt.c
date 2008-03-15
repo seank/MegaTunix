@@ -15,8 +15,8 @@
 #include <configfile.h>
 #include <datamgmt.h>
 #include <debugging.h>
+#include <firmware.h>
 #include <string.h>
-#include <structures.h>
 
 
 /*!

@@ -15,8 +15,38 @@
 #define __LOGVIEWER_GUI_H__
 
 #include <enums.h>
+#include <logviewer_core.h>
 #include <gtk/gtk.h>
-#include <structures.h>
+
+typedef struct _Viewable_Value Viewable_Value;
+/*!
+ \brief _Viewable_Value is the datastructure bound 
+ to every trace viewed in the logviewer. 
+ */
+struct _Viewable_Value
+{
+	GdkGC *font_gc;			/*! GC used for the fonts */
+	GdkGC *trace_gc;		/*! GC used for the trace */
+	PangoRectangle *log_rect;	/*! Logcial rectangle around text */
+	PangoRectangle *ink_rect;	/*! Ink rectangle around text */
+	GObject *object;		/*! object */
+	gchar *vname;			/*! Name of widget being logged */
+	gboolean is_float;		/*! TRUE or FALSE */
+	gboolean force_update;		/*! flag to force update on addition */
+	gboolean highlight;		/*! flag it highlight it.. */
+	gint last_y;			/*! Last point on screen of trace */
+	gint last_index;		/*! latest entryu into data array */
+	gchar *data_source;		/*! Textual name of source */
+	gfloat min;			/*! for auto-scaling */
+	gfloat max;			/*! for auto-scaling */
+	gfloat lower;			/*! hard limits to use for scaling */
+	gfloat upper;			/*! hard limits to use for scaling */
+	gfloat cur_low;			/*! User limits to use for scaling */
+	gfloat cur_high;		/*! User limits to use for scaling */
+	GArray *data_array;		/*! History of all values recorded */
+	Log_Info *log_info;	/*! important */
+};
+	
 
 /* Prototypes */
 void present_viewer_choices(void);

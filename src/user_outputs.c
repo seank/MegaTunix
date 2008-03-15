@@ -22,9 +22,10 @@
 #include <enums.h>
 #include <keyparser.h>
 #include <lookuptables.h>
+#include <multi_expr_loader.h>
 #include "../mtxmatheval/mtxmatheval.h"
+#include <rtv_map_loader.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <threads.h>
 #include <user_outputs.h>
 
@@ -138,9 +139,6 @@ GtkTreeModel * create_model(void)
 				COL_OBJECT, object,
 				COL_NAME, name,
 				COL_RANGE, range,
-				//COL_ENTRY, g_strdup(""),
-				//COL_HYS, g_strdup(""),
-				//COL_ULIMIT, g_strdup(""),
 				COL_ENTRY, NULL,
 				COL_HYS, NULL,
 				COL_ULIMIT,NULL,
@@ -333,10 +331,11 @@ void cell_edited(GtkCellRendererText *cell,
 			gtk_list_store_set (GTK_LIST_STORE (model), &iter, column,
 					g_strdup_printf("%i",(gint)new), -1);
 
-		// Then evaluate it in reverse....
+		/* Then evaluate it in reverse.... */
 		tmpf = evaluator_evaluate_x(multi->dl_eval,new);
-		// Then if it used a lookuptable,  reverse map it if possible to 
-		// determine the ADC reading we need to send to ECU
+		/* Then if it used a lookuptable, reverse map it if possible 
+		 * to determine the ADC reading we need to send to ECU
+		 */
 		if (multi->lookuptable)
 			result = direct_reverse_lookup(multi->lookuptable,(gint)tmpf);
 		else
@@ -373,7 +372,7 @@ void cell_edited(GtkCellRendererText *cell,
 				g_object_set_data(object,"dl_evaluator",(gpointer)evaluator);
 			}
 		}
-		// First conver to fahrenheit temp scale if temp dependant 
+		/* First conver to fahrenheit temp scale if temp dependant */
 		if (temp_dep)
 		{
 			if (temp_units == CELSIUS)
@@ -383,10 +382,11 @@ void cell_edited(GtkCellRendererText *cell,
 		}
 		else
 			x = new;
-		// Then evaluate it in reverse....
+		/* Then evaluate it in reverse.... */
 		tmpf = evaluator_evaluate_x(evaluator,x);
-		// Then if it used a lookuptable,  reverse map it if possible to 
-		// determine the ADC reading we need to send to ECU
+		/* Then if it used a lookuptable,  reverse map it if possible
+		 * to determine the ADC reading we need to send to ECU
+		 */
 		if (g_object_get_data(object,"lookuptable"))
 			result = reverse_lookup(object,(gint)tmpf);
 		else
@@ -675,7 +675,7 @@ void update_model_from_view(GtkWidget * widget)
 			gtk_tree_path_free(treepath);
 
 
-//			printf("offset matched for object %s\n",(gchar *)g_object_get_data(object,"dlog_gui_name"));
+			/*printf("offset matched for object %s\n",(gchar *)g_object_get_data(object,"dlog_gui_name"));*/
 
 		}
 		else

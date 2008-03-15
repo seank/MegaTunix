@@ -15,7 +15,6 @@
 #define __DISPATCHER_H__
 
 #include <gtk/gtk.h>
-#include <structures.h>
 
 /* Prototypes */
 gboolean dispatcher(gpointer);

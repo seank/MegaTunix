@@ -21,7 +21,6 @@
 #include <notifications.h>
 #include <rtv_processor.h>
 #include <serialio.h>
-#include <structures.h>
 #include <timeout_handlers.h>
 #include <threads.h>
 

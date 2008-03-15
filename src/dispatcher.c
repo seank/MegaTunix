@@ -39,7 +39,6 @@
 #include <serialio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <timeout_handlers.h>
 #include <threads.h>
@@ -88,13 +87,13 @@ gboolean dispatcher(gpointer data)
 		return TRUE;
 	/* Endless Loop, wait for message, processs and repeat... */
 trypop:
-	//printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));
+	/*printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));*/
 	if (leaving)
 		return TRUE;
 	message = g_async_queue_try_pop(dispatch_queue);
 	if (!message)
 	{
-	//	printf("no messages waiting, returning\n");
+	/*	printf("no messages waiting, returning\n");*/
 		return TRUE;
 	}
 
@@ -314,7 +313,7 @@ trypop:
 	}
 dealloc:
 	dealloc_message(message);
-	//printf ("deallocation of dispatch message complete\n");
+	/*printf ("deallocation of dispatch message complete\n");*/
 	count++;
 	/* try to handle up to 4 messages at a time.  If this is 
 	 * set too high, we can cause the timeout to hog the gui if it's
@@ -322,9 +321,9 @@ dealloc:
 	 * */
 	if(count < 3)
 	{
-		//printf("trying to handle another message\n");
+		/*printf("trying to handle another message\n");*/
 		goto trypop;
 	}
-	//printf("returning\n");
+	/*printf("returning\n");*/
 	return TRUE;
 }

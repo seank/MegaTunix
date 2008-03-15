@@ -15,9 +15,9 @@
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gui_handlers.h>
 #include <raweditor.h>
-#include <structures.h>
 
 GArray *raw_editor_widgets = NULL;
 

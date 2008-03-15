@@ -18,7 +18,6 @@
 #include <logviewer_events.h>
 #include <logviewer_gui.h>
 #include <math.h>
-#include <structures.h>
 #include <timeout_handlers.h>
 
 
@@ -171,13 +170,13 @@ EXPORT gboolean lv_mouse_motion_event(GtkWidget *widget, GdkEventMotion *event, 
 void highlight_tinfo(gint tnum, gboolean state)
 {
 	GdkRectangle rect;
+	extern Logview_Data *lv_data;
 
 	rect.x = 0;
 	rect.y = lv_data->spread*tnum;
 	rect.width =  lv_data->info_width-1;
 	rect.height = lv_data->spread;
 
-	extern Logview_Data *lv_data;
 	if (state)
 		gdk_draw_rectangle(lv_data->pixmap,
 				lv_data->highlight_gc,
@@ -255,8 +254,9 @@ EXPORT gboolean lv_mouse_button_event(GtkWidget *widget, GdkEventButton *event, 
 
 	return FALSE;
 
-	//printf("button with event is %i\n",event->button);
-	//printf("state of event is %i\n",state);
+	/*printf("button with event is %i\n",event->button);
+	 *printf("state of event is %i\n",state);
+	 */
 	if (x > lv_data->info_width) /* If out of bounds just return... */
 		return TRUE;
 
@@ -268,7 +268,7 @@ EXPORT gboolean lv_mouse_button_event(GtkWidget *widget, GdkEventButton *event, 
 	v_value = g_list_nth_data(lv_data->tlist,tnum);
 	if (event->state & (GDK_BUTTON3_MASK))
 	{
-		//printf("right button released... \n");
+		/*printf("right button released... \n");*/
 		v_value->highlight = FALSE;
 		gdk_draw_rectangle(lv_data->pixmap,
 				widget->style->black_gc,
@@ -281,7 +281,7 @@ EXPORT gboolean lv_mouse_button_event(GtkWidget *widget, GdkEventButton *event, 
 	}
 	else if (event->button == 3) /* right mouse button */
 	{
-		//printf("right button pushed... \n");
+		/*printf("right button pushed... \n");*/
 		v_value->highlight = TRUE;
 		gdk_draw_rectangle(lv_data->pixmap,
 				widget->style->black_gc,

@@ -33,7 +33,7 @@ typedef enum
 	LL = 10,
 	LR,
 	UL,
-	UR,
+	UR
 }CornerType;
 
 EXPORT gboolean dashdesigner_about(GtkWidget * widget, gpointer data)
@@ -376,7 +376,7 @@ EXPORT gboolean gauge_choice_button_event(GtkWidget *widget, GdkEventButton *eve
 		update_properties(gauge,GAUGE_ADD);
 	}
 
-//	printf("button event in gauge choice window at %i,%i\n",x_cur,y_cur);
+	/*printf("button event in gauge choice window at %i,%i\n",x_cur,y_cur);*/
 	return TRUE;
 
 }
@@ -403,8 +403,8 @@ EXPORT gboolean motion_event(GtkWidget *widget, GdkEventMotion *event, gpointer 
 	y_cur = (gint)event->y_root-origin_y;
 
 
-	//printf("motion event\n");
-//	printf("rel movement point %i,%i\n",x_cur,y_cur);
+	/*printf("motion event\n");*/
+	/*printf("rel movement point %i,%i\n",x_cur,y_cur);*/
 	if (grabbed)
 	{
 		if (moving)
@@ -479,7 +479,7 @@ EXPORT gboolean button_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 		moving = FALSE;
 		resizing = FALSE;
 		corner = -1;
-		//printf("button1 released, unlocking\n");
+		/*printf("button1 released, unlocking\n");*/
 		return TRUE;
 	}
 
@@ -524,7 +524,7 @@ EXPORT gboolean button_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 			}
 			if (event->button == 1)
 			{
-				//printf("grabbed it \n");
+				/*printf("grabbed it \n");*/
 				grabbed = TRUE;
 				tt.rel_grab_x=x_cur;
 				tt.rel_grab_y=y_cur;
@@ -580,7 +580,7 @@ EXPORT gboolean button_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 			}
 			else
 			{
-				//printf("didn't grab squat\n");
+				/*printf("didn't grab squat\n");*/
 				grabbed = FALSE;
 				moving = FALSE;
 				resizing = FALSE;
@@ -698,12 +698,12 @@ void update_properties(GtkWidget * widget, Choice choice)
 	}
 	else if (choice == GAUGE_REMOVE)
 	{
-//		printf ("gauge removal\n");
+		/*printf ("gauge removal\n");*/
 		table = g_object_get_data(G_OBJECT(widget),"prop_table");
 		gtk_widget_destroy(table);
 	}
 
-//	printf("update_properties\n");
+	/*printf("update_properties\n");*/
 }
 
 

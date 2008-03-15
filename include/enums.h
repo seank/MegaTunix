@@ -24,7 +24,7 @@ typedef enum
 	RAW_MEMORY_DUMP,
 	C_TEST,
 	GET_ERROR,
-	NULL_HANDLER,
+	NULL_HANDLER
 }InputHandler;
 
 /* Regular Buttons */
@@ -62,7 +62,7 @@ typedef enum
 	RESCALE_TABLE,
 	REQFUEL_RESCALE_TABLE,
 	EXPORT_SINGLE_TABLE,
-	IMPORT_SINGLE_TABLE,
+	IMPORT_SINGLE_TABLE
 }StdButton;
 
 /* Toggle/Radio buttons */
@@ -86,7 +86,7 @@ typedef enum
 	START_TRIGMON_LOGGER,
 	STOP_TOOTHMON_LOGGER,
 	STOP_TRIGMON_LOGGER,
-	COMM_AUTODETECT,
+	COMM_AUTODETECT
 }ToggleButton;
 
 	
@@ -117,7 +117,7 @@ typedef enum
 	GENERIC,
 	BAUD_CHANGE,
 	MAP_SENSOR_TYPE,
-	ALT_SIMUL,
+	ALT_SIMUL
 }SpinButton;
 
 /* Runtime Status flags */
@@ -129,7 +129,7 @@ typedef enum
         STAT_WARMUP, 
         STAT_AS_ENRICH, 
         STAT_ACCEL, 
-        STAT_DECEL,
+        STAT_DECEL
 }RuntimeStatus;
 
 typedef enum
@@ -141,14 +141,14 @@ typedef enum
 	DATALOG_IMPORT,
 	FIRMWARE_LOAD,
 	FULL_BACKUP,
-	FULL_RESTORE,
+	FULL_RESTORE
 }FileIoType;
 
 
 typedef enum
 {	
 	RED=0xc0,
-	BLACK,
+	BLACK
 }GuiColor;
 
 typedef enum
@@ -156,7 +156,7 @@ typedef enum
 	HEADER=0xd0,
 	PAGE,
 	RANGE,
-	TABLE,
+	TABLE
 }ImportParserFunc;
 
 typedef enum
@@ -168,7 +168,7 @@ typedef enum
 	VEX_TIME,
 	VEX_RPM_RANGE,
 	VEX_LOAD_RANGE,
-	VEX_NONE,
+	VEX_NONE
 }ImportParserArg;
 
 typedef enum
@@ -178,7 +178,7 @@ typedef enum
 	GRATICULE,
 	HIGHLIGHT,
 	TTM_AXIS,
-	TTM_TRACE,
+	TTM_TRACE
 }GcType;
 
 typedef enum
@@ -186,16 +186,8 @@ typedef enum
 	/* No capabilities == Standard B&G code with no modifications */
 	STANDARD	= 1<<0,
 	DUALTABLE	= 1<<1,
-	MSNS_E		= 1<<2,
+	MSNS_E		= 1<<2
 }Capability;
-
-typedef enum
-{
-	MTX=0x110,
-	MT_CLASSIC,
-	MT_FULL,
-	MT_RAW,
-}LogType;
 
 typedef enum
 {
@@ -212,7 +204,7 @@ typedef enum
 	KEYPARSER	= 1<<9,
 	RTMLOADER	= 1<<10,
 	COMPLEX_EXPR	= 1<<11,
-	CRITICAL	= 1<<30,
+	CRITICAL	= 1<<30
 }Dbg_Class;
 
 typedef enum guint
@@ -229,15 +221,8 @@ typedef enum guint
 	KEYPARSER_SHIFT		= 9,
 	RTMLOADER_SHIFT		= 10,
 	COMPLEX_EXPR_SHIFT	= 11,
-	CRITICAL_SHIFT		= 30,
+	CRITICAL_SHIFT		= 30
 }Dbg_Shift;
-
-typedef enum
-{
-        VNUM = 0x120,
-        TEXTVER,
-        SIG,
-}StoreType;
 
 typedef enum
 {
@@ -247,7 +232,7 @@ typedef enum
 	NULL_CMD,
 	INTERROGATION,
 	SILENT,
-	NOISY,
+	NOISY
 }CmdType;
 
 typedef enum
@@ -267,7 +252,7 @@ typedef enum
 	IO_JUST_BOOT,
 	IO_CLEAN_REBOOT,
 	IO_READ_TRIGMON_PAGE,
-	IO_READ_TOOTHMON_PAGE,
+	IO_READ_TOOTHMON_PAGE
 }Io_Command;
 
 typedef enum
@@ -303,7 +288,7 @@ typedef enum
 	UPD_TRIGTOOTHMON,
 	UPD_INITIALIZE_DASH,
 	UPD_BURN_MS_FLASH,
-	UPD_FORCE_PAGE_CHANGE,
+	UPD_FORCE_PAGE_CHANGE
 }UpdateFunction;
 
 typedef enum
@@ -312,7 +297,7 @@ typedef enum
 	MTX_ENUM,
 	MTX_BOOL,
 	MTX_FLOAT,
-	MTX_STRING,
+	MTX_STRING
 }DataType;
 
 typedef enum
@@ -338,14 +323,14 @@ typedef enum
 	DATALOGGING_TAB,
 	LOGVIEWER_TAB,
 	VE3D_VIEWER_TAB,
-	ERROR_STATUS_TAB,
+	ERROR_STATUS_TAB
 }TabIdent;
 
 typedef enum
 {
 	VE_EMB_BIT=0x1c0,
 	VE_VAR,
-	RAW_VAR,
+	RAW_VAR
 }ComplexExprType;
 
 typedef enum
@@ -353,13 +338,13 @@ typedef enum
 	UPLOAD=0x1c8,
 	DOWNLOAD,
 	RTV,
-	GAUGE,
+	GAUGE
 }ConvType;
 
 typedef enum
 {
 	MTX_HEX=0x1d0,
-	MTX_DECIMAL,
+	MTX_DECIMAL
 }Base;
 
 typedef enum
@@ -370,7 +355,7 @@ typedef enum
 	MTX_RANGE,
 	MTX_SPINBUTTON,
 	MTX_PROGRESS,
-	MTX_SCALE,
+	MTX_SCALE
 }WidgetType;
 
 
@@ -379,7 +364,7 @@ typedef enum
 	RTV_TICKLER=0x210,
 	LV_PLAYBACK_TICKLER,
 	TOOTHMON_TICKLER,
-	TRIGMON_TICKLER,
+	TRIGMON_TICKLER
 }TicklerType;
 
 typedef enum
@@ -389,7 +374,7 @@ typedef enum
 	MAF,
 	SD_AN_HYBRID,
 	MAF_AN_HYBRID,
-	SD_MAF_HYBRID,
+	SD_MAF_HYBRID
 }Algorithm;
 
 typedef enum
@@ -397,13 +382,13 @@ typedef enum
 	VEX_IMPORT=0x230,
 	VEX_EXPORT,
 	ECU_BACKUP,
-	ECU_RESTORE,
+	ECU_RESTORE
 }FioAction;
 
 typedef enum
 {
 	MTX_SIMPLE_WRITE=0x240,
-	MTX_CHUNK_WRITE,
+	MTX_CHUNK_WRITE
 }WriteMode;
 
 typedef enum
@@ -414,7 +399,7 @@ typedef enum
 	MTX_U16,
 	MTX_S16,
 	MTX_U32,
-	MTX_S32,
+	MTX_S32
 }DataSize;
 
 typedef enum
@@ -422,13 +407,13 @@ typedef enum
 	COUNT=0x260,
 	NUMMATCH,
 	SUBMATCH,
-	FULLMATCH,
+	FULLMATCH
 }MatchClass;
 
 typedef enum
 {
 	LV_PLAYBACK=0x270,
-	LV_REALTIME,
+	LV_REALTIME
 }Lv_Mode;
 
 typedef enum
@@ -438,7 +423,7 @@ typedef enum
 	LV_REWIND,
 	LV_FAST_FORWARD,
 	LV_STOP,
-	LV_PLAY,
+	LV_PLAY
 }Lv_Handler;
 
 

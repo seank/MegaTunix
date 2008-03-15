@@ -99,6 +99,7 @@ EXPORT gboolean create_color_span_event(GtkWidget * widget, gpointer data)
 	gfloat ubound = 0.0;
 	GladeXML *xml = NULL;
 	gchar * filename = NULL;
+	gint result = 0;
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
@@ -132,7 +133,7 @@ EXPORT gboolean create_color_span_event(GtkWidget * widget, gpointer data)
 	spinner = glade_xml_get_widget(xml,"range_highpoint_spin");
 	gtk_spin_button_set_range(GTK_SPIN_BUTTON(spinner),lbound,ubound);
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
 	switch (result)
 	{
 		case GTK_RESPONSE_APPLY:
@@ -167,6 +168,7 @@ EXPORT gboolean create_alert_span_event(GtkWidget * widget, gpointer data)
 	gfloat ubound = 0.0;
 	GladeXML *xml = NULL;
 	gchar * filename = NULL;
+	gint result = 0;
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
@@ -200,7 +202,7 @@ EXPORT gboolean create_alert_span_event(GtkWidget * widget, gpointer data)
 	spinner = glade_xml_get_widget(xml,"range_highpoint_spin");
 	gtk_spin_button_set_range(GTK_SPIN_BUTTON(spinner),lbound,ubound);
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
 	switch (result)
 	{
 		case GTK_RESPONSE_APPLY:
@@ -239,6 +241,7 @@ EXPORT gboolean create_polygon_event(GtkWidget * widget, gpointer wdata)
 	MtxPoint * points = NULL;
 	void * data = NULL;
 	GHashTable *hash = NULL;
+	gint result = 0;
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
@@ -267,7 +270,7 @@ EXPORT gboolean create_polygon_event(GtkWidget * widget, gpointer wdata)
 		return FALSE;
 	}
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
 	switch (result)
 	{
 		case GTK_RESPONSE_APPLY:
@@ -386,6 +389,7 @@ EXPORT gboolean create_text_block_event(GtkWidget * widget, gpointer data)
 	MtxTextBlock *tblock = NULL;
 	GladeXML *xml = NULL;
 	gchar * filename = NULL;
+	gint result = 0;
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
@@ -410,7 +414,7 @@ EXPORT gboolean create_text_block_event(GtkWidget * widget, gpointer data)
 		return FALSE;
 	}
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
 	switch (result)
 	{
 		case GTK_RESPONSE_APPLY:
@@ -447,6 +451,7 @@ EXPORT gboolean create_tick_group_event(GtkWidget * widget, gpointer data)
 	gchar * filename = NULL;
 	gfloat tmp1 = 0.0;
 	gfloat tmp2 = 0.0;
+	gint result = 0;
 	MtxGaugeFace *g = NULL;
 	
 	if (GTK_IS_WIDGET(gauge))
@@ -499,8 +504,8 @@ EXPORT gboolean create_tick_group_event(GtkWidget * widget, gpointer data)
 	{
 		return FALSE;
 	}
+	result = gtk_dialog_run(GTK_DIALOG(dialog));
 
-	gint result = gtk_dialog_run(GTK_DIALOG(dialog));
 	switch (result)
 	{
 		case GTK_RESPONSE_APPLY:
@@ -543,14 +548,16 @@ EXPORT gboolean create_tick_group_event(GtkWidget * widget, gpointer data)
 EXPORT gboolean generic_spin_button_handler(GtkWidget *widget, gpointer data)
 {
 	gfloat tmpf = 0.0;
+	MtxGaugeFace *g = NULL;
+	gint handler = 0;
+
 	tmpf = (gfloat)gtk_spin_button_get_value((GtkSpinButton *)widget);
 	if (!g_object_get_data(G_OBJECT(widget),"handler"))
 	{
 		printf("control %s has no handler\n",(gchar *)glade_get_widget_name(widget));
 		return FALSE;
 	}
-	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
-	MtxGaugeFace *g = NULL;
+	handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
 
 	if (GTK_IS_WIDGET(gauge))
 		g = MTX_GAUGE_FACE(gauge);
@@ -577,10 +584,10 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 	gfloat newval = 0.0;
 	GtkWidget *lowpartner = NULL;
 	GtkWidget *highpartner = NULL;
+	MtxGaugeFace *g = NULL;
 	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
 	tmpf = (gfloat)gtk_spin_button_get_value((GtkSpinButton *)widget);
 	tmpi = (gint)(tmpf+0.00001);
-	MtxGaugeFace *g = NULL;
 
 	if (GTK_IS_WIDGET(gauge))
 		g = MTX_GAUGE_FACE(gauge);
@@ -687,12 +694,12 @@ EXPORT gboolean entry_change_color(GtkWidget * widget, gpointer data)
 EXPORT gboolean change_font(GtkWidget *widget, gpointer data)
 {
 	gchar * tmpbuf = NULL;
+	MtxGaugeFace *g = NULL;
 	tmpbuf = (gchar *)gtk_font_button_get_font_name (GTK_FONT_BUTTON(widget));
 	/* Strip out the font size as the gauge lib uses a different scaling
 	 * method that scales with the size of the gauge
 	 */
 	tmpbuf = g_strchomp(g_strdelimit(tmpbuf,"0123456789",' '));
-	MtxGaugeFace *g = NULL;
 
 	if (GTK_IS_WIDGET(gauge))
 		g = MTX_GAUGE_FACE(gauge);
@@ -728,6 +735,7 @@ EXPORT gboolean checkbutton_handler(GtkWidget *widget, gpointer data)
 
 EXPORT gboolean color_button_color_set(GtkWidget *widget, gpointer data)
 {
+	GdkColor color;
 	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
 
 	if (!GTK_IS_WIDGET(gauge))
@@ -735,7 +743,6 @@ EXPORT gboolean color_button_color_set(GtkWidget *widget, gpointer data)
 
 	if (hold_handlers)
 		return TRUE;
-	GdkColor color;
 
 	gtk_color_button_get_color(GTK_COLOR_BUTTON(widget),&color);
 	mtx_gauge_face_set_color(MTX_GAUGE_FACE(gauge),handler,color);
@@ -1036,11 +1043,13 @@ gboolean sweep_gauge(gpointer data)
 	GladeXML *xml = NULL;
 	GtkWidget *button = NULL;
 	static gboolean rising = TRUE;
+	GtkWidget * gauge = NULL;
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	GtkWidget * gauge = data;
+	gauge = (GtkWidget *)data;
+
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), LBOUND, &lower);
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), UBOUND, &upper);
 	interval = (upper-lower)/100.0;
@@ -1223,7 +1232,6 @@ void update_onscreen_tgroups()
 	for (i=0;i<array->len; i++)
 	{
 		frame = gtk_frame_new(NULL);
-		//		gtk_container_set_border_width(GTK_CONTAINER(frame),5);
 		gtk_table_attach(GTK_TABLE(table),frame,0,1,i,i+1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,5,0);
 		tgroup = g_array_index(array,MtxTickGroup *, i);
 		subtable = gtk_table_new(1,2,FALSE);
@@ -1233,7 +1241,6 @@ void update_onscreen_tgroups()
 		g_object_set_data(G_OBJECT(button),"tgroup_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_tgroup),NULL);
 		gtk_table_attach(GTK_TABLE(subtable),button,0,1,0,1,GTK_SHRINK,GTK_FILL,0,0);
-		//		gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&white);
 		/* Load glade template */
 		xml = glade_xml_new(filename, "tgroup_main_table", NULL);
 		tg_main_table = glade_xml_get_widget(xml,"tgroup_main_table");
@@ -1416,7 +1423,6 @@ void update_onscreen_polygons()
 	{
 		frame = gtk_frame_new(NULL);
 		gtk_widget_show(frame);
-		//		gtk_container_set_border_width(GTK_CONTAINER(frame),5);
 		gtk_table_attach(GTK_TABLE(table),frame,0,1,i,i+1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,5,0);
 		poly = g_array_index(array,MtxPolygon *, i);
 		subtable = gtk_table_new(1,2,FALSE);
@@ -1428,7 +1434,6 @@ void update_onscreen_polygons()
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_polygon),NULL);
 		gtk_table_attach(GTK_TABLE(subtable),button,0,1,0,1,GTK_SHRINK,GTK_FILL,0,0);
 		gtk_widget_show(button);
-		//		gtk_widget_modify_bg(GTK_WIDGET(ebox),GTK_STATE_NORMAL,&white);
 		/* Load glade template */
 		xml = glade_xml_new(filename, "polygon_notebook", NULL);
 		notebook = glade_xml_get_widget(xml,"polygon_notebook");
@@ -1487,7 +1492,6 @@ void update_onscreen_polygons()
 			tmpwidget =  glade_xml_get_widget(xml,"polygon_details_table");
 			gtk_table_attach(GTK_TABLE(tmpwidget),dummy,0,1,1,2,GTK_FILL,GTK_FILL,0,0);
 			gtk_widget_show(dummy);
-//			gtk_combo_box_set_active(GTK_COMBO_BOX(dummy),0);
 			gtk_widget_show_all(glade_xml_get_widget(xml,"circle_polygon_table"));
 			/* Update circle controls */
 			/* X Center */
@@ -1923,7 +1927,7 @@ gboolean alter_a_range_data(GtkWidget *widget, gpointer data)
 	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
 	gfloat value = 0.0;
 	GdkColor color;
-	AlrtField field = (AlrtField)data;
+	AlertField field = (AlertField)data;
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
@@ -2120,7 +2124,7 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 	 * and then resize table destroying the widgets */
 	else if (rows > num_points)
 	{
-//		printf("rows > num_points\n");
+		/*printf("rows > num_points\n");*/
 		for (i=rows;i>num_points;i--)
 		{
 			xn = g_strdup_printf("generic_x_%i_spin",i-1);
@@ -2144,18 +2148,18 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 			g_free(xn);
 			g_free(yn);
 			g_free(ln);
-//			printf("removing controls on row %i\n",i);
+			/*printf("removing controls on row %i\n",i);*/
 		}
 		gtk_table_resize(GTK_TABLE(table),num_points,3);
-//		printf("table shoulda been resized to %i,3\n",num_points);
+		/*printf("table shoulda been resized to %i,3\n",num_points);*/
 	}
 	else if (num_points > rows)
 	{
-//		printf("num_points > rows\n");
+		/*printf("num_points > rows\n");*/
 		gtk_table_resize(GTK_TABLE(table),num_points,3);
 		for (i=0;i<num_points;i++)
 		{
-//			printf("creating new sets of spinners for row %i\n",i+1);
+			/*printf("creating new sets of spinners for row %i\n",i+1);*/
 			xn = g_strdup_printf("generic_x_%i_spin",i);
 			if (!GTK_IS_SPIN_BUTTON(g_hash_table_lookup(hash,xn)))
 			{

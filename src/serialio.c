@@ -27,7 +27,6 @@
 #include <runtime_gui.h>
 #include <serialio.h>
 #include <string.h>
-#include <structures.h>
 #include <termios.h>
 #include <threads.h>
 #include <unistd.h>
@@ -58,7 +57,7 @@ gboolean open_serial(gchar * port_name)
 	gchar * err_text = NULL;
 
 	g_static_mutex_lock(&serio_mutex);
-	//printf("Opening serial port %s\n",port_name);
+	/*printf("Opening serial port %s\n",port_name);*/
 	/* Open Read/Write and NOT as the controlling TTY */
 	/* Blocking mode... */
 #ifdef __WIN32__
@@ -89,7 +88,7 @@ gboolean open_serial(gchar * port_name)
 		serial_params->open = FALSE;
 		serial_params->fd = -1;
 		err_text = (gchar *)g_strerror(errno);
-		//printf("Error Opening \"%s\", Error Code: \"%s\"\n",port_name,g_strdup(err_text));
+		/*printf("Error Opening \"%s\", Error Code: \"%s\"\n",port_name,g_strdup(err_text));*/
 		if (dbg_lvl & (SERIAL_RD|SERIAL_WR|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": open_serial()\n\tError Opening \"%s\", Error Code: \"%s\"\n",port_name,err_text));
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup_printf("Error Opening \"%s\", Error Code: \"%s\"\n",port_name,err_text));
@@ -97,7 +96,7 @@ gboolean open_serial(gchar * port_name)
 		thread_update_logbar("comms_view","warning",g_strdup_printf("Error Opening \"%s\", Error Code: %s \n",port_name,err_text),FALSE,FALSE);
 	}
 
-	//printf("open_serial returning\n");
+	/*printf("open_serial returning\n");*/
 	g_static_mutex_unlock(&serio_mutex);
 	return port_open;
 }
@@ -126,49 +125,22 @@ void flush_serial(gint fd, gint type)
 
 
 /*!
- \brief toggle_serial_control_lines() is another wrapper that calls the 
- appropriate calls to toggle the hardware control lines.  This is an 
- experimental attempt to see if it resolves a serial over bluetooth connection
- loss problem
- */
-/*
-void toggle_serial_control_lines()
-{
-#ifdef __WIN32__
-	win32_toggle_serial_control_lines();
-#else
-	struct termios oldtio;
-	struct termios temptio;
-
-	// Save current port settings //
-	tcgetattr(serial_params->fd,&oldtio);
-	memcpy(&temptio, &oldtio, sizeof(struct termios)); 
-
-	serial_params->newtio.c_cflag &= ~(CLOCAL);
-	serial_params->newtio.c_cflag |= (CRTSCTS);
-	tcsetattr(serial_params->fd,TCSAFLUSH,&temptio);
-	g_usleep (100000); // Wait 100 ms //
-	//Set back
-	tcsetattr(serial_params->fd,TCSAFLUSH,&oldtio);
-#endif
-}
-*/
-
-/*!
  \brief setup_serial_params() is another wrapper that calls the appropriate
  calls to initialize the serial port to the proper speed, bits, flow, parity
  etc..
  */
 void setup_serial_params(gint baudrate)
 {
+#ifndef __WIN32__
+	speed_t baud = B9600;
+#endif
 	if (serial_params->open == FALSE)
 		return;
-	//printf("setup_serial_params entered\n");
+	/*printf("setup_serial_params entered\n");*/
 	g_static_mutex_lock(&serio_mutex);
 #ifdef __WIN32__
 	win32_setup_serial_params(baudrate);
 #else
-	guint baud = 0;
 	/* Save serial port status */
 	tcgetattr(serial_params->fd,&serial_params->oldtio);
 
@@ -231,7 +203,6 @@ void setup_serial_params(gint baudrate)
 	serial_params->newtio.c_cc[VEOF]     = 0;     /* Ctrl-d */
 	serial_params->newtio.c_cc[VEOL]     = 0;     /* '\0' */
 	serial_params->newtio.c_cc[VMIN]     = 0;     
-	//serial_params->newtio.c_cc[VTIME]    = 1;     /* 100ms timeout */
 	serial_params->newtio.c_cc[VTIME]    = 1;     /* 100ms timeout */
 
 	tcsetattr(serial_params->fd,TCSAFLUSH,&serial_params->newtio);
@@ -260,7 +231,7 @@ void close_serial()
 		return;
 	}
 
-	//printf("Closing serial port\n");
+	/*printf("Closing serial port\n");*/
 #ifndef __WIN32__
 	tcsetattr(serial_params->fd,TCSAFLUSH,&serial_params->oldtio);
 #endif
@@ -295,7 +266,7 @@ void *serial_repair_thread(gpointer data)
 	 * Thus we need to handle all possible conditions cleanly
 	 */
 	gboolean abort = FALSE;
-	static gboolean serial_is_open = FALSE; // Assume never opened 
+	static gboolean serial_is_open = FALSE; /* Assume never opened */
 	gchar * potential_ports;
 	gboolean autodetect = FALSE;
 	extern volatile gboolean offline;
@@ -331,7 +302,7 @@ void *serial_repair_thread(gpointer data)
 		serial_is_open = FALSE;
 		/* Fall through */
 	}
-	// App just started, no connection yet
+	/* App just started, no connection yet*/
 	while ((!serial_is_open) && (!abort)) 	
 	{
 		autodetect = (gboolean) g_object_get_data(G_OBJECT(global_data),"autodetect_port");
@@ -349,16 +320,16 @@ void *serial_repair_thread(gpointer data)
 			/* Message queue used to exit immediately */
 			if (g_async_queue_try_pop(serial_repair_queue))
 			{
-				//printf ("exiting repair thread immediately\n");
+				/*printf ("exiting repair thread immediately\n");*/
 				g_timeout_add(100,(GtkFunction)queue_function,g_strdup("kill_conn_warning"));
 				g_thread_exit(0);
 			}
 			if (!g_file_test(vector[i],G_FILE_TEST_EXISTS))
 			{
-				//printf("File %s, doesn't exist\n",vector[i]);
+				/*printf("File %s, doesn't exist\n",vector[i]);*/
 
-				//Wait 100 ms to avoid deadlocking
-				g_usleep(100000);
+				/* Wait 100 ms to avoid deadlocking */
+				g_usleep(200000);
 				continue;
 			}
 			g_usleep(100000);

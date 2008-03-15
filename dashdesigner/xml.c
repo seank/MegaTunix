@@ -110,8 +110,6 @@ void load_geometry(GtkWidget *dash, xmlNode *node)
 		cur_node = cur_node->next;
 
 	}
-//	gtk_window_resize(GTK_WINDOW(gtk_widget_get_toplevel(dash)),width,height);
-//	gtk_widget_set_size_request(dash,width,height);
 	gtk_widget_set_size_request(dash,-1,-1);
 
 }

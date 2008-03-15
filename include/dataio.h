@@ -16,7 +16,7 @@
 
 #include <enums.h>
 #include <gtk/gtk.h>
-#include <structures.h>
+#include <threads.h>
 
 /* Prototypes */
 gboolean handle_ecu_data(InputHandler, Io_Message * );

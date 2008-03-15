@@ -21,7 +21,6 @@
 #include <rtv_map_loader.h>
 #include <string.h>
 #include <stringmatch.h>
-#include <structures.h>
 #include <widgetmgmt.h>
 
 

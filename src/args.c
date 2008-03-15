@@ -14,9 +14,9 @@
 
 #include <args.h>
 #include <config.h>
+#include <defines.h>
 #include <glib.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -55,7 +55,6 @@ void handle_args(gint argc, gchar * argv[])
 	context = g_option_context_new ("- MegaTunix options");
 	g_option_context_add_main_entries (context, entries, NULL);
 	g_option_context_add_group (context, gtk_get_option_group (TRUE));
-	//g_option_context_set_help_enabled(context,FALSE);
 	g_option_context_parse (context, &argc, &argv, &error);
 
 	if (args->version)

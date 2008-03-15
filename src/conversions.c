@@ -26,7 +26,6 @@
 #include <rtv_processor.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <tabloader.h>
 
 
@@ -68,12 +67,12 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	g_static_mutex_lock(&mutex);
 
 	if (NULL == g_object_get_data(G_OBJECT(widget),"raw_lower"))
-		lower = 0; // BAD assumption
+		lower = 0; /* BAD assumption */
 	else
 		lower = (gint)g_object_get_data(G_OBJECT(widget),"raw_lower");
 
 	if (NULL == g_object_get_data(G_OBJECT(widget),"raw_upper"))
-		upper = 255; // BAD assumption
+		upper = 255; /* BAD assumption */
 	else
 		upper = (gint)g_object_get_data(G_OBJECT(widget),"raw_upper");
 
@@ -174,7 +173,7 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	}
 	else
 	{
-		//return_value = evaluator_evaluate_x(evaluator,value)+0.001;
+		/*return_value = evaluator_evaluate_x(evaluator,value)+0.001; */
 		return_value = evaluator_evaluate_x(evaluator,value);
 
 		if (dbg_lvl & CONVERSIONS)
@@ -339,7 +338,7 @@ gfloat convert_after_upload(GtkWidget * widget)
 		g_static_mutex_unlock(&mutex);
 		return (return_value);		
 	}
-//return_value = evaluator_evaluate_x(evaluator,tmpi)+0.0001;
+	/*return_value = evaluator_evaluate_x(evaluator,tmpi)+0.0001; */
 	return_value = evaluator_evaluate_x(evaluator,tmpi);
 
 	if (dbg_lvl & CONVERSIONS)
@@ -364,7 +363,6 @@ void convert_temps(gpointer widget, gpointer units)
 	gfloat value = 0.0;
 	GtkAdjustment * adj = NULL;
 	gchar *text = NULL;
-//	gchar *depend_on = NULL;
 	gboolean state = FALSE;
 	gint widget_temp = -1;
 	extern GdkColor black;
@@ -374,7 +372,6 @@ void convert_temps(gpointer widget, gpointer units)
 	 * return TRUE/FALSE.  True if what it depends on is in the matching
 	 * state, FALSE otherwise...
 	 */
-//	depend_on = (gchar *)g_object_get_data(G_OBJECT(widget),"depend_on");
 	if ((!widget) || (leaving))
 		return;
 	dep_obj = (GObject *)g_object_get_data(G_OBJECT(widget),"dep_object");

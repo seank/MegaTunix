@@ -18,16 +18,17 @@
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gui_handlers.h>
 #include <gui_handlers.h>
 #include "../mtxmatheval/mtxmatheval.h"
 #include <logviewer_gui.h>
 #include <math.h>
+#include <multi_expr_loader.h>
 #include <req_fuel.h>
 #include <rtv_processor.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <threads.h>
 #include <vetable_gui.h>
 
@@ -211,7 +212,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"data");
 	tmpwidget = g_hash_table_lookup(dynamic_widgets,tmpbuf);
 	g_return_if_fail(GTK_IS_WIDGET(tmpwidget));
-	//	new_reqfuel = gtk_spin_button_get_value(GTK_SPIN_BUTTON(tmpwidget));
+	/*new_reqfuel = gtk_spin_button_get_value(GTK_SPIN_BUTTON(tmpwidget));*/
 	tmpbuf = gtk_editable_get_chars(GTK_EDITABLE(tmpwidget),0,-1);
 	new_reqfuel = (gfloat)g_ascii_strtod(tmpbuf,NULL);
 	percentage = firmware->rf_params[table_num]->req_fuel_total/new_reqfuel;
@@ -321,7 +322,6 @@ void draw_ve_marker()
 	static gint **last = NULL;
 	static GdkColor ** old_colors = NULL;
 	static GdkColor color= { 0, 0,16384,16384};
-	//extern GdkColor white;
 	GdkColor newcolor;
 	gfloat value = 0.0;
 	GtkRcStyle *style = NULL;
@@ -497,7 +497,7 @@ void draw_ve_marker()
 			right_w = 0;
 		}
 	}
-	//	printf("left bin %i, right bin %i, left_weight %f, right_weight %f\n",bin[0],bin[1],left_w,right_w);
+	/*printf("left bin %i, right bin %i, left_weight %f, right_weight %f\n",bin[0],bin[1],left_w,right_w);*/
 
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
@@ -554,7 +554,7 @@ void draw_ve_marker()
 	return;
 
 redraw:
-	//	printf("bottom bin %i, top bin %i, bottom_weight %f, top_weight %f\n",bin[2],bin[3],bottom_w,top_w);
+	/*printf("bottom bin %i, top bin %i, bottom_weight %f, top_weight %f\n",bin[2],bin[3],bottom_w,top_w);*/
 
 	if ((bin[0] == -1) || (bin[2] == -1))
 		z_bin[0] = -1;
@@ -578,11 +578,6 @@ redraw:
 		{
 			if ((last[table][i] != z_bin[j] ) && (last_widgets[table][last[table][i]]))
 			{
-				//for (k=0;i<4;k++)
-				//	{
-				//			if (z_bin[k] != last[table][i])
-				//			{
-				//				printf("setting to normal coord %i\n",last[table][i]);
 				if (color_changed)
 				{
 					size = firmware->table_params[table]->z_size;
@@ -629,7 +624,7 @@ redraw:
 		style = gtk_widget_get_modifier_style(widget);
 
 		old_colors[table][z_bin[i]] = style->base[GTK_STATE_NORMAL];
-		//	printf("table %i, zbin[%i] %i\n",table,i,z_bin[i]);
+		/*printf("table %i, zbin[%i] %i\n",table,i,z_bin[i]);*/
 		color.red = z_weight[i]*32768 +32767;
 		color.green = (1.0-z_weight[i])*65535 +0;
 		color.blue = (1.0-z_weight[i])*32768 +0;

@@ -21,6 +21,7 @@
 #include <debugging.h>
 #include <enums.h>
 #include <fileio.h>
+#include <firmware.h>
 #include <gdk/gdkkeysyms.h>
 #include <glade/glade.h>
 #include <gui_handlers.h>
@@ -31,7 +32,7 @@
 #include <logviewer_core.h>
 #include <logviewer_events.h>
 #include <logviewer_gui.h>
-//#include <multitherm.h>
+/*#include <multitherm.h>*/
 #include <offline.h>
 #include <mode_select.h>
 #include <notifications.h>
@@ -42,11 +43,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <t-logger.h>
 #include <threads.h>
 #include <timeout_handlers.h>
+#include <unions.h>
 #include <user_outputs.h>
 #include <vetable_gui.h>
 #include <vex_support.h>
@@ -177,8 +178,8 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 		g_source_remove(dispatcher_id);
 	dispatcher_id = 0;
 
-	g_static_mutex_lock(&rtv_mutex);  // <-- this  makes us wait 
-	g_static_mutex_unlock(&rtv_mutex); // now unlock
+	g_static_mutex_lock(&rtv_mutex);  /* <-- this makes us wait */
+	g_static_mutex_unlock(&rtv_mutex); /* now unlock */
 
 
 	/* This makes us wait until the io queue finishes */
@@ -263,7 +264,7 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 	}
 	if (gtk_toggle_button_get_inconsistent(GTK_TOGGLE_BUTTON(widget)))
 		gtk_toggle_button_set_inconsistent(GTK_TOGGLE_BUTTON(widget),FALSE);
-	//printf("toggle_handler for %s\n",(gchar *)glade_get_widget_name(widget));
+	/*printf("toggle_handler for %s\n",(gchar *)glade_get_widget_name(widget));*/
 
 	if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget))) 
 	{	/* It's pressed (or checked) */
@@ -298,11 +299,11 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				forced_update = TRUE;
 				break;
 			case USE_ALT_IAT:
-				//use_alt_iat = TRUE;
+				/*use_alt_iat = TRUE;*/
 				gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"enter_iat_sensor_button")),TRUE);
 				break;
 			case USE_ALT_CLT:
-				//use_alt_clt = TRUE;
+				/*use_alt_clt = TRUE;*/
 				gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"enter_clt_sensor_button")),TRUE);
 				break;
 			case COMMA:
@@ -371,11 +372,11 @@ EXPORT gboolean toggle_button_handler(GtkWidget *widget, gpointer data)
 				tips_in_use = FALSE;
 				break;
 			case USE_ALT_IAT:
-				//use_alt_iat = FALSE;
+				/*use_alt_iat = FALSE;*/
 				gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"enter_iat_sensor_button")),FALSE);
 				break;
 			case USE_ALT_CLT:
-				//use_alt_clt = FALSE;
+				/*use_alt_clt = FALSE;*/
 				gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets,"enter_clt_sensor_button")),FALSE);
 				break;
 			default:
@@ -444,30 +445,30 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	group_2_update = (gchar *)g_object_get_data(G_OBJECT(widget),"group_2_update");
 	table_2_update = (gchar *)g_object_get_data(G_OBJECT(widget),"update_table");
 
-	// If it's a check button then it's state is dependant on the button's state
+	/* If it's a check button then it's state is dependant on the button's state*/
 	if (!GTK_IS_RADIO_BUTTON(widget))
 		bitval = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 	switch ((SpinButton)handler)
 	{
 			break;
 		case MAP_SENSOR_TYPE:
-			//printf("MAP SENSOR CHANGE\n");
+			/*printf("MAP SENSOR CHANGE\n");*/
 			if ((g_object_get_data(G_OBJECT(widget),"source_key")) && (g_object_get_data(G_OBJECT(widget),"source_value")))
 			{
-		//		printf("key %s value %s\n",(gchar *)g_object_get_data(G_OBJECT(widget),"source_key"),(gchar *)g_object_get_data(G_OBJECT(widget),"source_value"));
+		/*		printf("key %s value %s\n",(gchar *)g_object_get_data(G_OBJECT(widget),"source_key"),(gchar *)g_object_get_data(G_OBJECT(widget),"source_value"));*/
 				g_hash_table_replace(sources_hash,g_strdup(g_object_get_data(G_OBJECT(widget),"source_key")),g_strdup(g_object_get_data(G_OBJECT(widget),"source_value")));
 			}
 			/* FAll Through */
 		case GENERIC:
 			tmp = get_ecu_data(canID,page,offset,size);
-			tmp = tmp & ~bitmask;	//clears bits 
+			tmp = tmp & ~bitmask;	/*clears bits */
 			tmp = tmp | (bitval << bitshift);
 			dload_val = tmp;
 			if (dload_val == get_ecu_data(canID,page,offset,size))
 				return FALSE;
 			break;
 		case DEBUG_LEVEL:
-			// Debugging selection buttons 
+			/* Debugging selection buttons */
 			tmp32 = dbg_lvl;
 			tmp32 = tmp32 & ~bitmask;
 			tmp32 = tmp32 | (bitval << bitshift);
@@ -482,7 +483,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 						G_OBJECT(widget),"table_num");
 				table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 				tmp = get_ecu_data(canID,page,offset,size);
-				tmp = tmp & ~bitmask;// clears bits 
+				tmp = tmp & ~bitmask;/* clears bits */
 				tmp = tmp | (bitval << bitshift);
 				dload_val = tmp;
 				if (dload_val == get_ecu_data(canID,page,offset,size))
@@ -659,7 +660,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	text = gtk_editable_get_chars(GTK_EDITABLE(widget),0,-1);
 	tmpi = (gint)strtol(text,NULL,base);
 	tmpf = (gfloat)g_strtod(text,NULL);
-	//	printf("base \"%i\", text \"%s\" int val \"%i\", float val \"%f\" \n",base,text,tmpi,tmpf);
+	/*	printf("base \"%i\", text \"%s\" int val \"%i\", float val \"%f\" \n",base,text,tmpi,tmpf);*/
 	g_free(text);
 	/* This isn't quite correct, as the base can either be base10 
 	 * or base16, the problem is the limits are in base10
@@ -669,12 +670,12 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	if ((tmpf != (gfloat)tmpi) && (!is_float))
 	{
 		/* Pause signals while we change the value */
-		//		printf("resetting\n");
-		g_signal_handlers_block_by_func (widget,(gpointer) std_entry_handler, data);
+		/*		printf("resetting\n");*/
+		g_signal_handlers_block_by_func (widget,(gpointer)std_entry_handler, data);
 		tmpbuf = g_strdup_printf("%i",tmpi);
 		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
 		g_free(tmpbuf);
-		g_signal_handlers_unblock_by_func (widget,(gpointer) std_entry_handler, data);
+		g_signal_handlers_unblock_by_func (widget,(gpointer)std_entry_handler, data);
 	}
 	switch ((SpinButton)handler)
 	{
@@ -705,7 +706,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 			real_value = convert_after_upload(widget);
 			set_ecu_data(canID,page,offset,size,old);
 
-			//printf("real_value %f\n",real_value);
+			/*printf("real_value %f\n",real_value);*/
 			g_signal_handlers_block_by_func (widget,(gpointer) std_entry_handler, data);
 			if (is_float)
 			{
@@ -759,7 +760,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmpf -= 22.5;
 				dload_val = convert_before_download(widget,tmpf);
 			}
-			else	// tmpf <= 89.65 degrees, no long trigger
+			else	/* tmpf <= 89.65 degrees, no long trigger*/
 			{
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
@@ -797,7 +798,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 				tmpf -= 45.0;
 				dload_val = convert_before_download(widget,tmpf);
 			}
-			else	// tmpf <= 45 degrees, 
+			else	/* tmpf <= 45 degrees, */
 			{
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
@@ -965,7 +966,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			break;
 		case ENTER_SENSOR_INFO:
 			printf("not implemented yet\n");
-			//multitherm_request_info((gpointer)widget);
+			/*multitherm_request_info((gpointer)widget);*/
 			break;
 		case CLOSE_LOGFILE:
 			if (offline)
@@ -1135,7 +1136,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			tmpwidget = g_hash_table_lookup(dynamic_widgets,"logviewer_trace_darea");	
 			if (tmpwidget)
 				lv_configure_event(g_hash_table_lookup(dynamic_widgets,"logviewer_trace_darea"),NULL,NULL);
-			//	g_signal_emit_by_name(tmpwidget,"configure_event",NULL);
+			/*	g_signal_emit_by_name(tmpwidget,"configure_event",NULL);*/
 			break;
 
 		case NUM_SQUIRTS_1:
@@ -1179,7 +1180,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			tmpbuf = (gchar *)g_object_get_data(
 					G_OBJECT(widget),"table_num");
 			table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
-			//printf("table num %i\n",table_num);
+			/*printf("table num %i\n",table_num);*/
 			divider_offset = firmware->table_params[table_num]->divider_offset;
 			firmware->rf_params[table_num]->last_divider = get_ecu_data(canID,page,divider_offset,size);
 			firmware->rf_params[table_num]->last_num_cyls = firmware->rf_params[table_num]->num_cyls;
@@ -1196,7 +1197,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = tmp & ~bitmask;	/*clears top 4 bits */
 				tmp = tmp | ((tmpi-1) << bitshift);
 				dload_val = tmp;
-				//printf("new num_cyls is %i, new data is %i\n",tmpi,tmp);
+				/*printf("new num_cyls is %i, new data is %i\n",tmpi,tmp);*/
 				q_data = g_new0(Output_Data, 1);
 				q_data->canID = canID;
 				q_data->page = page;
@@ -1280,7 +1281,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				value -= 22.5;
 				dload_val = convert_before_download(widget,value);
 			}
-			else	// value <= 89.65 degrees, no long trigger
+			else	/* value <= 89.65 degrees, no long trigger*/
 			{
 				tmp = get_ecu_data(canID,page,spconfig_offset,size);
 				tmp = tmp & ~0x3; /*clears lower 2 bits */
@@ -1318,7 +1319,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				value -= 45.0;
 				dload_val = convert_before_download(widget,value);
 			}
-			else	// value <= 45 degrees, 
+			else	/* value <= 45 degrees, */
 			{
 				tmp = get_ecu_data(canID,page,oddfire_bit_offset,size);
 				tmp = tmp & ~0x7; /*clears lower 3 bits */
@@ -1416,7 +1417,7 @@ void update_ve_const()
 
 	for (i=0;i<firmware->total_tables;i++)
 	{
-		//printf("\n");
+		/*printf("\n");*/
 		page = firmware->table_params[i]->z_page;
 		if (firmware->table_params[i]->reqfuel_offset < 0)
 			continue;
@@ -1434,9 +1435,11 @@ void update_ve_const()
 		firmware->rf_params[i]->last_alternate = firmware->rf_params[i]->alternate;
 		reqfuel = get_ecu_data(canID,page,firmware->table_params[i]->reqfuel_offset,size);
 
-		//printf("num_inj %i, divider %i\n",firmware->rf_params[i]->num_inj,firmware->rf_params[i]->divider);
-		//printf("num_cyls %i, alternate %i\n",firmware->rf_params[i]->num_cyls,firmware->rf_params[i]->alternate);
-		//printf("req_fuel_per_lsquirt is %i\n",reqfuel);
+		/*
+		 * printf("num_inj %i, divider %i\n",firmware->rf_params[i]->num_inj,firmware->rf_params[i]->divider);
+		 * printf("num_cyls %i, alternate %i\n",firmware->rf_params[i]->num_cyls,firmware->rf_params[i]->alternate);
+		 * printf("req_fuel_per_lsquirt is %i\n",reqfuel);
+		 */
 
 
 		/* Calcs vary based on firmware. 
@@ -1446,17 +1449,17 @@ void update_ve_const()
 		 */
 		if (firmware->capabilities & DUALTABLE)
 		{
-		//	printf("DT\n");
+		/*	printf("DT\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else if ((firmware->capabilities & MSNS_E) && (((get_ecu_data(canID,firmware->table_params[i]->dtmode_page,firmware->table_params[i]->dtmode_offset,size)& 0x10) >> 4) == 1))
 		{
-		//	printf("MSnS-E DT\n");
+		/*	printf("MSnS-E DT\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else
 		{
-		//	printf("B&G\n");
+		/*	printf("B&G\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/((float)(firmware->rf_params[i]->divider)*((float)(firmware->rf_params[i]->alternate)+1.0));
 		}
 
@@ -1465,7 +1468,7 @@ void update_ve_const()
 		tmpf /= 10.0;
 		firmware->rf_params[i]->req_fuel_total = tmpf;
 		firmware->rf_params[i]->last_req_fuel_total = tmpf;
-		//printf("req_fuel_total is %f\n",tmpf);
+		/*printf("req_fuel_total is %f\n",tmpf);*/
 
 		/* Injections per cycle */
 		firmware->rf_params[i]->num_squirts = (float)(firmware->rf_params[i]->num_cyls)/(float)(firmware->rf_params[i]->divider);
@@ -1676,7 +1679,9 @@ void update_widget(gpointer object, gpointer user_data)
 			value = (value-32)*(5.0/9.0);
 	}
 
-	// update widget whether spin,radio or checkbutton  (check encompases radio)
+	/* update widget whether spin,radio or checkbutton  
+	 * (checkbutton encompases radio)
+	 */
 	if ((GTK_IS_ENTRY(widget)) && (!GTK_IS_SPIN_BUTTON(widget)))
 	{
 		if ((int)g_object_get_data(G_OBJECT(widget),"handler") == ODDFIRE_ANGLE)
@@ -1885,7 +1890,7 @@ void update_widget(gpointer object, gpointer user_data)
 		{
 			if ((g_object_get_data(G_OBJECT(widget),"source_key")) && (g_object_get_data(G_OBJECT(widget),"source_value")))
 			{
-			//	printf("key %s value %s\n",(gchar *)g_object_get_data(G_OBJECT(widget),"source_key"),(gchar *)g_object_get_data(G_OBJECT(widget),"source_value"));
+			/*	printf("key %s value %s\n",(gchar *)g_object_get_data(G_OBJECT(widget),"source_key"),(gchar *)g_object_get_data(G_OBJECT(widget),"source_value"));*/
 				g_hash_table_replace(sources_hash,g_strdup(g_object_get_data(G_OBJECT(widget),"source_key")),g_strdup(g_object_get_data(G_OBJECT(widget),"source_value")));
 
 			}
@@ -2106,13 +2111,15 @@ EXPORT gboolean widget_grab(GtkWidget *widget, GdkEventButton *event, gpointer d
 	extern GHashTable *dynamic_widgets;
 
 	/* Select all chars on click */
-//	printf("selecting all chars, or so I thought....\n");
-//	gtk_editable_select_region(GTK_EDITABLE(widget),0,-1);
+	/*
+	 * printf("selecting all chars, or so I thought....\n");
+	 * gtk_editable_select_region(GTK_EDITABLE(widget),0,-1);
+	 */
 
 	if ((gboolean)data == TRUE)
 		goto testit;
 
-	if (event->button != 1) // Left button click 
+	if (event->button != 1) /* Left button click  */
 		return FALSE;
 
 	if (!grab_allowed)
@@ -2155,7 +2162,7 @@ testit:
 	else
 		gtk_widget_set_sensitive(GTK_WIDGET(frame),FALSE);
 
-	return FALSE;	// Allow other handles to run... 
+	return FALSE;	/* Allow other handles to run...  */
 
 }
 
@@ -2190,21 +2197,22 @@ EXPORT void page_changed(GtkNotebook *notebook, GtkNotebookPage *page, guint pag
 
 	if (g_object_get_data(G_OBJECT(widget),"sub-notebook"))
 	{
-		//printf(" This tab has a sub-notebook\n");
+		/*printf(" This tab has a sub-notebook\n"); */
 		sub = g_hash_table_lookup(dynamic_widgets, (g_object_get_data(G_OBJECT(widget),"sub-notebook")));
 		if (GTK_IS_WIDGET(sub))
 		{
 			sub_page = gtk_notebook_get_current_page(GTK_NOTEBOOK(sub));
 			widget = gtk_notebook_get_nth_page(GTK_NOTEBOOK(sub),sub_page);
-			//printf("subtable found, searching for active page\n");
+			/*printf("subtable found, searching for active page\n");*/
 			if (g_object_get_data(G_OBJECT(widget),"table_num"))
 			{
 				tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
 				active_table = (gint)g_ascii_strtod(tmpbuf,NULL);
-			//	printf("found it,  active table %i\n",active_table);
+			/*	printf("found it,  active table %i\n",active_table);*/
 			}
-			//else
-			//	printf("didn't find table_num key on subtable\n");
+			/*else
+			 *	printf("didn't find table_num key on subtable\n");
+			 */
 		}
 	}
 
@@ -2238,7 +2246,7 @@ EXPORT void subtab_changed(GtkNotebook *notebook, GtkNotebookPage *page, guint p
 		tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
 		active_table = (gint)g_ascii_strtod(tmpbuf,NULL);
 	}
-//	printf("active table changed to %i\n",active_table);
+/*	printf("active table changed to %i\n",active_table); */
 	forced_update = TRUE;
 
 	return;
@@ -2267,7 +2275,7 @@ void swap_labels(gchar * input, gboolean state)
 	for (i=0;i<num_widgets;i++)
 	{
 		widget = NULL;
-		GtkWidget *widget = g_hash_table_lookup(dynamic_widgets,fields[i]);
+		widget = g_hash_table_lookup(dynamic_widgets,fields[i]);
 		if (GTK_IS_WIDGET(widget))
 			switch_labels((gpointer)widget,(gpointer)state);
 		else if ((list = get_list(fields[i])) != NULL)
@@ -2410,7 +2418,6 @@ void prompt_to_save(void)
 		gtk_box_pack_start(GTK_BOX(hbox),label,TRUE,TRUE,10);
 		gtk_widget_show_all(hbox);
 
-		//		gtk_window_set_title(GTK_WINDOW(gtk_widget_get_toplevel(dialog)),"Save internal log, yes/no ?");
 		gtk_window_set_transient_for(GTK_WINDOW(gtk_widget_get_toplevel(dialog)),GTK_WINDOW(main_window));
 
 		result = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -2512,22 +2519,23 @@ void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
 	toggle_groups = (gchar *)g_object_get_data(G_OBJECT(widget),
 			"toggle_groups");
 
-	//	printf("toggling groups\n");
+	/*	printf("toggling groups\n");*/
 	groups = parse_keys(toggle_groups,&num_groups,",");
-	//	printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);
+	/*	printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);*/
 
 	for (i=0;i<num_groups;i++)
 	{
-		//		printf("UW: This widget has %i groups, checking state of (%s)\n", num_groups, groups[i]);
+		/*printf("UW: This widget has %i groups, checking state of (%s)\n", num_groups, groups[i]);*/
 		tmp_state = get_state(group_states,i);
-		//		printf("If this ctrl is active we want state to be %i\n",tmp_state);
+		/*printf("If this ctrl is active we want state to be %i\n",tmp_state);*/
 		state = tmp_state == TRUE ? new_state:!new_state;
-		//		printf("Current state of button is %i\n",new_state),
-		//		printf("new group state is %i\n",state);
+		/*printf("Current state of button is %i\n",new_state),
+		 *printf("new group state is %i\n",state);
+		 */
 		g_hash_table_insert(widget_group_states,g_strdup(groups[i]),(gpointer)state);
-		//		printf("setting all widgets in that group to state %i\n\n",state);
+		/*printf("setting all widgets in that group to state %i\n\n",state);*/
 		g_list_foreach(get_list(groups[i]),alter_widget_state,NULL);
 	}
-	//	printf ("DONE!\n\n\n");
+	/*printf ("DONE!\n\n\n");*/
 	g_strfreev(groups);
 }

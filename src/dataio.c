@@ -18,12 +18,11 @@
 #include <debugging.h>
 #include <enums.h>
 #include <errno.h>
-#include <ms_structures.h>
+#include <firmware.h>
 #include <post_process.h>
 #include <rtv_processor.h>
 #include <serialio.h>
 #include <string.h>
-#include <structures.h>
 #include <threads.h>
 #include <unistd.h>
 
@@ -171,7 +170,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 						ptr+total_read,
 						total_wanted-total_read);
 
-				// Increment bad read counter....
+				/* Increment bad read counter.... */
 				if (res < 0) /* ERROR */
 				{
 					err_text = (gchar *)g_strerror(errno);
@@ -184,7 +183,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 
 				if (dbg_lvl & IO_PROCESS)
 					dbg_func(g_strdup_printf(__FILE__"\tGET_ERROR read %i bytes, running total %i\n",res,total_read));
-				if (zerocount > 1)  // 2 bad reads, abort
+				if (zerocount > 1)  /* 2 bad reads, abort */
 					break;
 			}
 			g_static_mutex_unlock(&serio_mutex);
@@ -238,7 +237,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 						ptr+total_read,
 						total_wanted-total_read);
 
-				// Increment bad read counter....
+				/* Increment bad read counter.... */
 				if (res < 0) /* ERROR */
 				{
 					err_text = (gchar *)g_strerror(errno);
@@ -252,7 +251,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 
 				if (dbg_lvl & (IO_PROCESS))
 					dbg_func(g_strdup_printf(__FILE__"\tRT_VARS read %i bytes, running total %i\n",res,total_read));
-				if (zerocount > 1)  // 2 bad reads, abort
+				if (zerocount > 1)  /* 2 bad reads, abort */
 				{
 					bad_read = TRUE;
 					break;
@@ -314,7 +313,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 						ptr+total_read,
 						total_wanted-total_read);
 
-				// Increment bad read counter....
+				/* Increment bad read counter.... */
 				if (res < 0) /* ERROR */
 				{
 					err_text = (gchar *)g_strerror(errno);
@@ -328,7 +327,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 
 				if (dbg_lvl & IO_PROCESS)
 					dbg_func(g_strdup_printf(__FILE__"\tVE_BLOCK read %i bytes, running total: %i\n",res,total_read));
-				if (zerocount > 1)  // 2 bad reads, abort
+				if (zerocount > 1)  /* 2 bad reads, abort */
 				{
 					bad_read = TRUE;
 					break;
@@ -370,7 +369,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 						ptr+total_read,
 						total_wanted-total_read);
 
-				// Increment bad read counter....
+				/* Increment bad read counter.... */
 				if (res < 0) /* ERROR condition */
 				{
 					if (dbg_lvl & (IO_PROCESS|CRITICAL))
@@ -384,7 +383,7 @@ gboolean handle_ecu_data(InputHandler handler, Io_Message * message)
 
 				if (dbg_lvl & IO_PROCESS)
 					dbg_func(g_strdup_printf(__FILE__"\tread %i bytes, running total: %i\n",res,total_read));
-				if (zerocount > 1)  // 2 bad reads, abort
+				if (zerocount > 1)  /* 2 bad reads, abort */
 				{
 					bad_read = TRUE;
 					break;

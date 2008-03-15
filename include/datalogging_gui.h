@@ -14,8 +14,8 @@
 #ifndef __DATALOGGING_GUI_H__
 #define __DATALOGGING_GUI_H__
 
+#include <defines.h>
 #include <gtk/gtk.h>
-#include <structures.h>
 
 
 /* Prototypes */

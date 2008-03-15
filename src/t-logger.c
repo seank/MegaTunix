@@ -17,6 +17,7 @@
 #endif
 #include <datamgmt.h>
 #include <enums.h>
+#include <firmware.h>
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <math.h>
@@ -24,7 +25,6 @@
 #include <timeout_handlers.h>
 #include <logviewer_gui.h>
 #include <rtv_processor.h>
-#include <structures.h>
 
 
 TTMon_Data *ttm_data;
@@ -165,7 +165,7 @@ void crunch_trigtooth_data(gint page)
 		g_printf("data block from position 0 to 185 (93 words)\n");
 */
 
-//	printf("position is %i\n",position);
+	/*printf("position is %i\n",position);*/
 	index=0;
 	for (i=0;i<93;i++)
 		ttm_data->last[i] = ttm_data->current[i];
@@ -173,7 +173,7 @@ void crunch_trigtooth_data(gint page)
 
 	for (i=position;i<185;i+=2)
 	{
-		//total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);
+		/*total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);*/
 		total = get_ecu_data(canID,page,i,MTX_U16);
 		ttm_data->current[index] = total;
 		index++;
@@ -182,22 +182,22 @@ void crunch_trigtooth_data(gint page)
 	{
 		for (i=0;i<position;i+=2)
 		{
-			//total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);
+			/*total = (get_ecu_data(canID,page,i,size)*256)+get_ecu_data(canID,page,i+1,size);*/
 			total = get_ecu_data(canID,page,i,MTX_U16);
 			ttm_data->current[index] = total;
 			index++;
 		}
 	}
-	//	g_printf("\n");
+	/*g_printf("\n");*/
 
 	if (get_ecu_data(canID,page,UNITS,size) == 1)
 	{
-		//	g_printf("0.1 ms units\n");
+		/*g_printf("0.1 ms units\n");*/
 		ttm_data->units=100;
 	}
 	else
 	{
-		//	g_printf("1uS units\n");
+		/*g_printf("1uS units\n");*/
 		ttm_data->units=1;
 	}
 
@@ -250,10 +250,8 @@ void crunch_trigtooth_data(gint page)
 		for (i=0;i<cap_idx;i++)
 			printf("Missing teeth at index %i\n",ttm_data->captures[i]);
 
-		//		printf("max/min is %f\n ceil %f. floor %f",ratio,ceil(ratio),floor(ratio) );
-		//		printf("wheel is a missing %i style\n",ttm_data->missing);
-
-
+		/*printf("max/min is %f\n ceil %f. floor %f",ratio,ceil(ratio),floor(ratio) );*/
+		/*printf("wheel is a missing %i style\n",ttm_data->missing);*/
 
 		printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
 		lookup_current_value("rpm",&ttm_data->rpm);
@@ -287,7 +285,7 @@ void crunch_trigtooth_data(gint page)
 	 * know what the values are
 	 * for values of 0-100000
 	 */
-	ttm_data->peak = ttm_data->max_time *1.25; // Add 25% padding 
+	ttm_data->peak = ttm_data->max_time *1.25; /* Add 25% padding */
 	tmp = ttm_data->peak;
 
 	if (tmp < 750)
@@ -348,7 +346,7 @@ void cairo_update_trigtooth_display(gint page)
 	cairo_select_font_face (cr, "Sans", CAIRO_FONT_SLANT_NORMAL,CAIRO_FONT_WEIGHT_NORMAL);
 	cairo_set_font_size(cr,h/20);
 
-	//	g_printf("peak %f, divisor, %i\n",ttm_data->peak, ttm_data->vdivisor);
+	/*g_printf("peak %f, divisor, %i\n",ttm_data->peak, ttm_data->vdivisor);*/
 	/* Get width of largest value and save it */
 	if (ttm_data->units == 1)
 		message = g_strdup_printf("%i",(gint)(ttm_data->peak));
@@ -368,17 +366,16 @@ void cairo_update_trigtooth_display(gint page)
 			message = g_strdup_printf("%i",(gint)ctr);
 		else
 			message = g_strdup_printf("%i",(gint)(ctr/10.0));
-		//		g_printf("marker \"%s\"\n",message);
+		/*g_printf("marker \"%s\"\n",message);*/
 		cairo_text_extents (cr, message, &extents);
 		cur_pos = (h-y_shift)*(1-(ctr/ttm_data->peak))+y_shift;
-		//		g_printf("drawing at %f\n",cur_pos);
-		//cairo_move_to(cr,0,cur_pos);
+		/*g_printf("drawing at %f\n",cur_pos);*/
 		cairo_move_to(cr,tmpx-extents.x_advance,cur_pos);
 		cairo_show_text(cr,message);
 		g_free(message);
 	}
 	/* Horizontal Axis lines */
-	cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0);//grey
+	cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1.0); /* grey */
 
 	for (ctr=0.0;ctr < ttm_data->peak;ctr+=ttm_data->vdivisor)
 	{
@@ -392,16 +389,16 @@ void cairo_update_trigtooth_display(gint page)
 	cairo_line_to(cr,extents.x_advance+7,h);
 	cairo_stroke(cr);
 
-	cairo_set_source_rgba (cr, 0, 0, 0, 1.0);//black
+	cairo_set_source_rgba (cr, 0, 0, 0, 1.0); /* black */
 	w = ttm_data->darea->allocation.width-ttm_data->usable_begin;
 	h = ttm_data->darea->allocation.height;
 	y_shift=ttm_data->font_height;
 	cairo_set_line_width(cr,w/186.0);
-	//g_printf("ttm_data->peak is %f line width %f\n",ttm_data->peak,w/186.0);
+	/*g_printf("ttm_data->peak is %f line width %f\n",ttm_data->peak,w/186.0);*/
 	/* Draw the bars, left to right */
 	for (i=0;i<93;i++)
 	{
-		//		g_printf("moved to %f %i\n",ttm_data->usable_begin+(i*w/93.0),0);
+		/*g_printf("moved to %f %i\n",ttm_data->usable_begin+(i*w/93.0),0);*/
 		cairo_move_to(cr,ttm_data->usable_begin+(i*w/93.0),h-(y_shift/2));
 		val = ttm_data->current[i];
 		cur_pos = (h-y_shift)*(1.0-(val/ttm_data->peak))+(y_shift/2);

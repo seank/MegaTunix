@@ -28,7 +28,7 @@ G_BEGIN_DECLS
 #define MTX_IS_PIE_GAUGE(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), MTX_TYPE_PIE_GAUGE))
 #define MTX_IS_PIE_GAUGE_CLASS(obj)	(G_TYPE_CHECK_CLASS_TYPE ((obj), MTX_TYPE_PIE_GAUGE))
 #define MTX_PIE_GAUGE_GET_CLASS	(G_TYPE_INSTANCE_GET_CLASS ((obj), MTX_TYPE_PIE_GAUGE, MtxPieGaugeClass))
-//#define MTX_PIE_GAUGE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MTX_TYPE_PIE_GAUGE, MtxPieGaugePrivate))
+/*#define MTX_PIE_GAUGE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MTX_TYPE_PIE_GAUGE, MtxPieGaugePrivate))*/
 
 
 typedef struct _MtxPieGauge		MtxPieGauge;
@@ -47,7 +47,7 @@ typedef enum
 }ColorIndex;
 
 struct _MtxPieGauge
-{//public data
+{	/* public data */
 	GtkDrawingArea parent;
 	GdkPixmap *pixmap;	/*! Update/backing pixmap */
 	GdkPixmap *bg_pixmap;	/*! Static rarely changing pixmap */

@@ -15,7 +15,6 @@
 #define __LOGVIEWER_EVENTS_H__
 
 #include <gtk/gtk.h>
-#include <structures.h>
 
 /* Prototypes */
 gboolean lv_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);

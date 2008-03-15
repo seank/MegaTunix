@@ -17,15 +17,16 @@
 #include <api-versions.h>
 #include <configfile.h>
 #include <debugging.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <glade/glade-xml.h>
 #include <glib.h>
 #include <gui_handlers.h>
+#include <rtv_map_loader.h>
 #include <runtime_status.h>
 #include <runtime_text.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <widgetmgmt.h>
 
 GHashTable *rtt_hash = NULL;

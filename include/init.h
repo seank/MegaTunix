@@ -15,7 +15,8 @@
 #define __INIT_H__
 
 #include <gtk/gtk.h>
-#include <structures.h>
+#include <firmware.h>
+#include <threads.h>
 
 /* Prototypes */
 void init(void);

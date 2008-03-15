@@ -21,14 +21,16 @@
 #include <debugging.h>
 #include <dep_processor.h>
 #include <enums.h>
+#include <firmware.h>
 #include <glade/glade.h>
 #include <lookuptables.h>
 #include <math.h>
 #include "../mtxmatheval/mtxmatheval.h"
+#include <multi_expr_loader.h>
 #include <notifications.h>
+#include <rtv_map_loader.h>
 #include <rtv_processor.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <threads.h>
 
 
@@ -186,12 +188,12 @@ store_it:
 			/* Store data in history buffer */
 			g_static_mutex_lock(&rtv_mutex);
 			g_array_append_val(history,result);
-			//printf("array size %i, current index %i, appended %f, readback %f previous %f\n",history->len,current_index,result,g_array_index(history, gfloat, current_index+1),g_array_index(history, gfloat, current_index));
+			/*printf("array size %i, current index %i, appended %f, readback %f previous %f\n",history->len,current_index,result,g_array_index(history, gfloat, current_index+1),g_array_index(history, gfloat, current_index));*/
 			current_index++;
 			g_object_set_data(object,"current_index",GINT_TO_POINTER(current_index));
 			g_static_mutex_unlock(&rtv_mutex);
 
-			//printf("Result of %s is %f\n",(gchar *)g_object_get_data(object,"internal_name"),result);
+			/*printf("Result of %s is %f\n",(gchar *)g_object_get_data(object,"internal_name"),result);*/
 
 		}
 	}

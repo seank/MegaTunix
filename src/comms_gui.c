@@ -19,7 +19,6 @@
 #include <serialio.h>
 #include <stdio.h>
 #include <string.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <unistd.h>
 #include <widgetmgmt.h>

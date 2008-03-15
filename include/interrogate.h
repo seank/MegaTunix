@@ -16,8 +16,29 @@
 
 #include <configfile.h>
 #include <gtk/gtk.h>
-#include <structures.h>
+#include <firmware.h>
 
+
+typedef struct _Detection_Test Detection_Test;
+/*!
+ \brief The _Detection_Test struct holds the basics for each ECU test.
+ a friendly human readable test name (this matches up eith test names in the 
+ actual profile), the actual_test string (a machine parsable form), and a 
+ test_vector,  which is the result of splitting up the actual_test string into
+ it's component parts. 
+ */
+struct _Detection_Test
+{
+	gchar *test_name;	/* Friendly test name, like "MS-II_RTvars" */
+	gchar *test_desc;	/* Gui displayed test description */
+	gchar *actual_test;	/* machine parsable test string */
+	gchar **test_vector;	/* Vector split of test (csv split) */
+	GArray *test_arg_types;	/* Array of enums describing test arguments */
+	gint test_arg_count;	/* number of args in the test */
+	gchar *result_str;	/* Result of test stored for matching */
+	gint num_bytes;		/* Number of bytes returned for this test */
+
+};
 /* Prototypes */
 void interrogate_ecu(void);
 gboolean determine_ecu(GArray *,GHashTable *);

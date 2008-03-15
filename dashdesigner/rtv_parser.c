@@ -16,7 +16,7 @@ void retrieve_rt_vars(void)
 	GArray *classes = NULL;
 	struct Rtv_Data *rtv_data = NULL;
 	gint i = 0;
-//	printf("retrieve rt_vars from mtx realtime maps\n");
+	/*printf("retrieve rt_vars from mtx realtime maps\n");*/
 	files = get_files(g_strconcat(REALTIME_MAPS_DATA_DIR,PSEP,NULL),g_strdup("rtv_map"),&classes);
 	if (!files)
 		return;
@@ -62,12 +62,12 @@ void load_rtvars(gchar **files, struct Rtv_Data *rtv_data)
 				if (g_hash_table_lookup_extended(rtv_data->rtv_hash,int_name,&orig,&value))
 				{
 					tmpi = (gint)value + 1;
-		//			printf("Value on pre-existing var %s is %i\n",(gchar *)orig,(gint)value);
+					/*printf("Value on pre-existing var %s is %i\n",(gchar *)orig,(gint)value);*/
 					g_hash_table_replace(rtv_data->rtv_hash,g_strdup(int_name),GINT_TO_POINTER(tmpi));
 				}
 				else
 				{
-		//			printf("inserting var %s with value %i\n",int_name,1);
+					/*printf("inserting var %s with value %i\n",int_name,1);*/
 					g_hash_table_insert(rtv_data->rtv_hash,g_strdup(int_name),GINT_TO_POINTER(1));
 					g_hash_table_insert(rtv_data->int_ext_hash,g_strdup(dlog_name),g_strdup(int_name));
 					rtv_data->rtv_list = g_list_prepend(rtv_data->rtv_list,g_strdup(dlog_name));
@@ -85,16 +85,16 @@ void load_rtvars(gchar **files, struct Rtv_Data *rtv_data)
 	rtv_data->rtv_list = g_list_sort(rtv_data->rtv_list,sort);
 	store = gtk_list_store_new(NUM_COLS,G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING);
 	len = g_list_length(rtv_data->rtv_list);
-//	printf("list length is %i\n",len);
+	/*printf("list length is %i\n",len);*/
 	for (i=0;i<len;i++)
 	{
 		element = g_list_nth_data(rtv_data->rtv_list,i);
-//		printf("element %s\n",element);
+		/*printf("element %s\n",element);*/
 		int_name = g_hash_table_lookup(rtv_data->int_ext_hash,element);
 		icount = (gint)g_hash_table_lookup(rtv_data->rtv_hash,int_name);
-//		printf("int name %s\n",int_name);
+		/*printf("int name %s\n",int_name);*/
 		gtk_list_store_append(store,&iter);
-		//printf("var %s, %s, icount %i, total %i\n",element,int_name,icount,rtv_data->total_files);
+		/*printf("var %s, %s, icount %i, total %i\n",element,int_name,icount,rtv_data->total_files);*/
 		if (icount == rtv_data->total_files)
 			gtk_list_store_set(store,&iter,VARNAME_COL,g_strdup(element),TYPE_COL,"  (common)",DATASOURCE_COL,g_strdup(int_name),-1);
 		else

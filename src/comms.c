@@ -20,12 +20,12 @@
 #include <enums.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <firmware.h>
 #include <gui_handlers.h>
 #include <notifications.h>
 #include <serialio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <structures.h>
 #include <threads.h>
 #include <timeout_handlers.h>
 #include <termios.h>
@@ -87,7 +87,7 @@ gint comms_test()
 		return connected;
 	}
 	result = handle_ecu_data(C_TEST,NULL);
-	if (!result) // Failure,  Attempt MS-II method
+	if (!result) /* Failure,  Attempt MS-II method */
 	{
 		if (write(serial_params->fd,"c",1) != 1)
 		{
@@ -100,7 +100,7 @@ gint comms_test()
 		}
 		result = handle_ecu_data(C_TEST,NULL);
 	}
-	if (result)	// Success
+	if (result)	/* Success */
 	{
 		connected = TRUE;
 		errcount=0;
@@ -113,7 +113,7 @@ gint comms_test()
 	}
 	else
 	{
-		// An I/O Error occurred with the MegaSquirt ECU 
+		/* An I/O Error occurred with the MegaSquirt ECU  */
 		connected = FALSE;
 		errcount++;
 		if (errcount > 2 )
@@ -152,16 +152,17 @@ void update_write_status(Output_Data *data)
 
 	paused_handlers = TRUE;
 
-	//printf ("page %i, offset %i\n",data->page,data->offset);
+	/*printf ("page %i, offset %i\n",data->page,data->offset); */
 	for (i=0;i<g_list_length(ve_widgets[data->page][data->offset]);i++)
 	{
 		if ((gint)g_object_get_data(G_OBJECT(g_list_nth_data(ve_widgets[data->page][data->offset],i)),"dl_type") != DEFERRED)
 		{
-			//			printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i)));
+			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i))); */
 			update_widget(g_list_nth_data(ve_widgets[data->page][data->offset],i),NULL);
 		}
-		//		else
-		//printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i)));
+		/*	else
+		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i)));
+		*/
 	}
 
 	update_ve3d_if_necessary(data->page,data->offset);
@@ -203,8 +204,6 @@ void writeto_ecu(Io_Message *message)
 	gint value = output->value;
 	gint canID = output->canID;
 	DataSize size = output->size;
-	//gint highbyte = 0;
-	//gint lowbyte = 0;
 	gint res = 0;
 	gint count = 0;
 	gchar * err_text = NULL;
@@ -221,7 +220,7 @@ void writeto_ecu(Io_Message *message)
 
 	if (offline)
 	{
-		//printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value);
+		/*printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); */
 		switch (output->mode)
 		{
 			case MTX_SIMPLE_WRITE:
@@ -292,10 +291,10 @@ void writeto_ecu(Io_Message *message)
 			count = 5;
 			lbuff = g_new0(char,count);
 			lbuff[0]=offset;
-			lbuff[1]=(value & 0xff000000) >> 24; // Highbyte
-			lbuff[2]=(value & 0xff0000) >> 16;	// Secondhigh
-			lbuff[3]=(value & 0xff00) >> 8; // secondlow
-			lbuff[4]=value & 0x00ff;	// Lowbyte
+			lbuff[1]=(value & 0xff000000) >> 24; /* Highbyte */
+			lbuff[2]=(value & 0xff0000) >> 16;	/* Secondhigh */
+			lbuff[3]=(value & 0xff00) >> 8; /* secondlow */
+			lbuff[4]=value & 0x00ff;	/* Lowbyte */
 			if (dbg_lvl & SERIAL_WR)
 				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 32 bit value to ECU\n"));
 		}
@@ -304,8 +303,8 @@ void writeto_ecu(Io_Message *message)
 			count = 3;
 			lbuff = g_new0(char,count);
 			lbuff[0]=offset;
-			lbuff[1]=(value & 0xff00) >> 8; // Highbyte
-			lbuff[2]=value & 0x00ff;	// Lowbyte
+			lbuff[1]=(value & 0xff00) >> 8; /* Highbyte */
+			lbuff[2]=value & 0x00ff;	/* Lowbyte */
 			if (dbg_lvl & SERIAL_WR)
 				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 16 bit value to ECU\n"));
 		}
@@ -574,7 +573,7 @@ void set_ms_page(guint8 ms_page)
 	gchar * err_text = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
-	//printf("fed_page %i, last_page %i\n",ms_page,last_page);
+	/*printf("fed_page %i, last_page %i\n",ms_page,last_page); */
 	g_static_mutex_lock(&serio_mutex);
 	g_static_mutex_lock(&mutex);
 
@@ -603,7 +602,7 @@ void set_ms_page(guint8 ms_page)
 skip_change:
 	if ((ms_page == last_page) && (!force_page_change))
 	{
-		//	printf("no need to change the page again as it's already %i\n",ms_page);
+		/*	printf("no need to change the page again as it's already %i\n",ms_page); */
 		g_static_mutex_unlock(&serio_mutex);
 		g_static_mutex_unlock(&mutex);
 		return;

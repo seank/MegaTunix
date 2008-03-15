@@ -24,9 +24,9 @@
 #include <gui_handlers.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <rtv_map_loader.h>
 #include <rtv_processor.h>
 #include <string.h>
-#include <structures.h>
 #include <widgetmgmt.h>
 
 
@@ -136,7 +136,7 @@ void load_dashboard(gchar *filename, gpointer data)
 
 	width = (gint)g_object_get_data(G_OBJECT(dash),"orig_width");
 	height = (gint)g_object_get_data(G_OBJECT(dash),"orig_height");
-//	printf("move/resize to %i,%i, %ix%i\n",x,y,width,height);
+	/*printf("move/resize to %i,%i, %ix%i\n",x,y,width,height); */
 	gtk_window_move(GTK_WINDOW(window), x,y);
 	if (ratio)
 		gtk_window_set_default_size(GTK_WINDOW(window), width**ratio,height**ratio);
@@ -375,7 +375,7 @@ void update_dash_gauge(gpointer key, gpointer value, gpointer user_data)
 	GtkWidget *gauge = NULL;
 	
 	gauge = d_gauge->gauge;
-//	printf("updating gauge %s\n",(gchar *)key);
+	/*printf("updating gauge %s\n",(gchar *)key);*/
 
 	history = (GArray *)g_object_get_data(d_gauge->object,"history");
 	current_index = (gint)g_object_get_data(d_gauge->object,"current_index");
@@ -457,13 +457,13 @@ void dash_shape_combine(GtkWidget *dash, gboolean hide_resizers)
 		yc = y+h/2;
 		gdk_draw_arc (bitmap,
 				gc1,
-				TRUE,     // filled
+				TRUE,     /* filled */
 				xc-radius,
 				yc-radius,
 				2*radius,
 				2*radius,
-				0,        // angle 1
-				360*64);  // angle 2: full circle
+				0,        /* angle 1 */
+				360*64);  /* angle 2: full circle */
 	}
 	if (GTK_IS_WINDOW(gtk_widget_get_toplevel(dash)))
 	{
@@ -557,12 +557,12 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-//	printf("button event\n");
+	/*printf("button event\n"); */
 	gint edge = -1;
 
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
-//		printf("dash button event\n");
+		/*printf("dash button event\n"); */
 		if (event->x > (widget->allocation.width-16))
 		{
 			/* Upper portion */
@@ -593,7 +593,7 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	
 		if ((edge == -1 ) && (GTK_IS_WINDOW(widget->parent)))
 		{
-//			printf("MOVE drag\n");
+			/*printf("MOVE drag\n"); */
 			gtk_window_begin_move_drag (GTK_WINDOW(gtk_widget_get_toplevel(widget)),
 					event->button,
 					event->x_root,
@@ -603,7 +603,7 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 		}
 		else if (GTK_IS_WINDOW(widget->parent))
 		{
-//			printf("RESIZE drag\n");
+			/*printf("RESIZE drag\n"); */
 			gtk_window_begin_resize_drag (GTK_WINDOW(gtk_widget_get_toplevel(widget)),
 					edge,
 					event->button,
@@ -668,11 +668,10 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 	GtkWidget *label = NULL;
 	extern GtkWidget *main_window;
 	extern gboolean interrogated;
-
+	extern GHashTable *dash_gauges;
 
 	if (!interrogated)
 		return FALSE;
-	extern GHashTable *dash_gauges;
 
 	fileio = g_new0(MtxFileIO ,1);
 	fileio->default_path = g_strdup("Dashboards");

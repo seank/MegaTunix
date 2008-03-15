@@ -20,7 +20,6 @@
 #include <listmgmt.h>
 #include <notifications.h>
 #include <offline.h>
-#include <structures.h>
 #include <tabloader.h>
 
 extern GdkColor red;
@@ -250,11 +249,11 @@ EXPORT void kill_conn_warning()
 void warn_user(gchar *message)
 {
 	extern GObject *global_data;
+	extern gboolean interrogated;
 	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 	if (args->be_quiet)
 		return;
 
-	extern gboolean interrogated;
 	warning_dialog = gtk_message_dialog_new(NULL,0,GTK_MESSAGE_ERROR,
 			GTK_BUTTONS_NONE,message);
 	if (!interrogated)

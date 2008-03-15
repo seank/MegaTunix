@@ -62,14 +62,6 @@ void build_string_2_enum_table()
 	g_hash_table_insert(str_2_enum,"_FULLMATCH_",
 			GINT_TO_POINTER(FULLMATCH));
 
-	/* Storage Types for reading interrogation tests */
-	g_hash_table_insert(str_2_enum,"_SIG_",
-			GINT_TO_POINTER(SIG));
-	g_hash_table_insert(str_2_enum,"_VNUM_",
-			GINT_TO_POINTER(VNUM));
-	g_hash_table_insert(str_2_enum,"_TEXTVER_",
-			GINT_TO_POINTER(TEXTVER));
-
 	/* Data Types for glade data binder.... */
 	g_hash_table_insert(str_2_enum,"_INT_",
 			GINT_TO_POINTER(MTX_INT));
@@ -272,7 +264,7 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(SD_MAF_HYBRID));
 
 
-	//g_hash_table_foreach(str_2_enum,dump_hash,NULL);
+	/*g_hash_table_foreach(str_2_enum,dump_hash,NULL);*/
 
 }
 

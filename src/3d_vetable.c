@@ -26,6 +26,7 @@
 #include <debugging.h>
 #include <dep_processor.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gdk/gdkglglext.h>
 #include <gdk/gdkkeysyms.h>
 #include <gui_handlers.h>
@@ -34,13 +35,13 @@
 #include <logviewer_gui.h>
 #include <../mtxmatheval/mtxmatheval.h>
 #include <math.h>
+#include <multi_expr_loader.h>
 #include <notifications.h>
 #include <pango/pango-font.h>
 #include <rtv_processor.h>
 #include <runtime_sliders.h>
 #include <stdlib.h>
 #include <serialio.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <threads.h>
 #include <time.h>
@@ -187,10 +188,8 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	/* Bind pointer to veview to an object for retrieval elsewhere */
 	object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-	// ATTEMPTED FIX FOR GLIB 2.10
 	g_object_ref(object);
 	gtk_object_sink(GTK_OBJECT(object));
-	// ATTEMPTED FIX FOR GLIB 2.10
 	g_object_set_data(G_OBJECT(object),"ve_view",(gpointer)ve_view);
 
 	tmpbuf = g_strdup_printf("ve_view_%i",table_num);
@@ -529,12 +528,11 @@ gboolean ve3d_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpoin
 {
 	GdkGLContext *glcontext = gtk_widget_get_gl_context (widget);
 	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable (widget);
-	Ve_View_3D *ve_view;
-	ve_view = (Ve_View_3D 
-			*)g_object_get_data(G_OBJECT(widget),"ve_view");
-
+	Ve_View_3D *ve_view = NULL;
 	GLfloat w = widget->allocation.width;
 	GLfloat h = widget->allocation.height;
+
+	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_configure_event() 3D View Configure Event\n"));
@@ -543,12 +541,8 @@ gboolean ve3d_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpoin
 	if (!gdk_gl_drawable_gl_begin (gldrawable, glcontext))
 		return FALSE;
 
-//	ve_view->aspect = (gfloat)w/(gfloat)h;
 	ve_view->aspect = 1.0;
 	glViewport (0, 0, w, h);
-//	  glMatrixMode(GL_PROJECTION);
-//	     glLoadIdentity();
-//	        gluPerspective(60.0, 1, -1, 1.0);
 	  glMatrixMode(GL_MODELVIEW);
 
 	gdk_gl_drawable_gl_end (gldrawable);
@@ -568,21 +562,15 @@ we don't
  */
 gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
 {
+	GdkGLContext *glcontext = gtk_widget_get_gl_context(widget);
+	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable(widget);
 	Ve_View_3D *ve_view = NULL;
 	Cur_Vals *cur_vals = NULL;
-
-	ve_view = (Ve_View_3D 
-			*)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_expose_event() 3D View Expose Event\n"));
 
-	//      if (!GTK_WIDGET_HAS_FOCUS(widget)){
-	//              gtk_widget_grab_focus(widget);
-	//      }
-
-	GdkGLContext *glcontext = gtk_widget_get_gl_context(widget);
-	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable(widget);
 
 	/*** OpenGL BEGIN ***/
 	if (!gdk_gl_drawable_gl_begin(gldrawable, glcontext))
@@ -590,7 +578,6 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	//      gluPerspective(64.0, ve_view->aspect, ve_view->zNear, ve_view->zFar);
 	gluPerspective(65.0, 1.0, 0.1, 4);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -604,8 +591,6 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 
 	/* Shift to middle of the screen or something like that */
 	glTranslatef (-0.5, -0.5, -0.5);
-	//glTranslatef (ve_view->h_strafe,ve_view->v_strafe, 0);
-	//printf("strafe %f,%f\n",ve_view->h_strafe,ve_view->v_strafe);
 
 	/* Draw everything */
 	cur_vals = get_current_values(ve_view);
@@ -645,19 +630,19 @@ gboolean ve3d_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpoi
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_motion_notify() 3D View Motion Notify\n"));
 
-	// Left Button
+	/* Left Button */
 	if (event->state & GDK_BUTTON1_MASK)
 	{
 		ve_view->sphi += (gfloat)(event->x - ve_view->beginX) / 4.0;
 		ve_view->stheta += (gfloat)(event->y - ve_view->beginY) / 4.0;
 	}
-	// Middle button (or both buttons for two button mice)
+	/* Middle button (or both buttons for two button mice) */
 	if (event->state & GDK_BUTTON2_MASK)
 	{
 		ve_view->h_strafe -= (gfloat)(event->x - ve_view->beginX)/300.0;
 		ve_view->v_strafe += (gfloat)(event->y - ve_view->beginY)/300.0;
 	}
-	// Right Button
+	/* Right Button */
 	if (event->state & GDK_BUTTON3_MASK)
 	{
 		ve_view->sdepth -= (event->y - ve_view->beginY)/(widget->allocation.height);
@@ -735,8 +720,6 @@ void ve3d_realize (GtkWidget *widget, gpointer data)
 	}
 
 	glClearColor (0.0, 0.0, 0.0, 0.0);
-	//gdk_gl_glPolygonOffsetEXT (proc, 1.0, 1.0);
-	//	glShadeModel(GL_FLAT);
 	glShadeModel(GL_SMOOTH);
 	glEnable (GL_LINE_SMOOTH);
 	glEnable (GL_BLEND);
@@ -820,12 +803,9 @@ void ve3d_calculate_scaling(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 		if (tmpf < min) 
 			min = tmpf;
 	}
-	//printf ("max is %f\t min is %f\n", max, min);
 	ve_view->z_trans = min-((max-min)*0.15);
 	ve_view->z_max = max;
 	ve_view->z_scale = 1.0/((max-min)/0.75);
-	/* 	ve_view->z_trans = 0; */
-	/* 	ve_view->z_scale = 1.0 / 255.0; */
 	ve_view->z_offset = 0.0;
 }
  
@@ -854,7 +834,6 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	glColor3f(1.0, 1.0, 1.0);
 	tmpf1 = (MIN(w,h)/360.0 < 1.2) ? 1.2:MIN(w,h)/360.0;
 
-	//glLineWidth(tmpf1);
 	glLineWidth(1.25);
 
 	/* Draw lines on RPM axis */
@@ -947,7 +926,6 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	g_free(tmpbuf);
 
 	/* Render a red dot at the active VE map position */
-	//	glPointSize(8.0);
 	glPointSize(MIN(w,h)/55.0);
 	glColor3f(1.0,0.0,0.0);
 	glBegin(GL_POINTS);
@@ -1364,8 +1342,6 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 
 	z_size = ve_view->z_size;
 
-	// Spark requires a divide by 2.84 to convert from ms units to degrees
-
 	switch (event->keyval)
 	{
 		case GDK_Up:
@@ -1667,7 +1643,6 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 			right_w = 1;
 		}
 	}
-	//	printf("left bin %i, right bin %i, left_weight %f, right_weight %f\n",bin[0],bin[1],left_w,right_w);
 
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
@@ -2071,9 +2046,9 @@ gfloat get_fixed_pos(Ve_View_3D *ve_view,void * eval,gfloat value,Axis axis)
 		if ((tmp1 <= value) && (tmp2 >= value))
 			break;
 	}
-	//printf("Value %f is between bins %i (%f), and %i (%f)\n",value,i,tmp1,i+1,tmp2);
+	/*printf("Value %f is between bins %i (%f), and %i (%f)\n",value,i,tmp1,i+1,tmp2); */
 	tmp3 = ((gfloat)i/((gfloat)count-1))+(((value-tmp1)/(tmp2-tmp1))/10.0);
-	//printf("percent of full scale is %f\n",tmp3);
+	/*printf("percent of full scale is %f\n",tmp3); */
 	return tmp3;
 
 }

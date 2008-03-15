@@ -29,7 +29,7 @@
 #include <string.h>
 
 
-G_DEFINE_TYPE (MtxPieGauge, mtx_pie_gauge, GTK_TYPE_DRAWING_AREA);
+G_DEFINE_TYPE (MtxPieGauge, mtx_pie_gauge, GTK_TYPE_DRAWING_AREA)
 
 /*!
  \brief Initializes the mtx pie gauge class and links in the primary
@@ -47,13 +47,13 @@ void mtx_pie_gauge_class_init (MtxPieGaugeClass *class_name)
 	/* GtkWidget signals */
 	widget_class->configure_event = mtx_pie_gauge_configure;
 	widget_class->expose_event = mtx_pie_gauge_expose;
-	//widget_class->button_press_event = mtx_pie_gauge_button_press;
-	//widget_class->button_release_event = mtx_pie_gauge_button_release;
+	/*widget_class->button_press_event = mtx_pie_gauge_button_press; */
+	/*widget_class->button_release_event = mtx_pie_gauge_button_release; */
 	/* Motion event not needed, as unused currently */
-//	widget_class->motion_notify_event = mtx_pie_gauge_motion_event;
+	/*widget_class->motion_notify_event = mtx_pie_gauge_motion_event; */
 	widget_class->size_request = mtx_pie_gauge_size_request;
 
-	//g_type_class_add_private (obj_class, sizeof (MtxPieGaugePrivate));
+	/*g_type_class_add_private (obj_class, sizeof (MtxPieGaugePrivate)); */
 }
 
 
@@ -72,15 +72,15 @@ void mtx_pie_gauge_init (MtxPieGauge *gauge)
 			       | GDK_BUTTON_RELEASE_MASK |GDK_POINTER_MOTION_MASK);
 	gauge->w = 130;		
 	gauge->h = 20;
-	gauge->pie_xc = 17;	// pie x center coord from LL corner
-	gauge->pie_yc = gauge->h-3;	// pie y center coord from LL corner
-	gauge->pie_radius = 14; // pie is 180deg swep so 14x28 pixels
-	gauge->value = 0.0;//default values
+	gauge->pie_xc = 17;		/* pie x center coord from LL corner */
+	gauge->pie_yc = gauge->h-3;	/* pie y center coord from LL corner */
+	gauge->pie_radius = 14;		/* pie is 180deg swep so 14x28 pixels */
+	gauge->value = 0.0;		/* default values */
 	gauge->min = 0.0;
 	gauge->max = 100.0;
 	gauge->precision = 2;
-	gauge->start_angle = 180; // *lower left quadrant
-	gauge->sweep_angle = 180; // CW sweep
+	gauge->start_angle = 180;	/* lower left quadrant */
+	gauge->sweep_angle = 180;	/* CW sweep */
 	gauge->value_font = g_strdup("Bitstream Vera Sans");
 	gauge->value_xpos = 0;
 	gauge->value_ypos = 0;
@@ -94,7 +94,7 @@ void mtx_pie_gauge_init (MtxPieGauge *gauge)
 	gauge->colormap = gdk_colormap_get_system();
 	gauge->gc = NULL;
 	mtx_pie_gauge_init_colors(gauge);
-	//mtx_pie_gauge_redraw (gauge);
+	/*mtx_pie_gauge_redraw (gauge);*/
 }
 
 
@@ -515,7 +515,7 @@ void gdk_generate_pie_gauge_background(MtxPieGauge *gauge)
 gboolean mtx_pie_gauge_motion_event (GtkWidget *gauge,GdkEventMotion *event)
 {
 	/* We don't care, but return FALSE to propogate properly */
-	//	printf("motion in gauge, returning false\n");
+	/*	printf("motion in gauge, returning false\n");*/
 	return FALSE;
 }
 					       
@@ -540,7 +540,6 @@ void mtx_pie_gauge_size_request(GtkWidget *widget, GtkRequisition *requisition)
  */
 void mtx_pie_gauge_redraw (MtxPieGauge *gauge)
 {
-//	if (GTK_WIDGET(gauge)->window) return;
 	update_pie_gauge_position(gauge);
 	gdk_window_clear(GTK_WIDGET(gauge)->window);
 }

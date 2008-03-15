@@ -29,7 +29,6 @@
 #include <serialio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <tuning_gui.h>
 #include <widgetmgmt.h>
@@ -258,7 +257,7 @@ void finalize_core_gui(GladeXML * xml)
 
 	/* General Tab Interrogation button */
 	ebox = glade_xml_get_widget(xml,"interrogate_button_ebox");
-	gtk_tooltips_set_tip(tip,ebox,"This button interrogates the connected ECU to attempt to determine what firmware is loaded and to setup the gui to adapt to the capabilities of the loaded version. This method is not 100\% foolproof, but it works about 99.5% of hte time.  If it MIS-detects your ECU contact the developer with your firmware details.",NULL);
+	gtk_tooltips_set_tip(tip,ebox,"This button interrogates the connected ECU to attempt to determine what firmware is loaded and to setup the gui to adapt to the capabilities of the loaded version. This method is not 100\% foolproof, but it works about 99.5\% of the time.  If it MIS-detects your ECU contact the developer with your firmware details.",NULL);
 	button = glade_xml_get_widget(xml,"interrogate_button");
 	register_widget("interrogate_button",button);
 	g_object_set_data(G_OBJECT(button),"handler",GINT_TO_POINTER(INTERROGATE_ECU));

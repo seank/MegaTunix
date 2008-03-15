@@ -14,7 +14,6 @@
 #include <config.h>
 #include <firmware.h>
 #include <glib/gprintf.h>
-#include <structures.h>
 
 
 /*!

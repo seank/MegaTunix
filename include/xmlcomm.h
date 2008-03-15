@@ -21,6 +21,36 @@
 #include <libxml/tree.h>
 
 
+typedef struct _PotentialArg PotentialArg;
+typedef struct _Command Command;
+
+/*!
+ * \brief _PotentialArgs struct holds information read from the 
+ * communications XML, one PotentialArg per command
+ */
+struct _PotentialArg
+{
+	gchar *name;		/* Potential arg name */
+	gchar *desc;		/* Description */
+	gchar *internal_name;	/* Internal name used for linking */
+	gint count;		/* Number of elements to xfer */
+	DataSize size;		/* Size of data */
+};
+
+
+/*!
+ * \brief _Command struct holds information read from the 
+ * communications XML, describing each possible command. Their names
+ * are used as internal keys to link firmware stuf to the XML definitions.
+ */
+struct _Command
+{
+	gchar *name;		/* Command Name */
+	gchar *desc;		/* Command Description */
+	gchar *base;		/* Base command charactor(s) */
+	CmdType type;		/* Command type enumeration */
+	GArray *arg_sequence;	/* Argument list array of PotentialArgs */
+};
 /* Prototypes */
 void load_comm_xml(gchar *, gpointer );
 void load_xmlcomm_elements(GHashTable *, xmlNode *);

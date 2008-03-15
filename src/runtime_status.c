@@ -18,13 +18,13 @@
 #include <configfile.h>
 #include <debugging.h>
 #include <getfiles.h>
+#include <firmware.h>
 #include <glib.h>
 #include <keybinder.h>
 #include <keyparser.h>
 #include <listmgmt.h>
 #include <gui_handlers.h>
 #include <runtime_status.h>
-#include <structures.h>
 #include <widgetmgmt.h>
 
 

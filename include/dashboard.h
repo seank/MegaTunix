@@ -20,6 +20,19 @@
 #include <libxml/tree.h>
 
 
+typedef struct _Dash_Gauge Dash_Gauge;
+/*! 
+ \brief The _Dash_Gauge struct contains info on the dashboard guages for 
+ megatunix's two potential dashboards.
+ */
+struct _Dash_Gauge
+{
+	GObject *object;		/* Data storage object for RT vars */
+	gchar * source;			/* Data Source name */
+	GtkWidget *gauge;		/* pointer to gauge itself */
+	GtkWidget *dash;		/* pointer to gauge parent */
+};
+
 /* Prototypes */
 void load_dashboard(gchar *, gpointer);
 gboolean remove_dashboard(GtkWidget *, gpointer );

@@ -31,7 +31,6 @@
 #include <serialio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <structures.h>
 #include <threads.h>
 #include <tabloader.h>
 #include <unistd.h>
@@ -385,7 +384,7 @@ void *thread_dispatcher(gpointer data)
 	/* Endless Loop, wait for message, processs and repeat... */
 	while (1)
 	{
-		//printf("thread_dispatch_queue length is %i\n",g_async_queue_length(io_queue));
+		/*printf("thread_dispatch_queue length is %i\n",g_async_queue_length(io_queue));*/
 		g_get_current_time(&cur);
 		g_time_val_add(&cur,100000); /* 100 ms timeout */
 		message = g_async_queue_timed_pop(io_queue,&cur);
@@ -736,9 +735,9 @@ void start_restore_monitor(void)
 {
 	GThread * restore_update_thread = NULL;
 	restore_update_thread = g_thread_create(restore_update,
-			NULL, // Thread args
-			TRUE, // Joinable
-			NULL); //GError Pointer
+			NULL, /* Thread args */
+			TRUE, /* Joinable */
+			NULL); /*GError Pointer */
 
 }
 

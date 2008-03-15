@@ -18,12 +18,12 @@
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <firmware.h>
 #include <fileio.h>
 #include <getfiles.h>
 #include <gui_handlers.h>
 #include <notifications.h>
 #include <stdio.h>
-#include <structures.h>
 #include <time.h>
 #include <vex_support.h>
 #include <string.h>
@@ -283,7 +283,7 @@ gboolean all_table_export(GIOChannel *iochannel)
 
 	/* For Page 0.... */
 	output = g_string_sized_new(64); /*pre-allocate 64 chars */
-	//printf("total tables %i\n",firmware->total_tables);
+	/*printf("total tables %i\n",firmware->total_tables);*/
 	for (z=0;z<firmware->total_tables;z++)
 	{
 		table = z;
@@ -400,8 +400,7 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 
 	/* For Page 0.... */
 	output = g_string_sized_new(64); /*pre-allocate 64 chars */
-	//printf("total tables %i\n",firmware->total_tables);
-	//
+	/*printf("total tables %i\n",firmware->total_tables);*/
 	table = table_num;
 	z_page = firmware->table_params[table]->z_page;
 	x_page = firmware->table_params[table]->x_page;
@@ -503,7 +502,7 @@ gboolean all_table_import(GIOChannel *iochannel)
 	vex = g_new0(Vex_Import, 1);
 	vex->table = -1;
 
-	//reset_import_flags();
+	/*reset_import_flags();*/
 	status = g_io_channel_seek_position(iochannel,0,G_SEEK_SET,NULL);
 	if (status != G_IO_STATUS_NORMAL)
 	{
@@ -574,7 +573,7 @@ void single_table_import(GIOChannel *iochannel, gint table_num)
 	vex = g_new0(Vex_Import, 1);
 	vex->table = table_num;
 
-	//reset_import_flags();
+	/*reset_import_flags();*/
 	status = g_io_channel_seek_position(iochannel,0,G_SEEK_SET,NULL);
 	if (status != G_IO_STATUS_NORMAL)
 	{

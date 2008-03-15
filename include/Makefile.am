@@ -39,7 +39,6 @@ headers = \
 	menu_handlers.h \
         memory_gui.h \
         mode_select.h \
-        ms_structures.h \
         multi_expr_loader.h \
         notifications.h \
 	offline.h \
@@ -54,7 +53,6 @@ headers = \
         runtime_text.h \
         serialio.h \
 	stringmatch.h \
-        structures.h \
         tabloader.h \
         tag_loader.h \
         thermistor.h \

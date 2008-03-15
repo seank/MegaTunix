@@ -18,7 +18,6 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <stringmatch.h>
-#include <structures.h>
 #include <xmlcomm.h>
 #include <xmlbase.h>
 
@@ -28,7 +27,7 @@ extern gint dbg_lvl;
 
 void load_comm_xml(gchar *filename, gpointer data)
 {
-	//extern GObject * global_data;
+	/*extern GObject * global_data; */
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
 	GHashTable *arguments = NULL;
@@ -210,8 +209,8 @@ void load_command_section(Command *cmd, xmlNode *node)
 void load_cmd_arguments(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
-	cmd->arg_sequence = g_array_new(FALSE,TRUE,sizeof(PotentialArg *));
 	PotentialArg *arg = NULL;
+	cmd->arg_sequence = g_array_new(FALSE,TRUE,sizeof(PotentialArg *));
 
 	arg = g_new0(PotentialArg, 1);
 

@@ -22,11 +22,11 @@
 #include <listmgmt.h>
 #include "../mtxmatheval/mtxmatheval.h"
 #include <serialio.h>
-#include <structures.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <threads.h>
 #include <widgetmgmt.h>
 #include <unistd.h>
 

@@ -30,7 +30,7 @@ G_BEGIN_DECLS
 #define MTX_IS_GAUGE_FACE(obj)		(G_TYPE_CHECK_INSTANCE_TYPE ((obj), MTX_TYPE_GAUGE_FACE))
 #define MTX_IS_GAUGE_FACE_CLASS(obj)	(G_TYPE_CHECK_CLASS_TYPE ((obj), MTX_TYPE_GAUGE_FACE))
 #define MTX_GAUGE_FACE_GET_CLASS	(G_TYPE_INSTANCE_GET_CLASS ((obj), MTX_TYPE_GAUGE_FACE, MtxGaugeFaceClass))
-//#define MTX_GAUGE_FACE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MTX_TYPE_GAUGE_FACE, MtxGaugeFacePrivate))
+/*#define MTX_GAUGE_FACE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), MTX_TYPE_GAUGE_FACE, MtxGaugeFacePrivate))*/
 
 
 #define DRAG_BORDER 7
@@ -39,8 +39,10 @@ typedef enum
 {
 	CLAMP_UPPER = 0xaa,
 	CLAMP_LOWER,
-	CLAMP_NONE,
+	CLAMP_NONE
 }MtxClampType;
+
+
 /* MtxPolyType enumeration,  for polygon support */
 typedef enum
 {
@@ -48,7 +50,7 @@ typedef enum
 	MTX_ARC,
 	MTX_RECTANGLE,
 	MTX_GENPOLY,
-	NUM_POLYS,
+	NUM_POLYS
 }MtxPolyType;
 
 
@@ -73,7 +75,7 @@ typedef enum
 	TB_COLOR,
 	TB_FONT,
 	TB_TEXT,
-	TB_NUM_FIELDS,
+	TB_NUM_FIELDS
 }TbField;
 
 
@@ -94,7 +96,7 @@ typedef enum
 	POLY_START_ANGLE,
 	POLY_SWEEP_ANGLE,
 	POLY_NUM_POINTS,
-	POLY_NUM_FIELDS,
+	POLY_NUM_FIELDS
 }PolyField;
 
 
@@ -118,7 +120,7 @@ typedef enum
 	TG_MIN_TICK_WIDTH,
 	TG_START_ANGLE,
 	TG_SWEEP_ANGLE,
-	TG_NUM_FIELDS,
+	TG_NUM_FIELDS
 }TgField;
 
 
@@ -130,7 +132,7 @@ typedef enum
 	CR_COLOR,
 	CR_LWIDTH,
 	CR_INSET,
-	CR_NUM_FIELDS,
+	CR_NUM_FIELDS
 }CrField;
 
 /* Alert Range enumeration for the individual fields */
@@ -141,8 +143,9 @@ typedef enum
 	ALRT_COLOR,
 	ALRT_LWIDTH,
 	ALRT_INSET,
-	ALRT_NUM_FIELDS,
-}AlrtField;
+	ALRT_NUM_FIELDS
+}AlertField;
+
 
 /* General Attributes enumeration */
 typedef enum
@@ -163,7 +166,7 @@ typedef enum
 	PRECISION,
 	ANTIALIAS,
 	SHOW_VALUE,
-	NUM_ATTRIBUTES,
+	NUM_ATTRIBUTES
 }MtxGenAttr;
 
 
@@ -202,11 +205,11 @@ struct _MtxDispatchHelper
  */
 struct _MtxColorRange
 {
-	gfloat lowpoint;	///< where the range starts from
-	gfloat highpoint; 	///< where the range ends at
-	GdkColor color;		///< The color to use
-	gfloat lwidth;		///< % of radius to determine the line width
-	gfloat inset;		///< % of radius to inset the line
+	gfloat lowpoint;	/* where the range starts from */
+	gfloat highpoint; 	/* where the range ends at */
+	GdkColor color;		/* The color to use */
+	gfloat lwidth;		/* % of radius to determine the line width */
+	gfloat inset;		/* % of radius to inset the line */
 };
 
 
@@ -219,11 +222,11 @@ struct _MtxColorRange
  */
 struct _MtxAlertRange
 {
-	gfloat lowpoint;	///< where the range starts from
-	gfloat highpoint; 	///< where the range ends at
-	GdkColor color;		///< The color to use
-	gfloat lwidth;		///< % of radius to determine the line width
-	gfloat inset;		///< % of radius to inset the line
+	gfloat lowpoint;	/* where the range starts from */
+	gfloat highpoint; 	/* where the range ends at */
+	GdkColor color;		/* The color to use */
+	gfloat lwidth;		/* % of radius to determine the line width */
+	gfloat inset;		/* % of radius to inset the line */
 };
 
 
@@ -392,7 +395,7 @@ struct _MtxXMLFuncs
 };
 
 struct _MtxGaugeFace
-{//public data
+{	/* public data */
 	GtkDrawingArea parent;
 	GdkBitmap *bitmap;	/*! for shape_combine stuff */
 	GdkPixmap *pixmap;	/*! Update/backing pixmap */
@@ -481,7 +484,7 @@ void mtx_gauge_face_remove_all_color_ranges(MtxGaugeFace *gauge);
 
 /* Alert Ranges */
 GArray * mtx_gauge_face_get_alert_ranges(MtxGaugeFace *gauge);
-void mtx_gauge_face_alter_alert_range(MtxGaugeFace *gauge, gint index, AlrtField field, void * value);
+void mtx_gauge_face_alter_alert_range(MtxGaugeFace *gauge, gint index, AlertField field, void * value);
 gint mtx_gauge_face_set_alert_range_struct(MtxGaugeFace *gauge, MtxAlertRange *);
 void mtx_gauge_face_remove_alert_range(MtxGaugeFace *gauge, gint index);
 void mtx_gauge_face_remove_all_alert_ranges(MtxGaugeFace *gauge);

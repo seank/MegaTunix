@@ -19,14 +19,18 @@
 #include <debugging.h>
 #include <dep_processor.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gui_handlers.h>
 #include <listmgmt.h>
 #include <math.h>
 #include <mode_select.h>
+#include <multi_expr_loader.h>
+#include <rtv_map_loader.h>
 #include <rtv_processor.h>
 #include <runtime_gui.h>
+#include <runtime_sliders.h>
+#include <runtime_text.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <vetable_gui.h>
 #include <warmwizard_gui.h>
 
@@ -271,9 +275,9 @@ breakout:
  */
 void reset_runtime_status()
 {
-	// Runtime screen
+	/* Runtime screen */
 	g_list_foreach(get_list("runtime_status"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
-	// Warmup Wizard screen
+	/* Warmup Wizard screen */
 	g_list_foreach(get_list("ww_status"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
 }
 
@@ -336,13 +340,13 @@ void rt_update_status(gpointer key, gpointer data)
 	bitshift = (gint)g_object_get_data(G_OBJECT(widget),"bitshift");
 
 
-	/// if the value hasn't changed, don't bother continuing 
+	/* if the value hasn't changed, don't bother continuing */
 	if (((value & bitmask) == (previous_value & bitmask)) && (!forced_update))
 		return;	
 
-	if (((value & bitmask) >> bitshift) == bitval) // enable it
+	if (((value & bitmask) >> bitshift) == bitval) /* enable it */
 		gtk_widget_set_sensitive(GTK_WIDGET(widget),TRUE);
-	else	// disable it..
+	else	/* disable it.. */
 		gtk_widget_set_sensitive(GTK_WIDGET(widget),FALSE);
 
 	last_source = source;
@@ -378,7 +382,7 @@ void rt_update_values(gpointer key, gpointer value, gpointer data)
 	current_index = (gint)g_object_get_data(slider->object,"current_index");
 	is_float = (gboolean)g_object_get_data(slider->object,"is_float");
 	g_static_mutex_lock(&rtv_mutex);
-	//	printf("runtime_gui history length is %i, current index %i\n",history->len,current_index);
+	/*printf("runtime_gui history length is %i, current index %i\n",history->len,current_index);*/
 	current = g_array_index(history, gfloat, current_index);
 	if (current_index > 0)
 		current_index-=1;
@@ -488,7 +492,7 @@ void rtt_update_values(gpointer key, gpointer value, gpointer data)
 		/* If changed by more than 5% or has been at least 5 
 		 * times withot an update or forced_update is set
 		 * */
-		//if ((rtt->textval) && ((abs(count-last_upd) > 2) || (forced_update)))
+		/*if ((rtt->textval) && ((abs(count-last_upd) > 2) || (forced_update)))*/
 		{
 			if (is_float)
 				tmpbuf = g_strdup_printf("%.2f",current);

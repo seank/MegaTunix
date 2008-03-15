@@ -15,7 +15,6 @@
 #include <defines.h>
 #include <debugging.h>
 #include <mode_select.h>
-#include <structures.h>
 #include <threads.h>
 
 gchar *states[] = {"FALSE","TRUE"};

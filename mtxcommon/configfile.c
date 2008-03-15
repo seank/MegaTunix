@@ -273,7 +273,7 @@ void cfg_write_string(ConfigFile * cfg, gchar * section, gchar * key, gchar * va
 	if ((line = cfg_find_string(sect, key)))
 	{
 		g_free(line->value);
-		//tmpbuf = g_strchug(g_strchomp(g_strdup(value)));
+		/*tmpbuf = g_strchug(g_strchomp(g_strdup(value)));*/
 		tmpbuf = g_strstrip(g_strdup(value));
 		line->value = g_strescape(tmpbuf,NULL);
 		g_free(tmpbuf);
@@ -440,8 +440,6 @@ static ConfigLine *cfg_create_string(ConfigSection * section, gchar * key, gchar
 	gchar * tmpbuf = NULL;
 
 	line = g_malloc0(sizeof (ConfigLine));
-	//line->key = g_strchug(g_strchomp(g_strdup(key)));
-	//tmpbuf = g_strchug(g_strchomp(g_strdup(value)));
 	line->key = g_strstrip(g_strdup(key));
 	tmpbuf = g_strstrip(g_strdup(value));
 	line->value = g_strescape(tmpbuf,NULL);

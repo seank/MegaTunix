@@ -17,10 +17,10 @@
 #include <defines.h>
 #include <dep_processor.h>
 #include <enums.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <lookuptables.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <timeout_handlers.h>
 
 static gboolean ltc_visible = FALSE;
@@ -33,7 +33,7 @@ enum
 	INTERNAL_NAME_COL,
 	FILENAME_COL,
 	VIEW_EDIT_COL,
-	N_COLS,
+	N_COLS
 };
 
 /*!
@@ -90,7 +90,7 @@ gboolean load_table(gchar *table_name, gchar *filename)
 	gchar * end = NULL;
 	GString *a_line; 
 	LookupTable *lookuptable = NULL;
-	gint tmparray[2048]; // bad idea being static!!
+	gint tmparray[2048]; /* bad idea being static!!*/
 	gchar ** vector = NULL;
 	gint i = 0;
 
@@ -109,11 +109,11 @@ gboolean load_table(gchar *table_name, gchar *filename)
 			go = FALSE;
 		else
 		{
-		//	str = g_strchug(g_strdup(a_line->str));
+		/*	str = g_strchug(g_strdup(a_line->str));*/
 			str = g_strchug(a_line->str);
 			if (g_str_has_prefix(str,"DB"))
 			{
-				str+=2; // move 2 places in	
+				str+=2; /* move 2 places in	*/
 				end = g_strrstr(str,"T");
 				tmp = g_strndup(str,end-str);
 				tmparray[i]=atoi(tmp);
@@ -186,14 +186,14 @@ gint reverse_lookup(GObject *object, gint value)
 
 	for (i=0;i<len;i++)
 	{
-		//		printf("counter is %i\n",i);
+		/*printf("counter is %i\n",i);*/
 		if (array[i] == value)
 		{
-			//			printf("match at %i\n",i);
+			/*printf("match at %i\n",i);*/
 			j = i;
 			while (array[j] == value)
 			{
-				//				printf("searching for dups to upp the weight\n");
+				/*printf("searching for dups to upp the weight\n");*/
 				weight[i]++;
 				if (j+1 == len)
 					break;
@@ -207,13 +207,13 @@ gint reverse_lookup(GObject *object, gint value)
 	{
 		if (weight[i] > min)
 		{
-			//			printf("weight[%i]= %i greater than %i\n",i,weight[i],min);
+			/*printf("weight[%i]= %i greater than %i\n",i,weight[i],min);*/
 			min = weight[i];
 			closest_index=i+(min/2);
 		}
 	}
 
-	//	printf("closest index is %i\n",closest_index);
+	/*printf("closest index is %i\n",closest_index);*/
 
 	return closest_index;
 }
@@ -242,14 +242,14 @@ gint direct_reverse_lookup(gchar *table, gint value)
 
 	for (i=0;i<len;i++)
 	{
-		//		printf("counter is %i\n",i);
+		/*printf("counter is %i\n",i);*/
 		if (array[i] == value)
 		{
-			//			printf("match at %i\n",i);
+			/*printf("match at %i\n",i);*/
 			j = i;
 			while (array[j] == value)
 			{
-				//				printf("searching for dups to upp the weight\n");
+				/*printf("searching for dups to upp the weight\n");*/
 				weight[i]++;
 				if (j+1 == len)
 					break;
@@ -263,13 +263,13 @@ gint direct_reverse_lookup(gchar *table, gint value)
 	{
 		if (weight[i] > min)
 		{
-			//			printf("weight[%i]= %i greater than %i\n",i,weight[i],min);
+			/*printf("weight[%i]= %i greater than %i\n",i,weight[i],min);*/
 			min = weight[i];
 			closest_index=i+(min/2);
 		}
 	}
 
-	//	printf("closest index is %i\n",closest_index);
+	/*printf("closest index is %i\n",closest_index);*/
 
 	return closest_index;
 }
@@ -306,12 +306,12 @@ gfloat lookup_data(GObject *object, gint offset)
 	}
 	if (state)
 	{
-		//printf("ALTERNATE\n");
+		/*printf("ALTERNATE\n");*/
 		lookuptable = (LookupTable *)g_hash_table_lookup(lookuptables,alt_table);	
 	}
 	else
 	{
-		//printf("NORMAL\n");
+		/*printf("NORMAL\n");*/
 		lookuptable = (LookupTable *)g_hash_table_lookup(lookuptables,table);	
 	}
 
@@ -547,7 +547,7 @@ gboolean lookuptable_change(GtkCellRenderer *renderer, gchar *path, gchar * new_
 	cfg_free(cfgfile);
 	g_free(cfgfile);
 		
-	//printf("internal name %s, old table %s, new table %s\n",int_name,old,new_text);
+	/*printf("internal name %s, old table %s, new table %s\n",int_name,old,new_text);*/
 	return TRUE;
 
 }
@@ -556,7 +556,7 @@ void update_lt_config(gpointer key, gpointer value, gpointer data)
 {
 	ConfigFile *cfgfile = data;
 	LookupTable *lookuptable = value;
-//	printf("updating %s, %s, %s\n",cfgfile->filename,(gchar *)key, lookuptable->filename);
+	/*printf("updating %s, %s, %s\n",cfgfile->filename,(gchar *)key, lookuptable->filename);*/
 	cfg_write_string(cfgfile,"lookuptables",(gchar *)key,lookuptable->filename);
 
 }

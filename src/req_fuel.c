@@ -18,16 +18,16 @@
 #include <defines.h>
 #include <debugging.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gtk/gtk.h>
 #include <gui_handlers.h>
 #include <math.h>
 #include <mode_select.h>
-#include <ms_structures.h>
 #include <notifications.h>
 #include <req_fuel.h>
 #include <serialio.h>
-#include <structures.h>
 #include <threads.h>
+#include <unions.h>
 #include <widgetmgmt.h>
 
 extern GdkColor red;
@@ -194,7 +194,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (0), 0, 0);
 
 
-	// Engine Displacement 
+	/* Engine Displacement */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->disp,1.0,1000,1.0,10.0,0);
 
@@ -210,7 +210,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_EXPAND),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Number of Cylinders 
+	/* Number of Cylinders */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->cyls,1,12,1.0,4.0,0);
 
@@ -226,7 +226,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_EXPAND),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Target AFR
+	/* Target AFR */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->target_afr,1.0,100.0,1.0,1.0,0);
 
@@ -242,7 +242,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_EXPAND),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Rated Injector Flow
+	/* Rated Injector Flow */
 	adj =  (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->rated_inj_flow,10.0,255,0.1,1,0);
 
@@ -259,7 +259,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_EXPAND),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Rated fuel pressure in bar 
+	/* Rated fuel pressure in bar */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->rated_pressure,0.1,10.0,0.1,1.0,0);
 	spinner = gtk_spin_button_new(adj,0,1);
@@ -275,7 +275,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_EXPAND),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Actual fuel pressure in bar 
+	/* Actual fuel pressure in bar */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->actual_pressure,0.1,10.0,0.1,1.0,0);
 
@@ -304,7 +304,7 @@ gboolean reqd_fuel_popup(GtkWidget * widget)
 			(GtkAttachOptions) (GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 
-	// Preliminary Required Fuel Value
+	/* Preliminary Required Fuel Value */
 	adj = (GtkAdjustment *) gtk_adjustment_new(
 			reqd_fuel->calcd_reqd_fuel,0.1,25.5,0.1,1.0,0);
 
@@ -382,7 +382,7 @@ gboolean save_reqd_fuel(GtkWidget *widget, gpointer data)
 	filename = g_strconcat(HOME(), "/.MegaTunix/config", NULL);
 	tmpbuf = g_strdup_printf("Req_Fuel_Page_%i",reqd_fuel->page);
 	cfgfile = cfg_open_file(filename);
-	if (cfgfile)	// If it opened nicely 
+	if (cfgfile)	/* If it opened nicely  */
 	{
 		cfg_write_int(cfgfile,tmpbuf,"Displacement",reqd_fuel->disp);
 		cfg_write_int(cfgfile,tmpbuf,"Cylinders",reqd_fuel->cyls);
@@ -529,17 +529,17 @@ void check_req_fuel_limits(gint table_num)
 
 	if (firmware->capabilities & DUALTABLE)
 	{
-	//	printf ("dualtable\n");
+		/*printf ("dualtable\n");*/
 		tmp = (float)num_inj/(float)divider;
 	}
 	else if ((firmware->capabilities & MSNS_E) && (((get_ecu_data(canID,firmware->table_params[table_num]->dtmode_page,firmware->table_params[table_num]->dtmode_offset,size) & 0x10) >> 4) == 1))
 	{
-	//	printf ("msns-E with DT enabled\n");
+		/*printf ("msns-E with DT enabled\n");*/
 		tmp = (float)num_inj/(float)divider;
 	}
 	else	/* B&G style */
 	{
-	//	printf ("B&G\n");
+		/*printf ("B&G\n");*/
 		tmp =	((float)(num_inj))/((float)divider*(float)(alternate+1));
 	}
 
@@ -592,8 +592,6 @@ void check_req_fuel_limits(gint table_num)
 		send_to_ecu(canID, page, offset, MTX_U08, rf_per_squirt, TRUE);
 		/* Call handler to empty interdependant hash table */
 		g_hash_table_foreach_remove(interdep_vars[page],drain_hashtable,NULL);
-		//g_free(data);
-
 	}
 	g_free(g_name);
 
@@ -621,7 +619,7 @@ Reqd_Fuel * initialize_reqd_fuel(gint page)
 	reqd_fuel->page = page;
 	tmpbuf = g_strdup_printf("Req_Fuel_Page_%i",page);
 	cfgfile = cfg_open_file(filename);
-	// Set defaults 
+	/* Set defaults */
 	reqd_fuel->visible = FALSE;
 	reqd_fuel->disp = 350;
 	reqd_fuel->cyls = 8;

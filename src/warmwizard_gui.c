@@ -15,7 +15,6 @@
 #include <defines.h>
 #include <enums.h>
 #include <gui_handlers.h>
-#include <structures.h>
 #include <warmwizard_gui.h>
 
 extern GdkColor red;

@@ -16,7 +16,7 @@
 
 #include <gtk/gtk.h>
 #include <enums.h>
-#include <structures.h>
+#include <threads.h>
 
 /* Prototypes */
 gint comms_test(void);			/* new check_ecu_comms function */

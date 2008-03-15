@@ -24,7 +24,7 @@
 #include <logviewer_gui.h>
 #include <math.h>
 #include <mode_select.h>
-#include <structures.h>
+#include <rtv_map_loader.h>
 #include <tabloader.h>
 #include <timeout_handlers.h>
 #include <widgetmgmt.h>
@@ -167,7 +167,7 @@ void present_viewer_choices(void)
 		{
 			g_object_set_data(G_OBJECT(button),"object",
 					(gpointer)object);
-			// so we can set the state from elsewhere... 
+			/* so we can set the state from elsewhere...*/
 			g_object_set_data(G_OBJECT(object),"lview_button",
 					(gpointer)button);
 			if ((gboolean)g_object_get_data(object,"being_viewed"))
@@ -328,7 +328,7 @@ void populate_viewer()
 			{
 				/* Call the build routine, feed it the drawing_area*/
 				v_value = build_v_value(object);
-				// store location of master
+				/* store location of master*/
 				g_hash_table_insert(lv_data->traces,
 						g_strdup(name),
 						(gpointer)v_value);
@@ -346,24 +346,24 @@ void populate_viewer()
 					hue-= 30;
 					col_sat = 1.0;
 					col_val = 0.75;
-				//	printf("hue at 1110 deg, reducing to 1080, sat at 1.0, val at 0.75\n");
+					/*printf("hue at 1110 deg, reducing to 1080, sat at 1.0, val at 0.75\n");*/
 				}
 				if ((hue > 0) && ((gint)hue%780 == 0))
 				{
 					hue-= 30;
 					col_sat = 0.5;
 					col_val = 1.0;
-				//	printf("hue at 780 deg, reducing to 750, sat at 0.5, val at 1.0\n");
+					/*printf("hue at 780 deg, reducing to 750, sat at 0.5, val at 1.0\n");*/
 				}
 				if ((hue > 0) && ((gint)hue%390 == 0)) /* phase shift */
 				{
 					hue-=30.0;
 					col_sat=1.0;
 					col_val = 1.0;
-				//	printf("hue at 390 deg, reducing to 360, sat at 0.5, val at 1.0\n");
+					/*printf("hue at 390 deg, reducing to 360, sat at 0.5, val at 1.0\n");*/
 				}
 				hue -=60;
-			//	printf("angle at %f, sat %f, val %f\n",hue,col_sat,col_val);
+				/*printf("angle at %f, sat %f, val %f\n",hue,col_sat,col_val);*/
 
 				/* Remove entry in from hash table */
 				g_hash_table_remove(lv_data->traces,name);
@@ -464,7 +464,7 @@ Viewable_Value * build_v_value(GObject *object)
 	}
 	else
 	{
-		// textual name of the variable we're viewing.. 
+		/* textual name of the variable we're viewing.. */
 		v_value->vname = g_strdup(g_object_get_data(object,"dlog_gui_name"));
 		/* Array to keep history for resize/redraw and export 
 		 * to datalog we use the _sized_ version to give a big 
@@ -545,7 +545,7 @@ GdkGC * initialize_gc(GdkDrawable *drawable, GcType type)
 
 		case TRACE:
 			hue += 60;
-			//printf("angle at %f, sat %f, val %f\n",hue,col_sat,col_val);
+			/*printf("angle at %f, sat %f, val %f\n",hue,col_sat,col_val);*/
 
 			if ((hue > 0) && ((gint)hue%360 == 0))
 			{
@@ -559,8 +559,8 @@ GdkGC * initialize_gc(GdkDrawable *drawable, GcType type)
 				col_sat=1.0;
 				col_val = 0.75;
 			}
-			//printf("JBA angle at %f, sat %f, val %f\n",hue,col_sat,col_val);
-			color = (GdkColor)  get_colors_from_hue(hue,col_sat,col_val);
+			/*printf("JBA angle at %f, sat %f, val %f\n",hue,col_sat,col_val);*/
+			color = get_colors_from_hue(hue,col_sat,col_val);
 			gdk_colormap_alloc_color(cmap,&color,TRUE,TRUE);
 			values.foreground = color;
 			gc = gdk_gc_new_with_values(GDK_DRAWABLE(drawable),
@@ -615,18 +615,21 @@ GdkGC * initialize_gc(GdkDrawable *drawable, GcType type)
 GdkColor get_colors_from_hue(gfloat hue, gfloat sat, gfloat val)
 {
 	GdkColor color;
-	color.pixel=0;
-	gfloat tmp = 0.0;	
 	gint i = 0;
+	gfloat tmp = 0.0;	
 	gfloat fract = 0.0;
-	gfloat S = sat;	// using col_sat of 1.0
-	gfloat V = val;	// using Value of 1.0
+	gfloat S = sat;	/* using col_sat of 1.0*/
+	gfloat V = val;	/* using Value of 1.0*/
 	gfloat p = 0.0;
 	gfloat q = 0.0;
 	gfloat t = 0.0;
 	gfloat r = 0.0;
 	gfloat g = 0.0;
 	gfloat b = 0.0;
+	static GdkColormap *colormap = NULL;
+
+	if (!colormap)
+		colormap = gdk_colormap_get_system();
 
 	while (hue > 360.0)
 		hue -= 360.0;
@@ -674,6 +677,7 @@ GdkColor get_colors_from_hue(gfloat hue, gfloat sat, gfloat val)
 	color.red = r * 65535;
 	color.green = g * 65535;
 	color.blue = b * 65535;
+	gdk_colormap_alloc_color(colormap,&color,FALSE,TRUE);
 
 	return (color);	
 }
@@ -685,7 +689,7 @@ GdkColor get_colors_from_hue(gfloat hue, gfloat sat, gfloat val)
  */
 void draw_infotext()
 {
-	// Draws the textual (static) info on the left side of the window..
+	/* Draws the textual (static) info on the left side of the window..*/
 
 	gint name_x = 0;
 	gint name_y = 0;
@@ -892,16 +896,18 @@ void trace_update(gboolean redraw_all)
 	gfloat log_pos = 0.0;
 	gfloat newpos = 0.0;
 	GArray *array = NULL;
-	GdkPoint pts[2048]; // Bad idea as static...
+	GdkPoint pts[2048]; /* Bad idea as static...*/
 	Viewable_Value *v_value = NULL;
-	static gulong sig_id = 0;
+	/*static gulong sig_id = 0;*/
 	static GtkWidget *scale = NULL;
 	extern GHashTable *dynamic_widgets;
 
 	pixmap = lv_data->pixmap;
 
+	/*
 	if (sig_id == 0)
-		sig_id = g_signal_handler_find(g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale"),G_SIGNAL_MATCH_FUNC,0,0,NULL,logviewer_log_position_change,NULL);
+		sig_id = g_signal_handler_find(g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale"),G_SIGNAL_MATCH_FUNC,0,0,NULL,(gpointer)logviewer_log_position_change,NULL);
+		*/
 
 	if (!scale)
 		scale = g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale");
@@ -909,7 +915,7 @@ void trace_update(gboolean redraw_all)
 	h = lv_data->darea->allocation.height;
 
 	log_pos = (gfloat)((gint)g_object_get_data(G_OBJECT(lv_data->darea),"log_pos_x100"))/100.0;
-	//printf("log_pos is %f\n",log_pos);
+	/*printf("log_pos is %f\n",log_pos);*/
 	/* Full screen redraw, only with configure events (usually) */
 	if ((gboolean)redraw_all)
 	{
@@ -923,18 +929,19 @@ void trace_update(gboolean redraw_all)
 			{
 				return;
 			}
-			//		printf("length is %i\n", len);
+			/*printf("length is %i\n", len);*/
 			len *= (log_pos/100.0);
-			//		printf("length after is  %i\n", len);
-			/* Determine total number of points that'll fit on the window
+			/*printf("length after is  %i\n", len);*/
+			/* Determine total number of points 
+			 * that'll fit on the window
 			 * taking into account the scroll amount
 			 */
 			total = len < lo_width/lv_zoom ? len : lo_width/lv_zoom;
 
 
-			// Draw is reverse order, from right to left, 
-			// easier to think out in my head... :) 
-			//
+			/* Draw is reverse order, from right to left, 
+			 * easier to think out in my head... :) 
+			 */	
 			for (x=0;x<total;x++)
 			{
 				val = g_array_index(array,gfloat,len-1-x);
@@ -965,10 +972,10 @@ void trace_update(gboolean redraw_all)
 			v_value->last_y = pts[0].y;
 			v_value->last_index = len-1;
 
-			//printf ("last index displayed was %i from %i,%i to %i,%i\n",v_value->last_index,pts[1].x,pts[1].y, pts[0].x,pts[0].y );
+			/*printf ("last index displayed was %i from %i,%i to %i,%i\n",v_value->last_index,pts[1].x,pts[1].y, pts[0].x,pts[0].y );*/
 		}
 		draw_valtext(TRUE);
-		//printf("redraw complete\n");
+		/*printf("redraw complete\n");*/
 		return;
 	}
 	/* Playback mode, playing from logfile.... */
@@ -982,7 +989,7 @@ void trace_update(gboolean redraw_all)
 			if(last_index >= array->len)
 				return;
 
-			//printf("got data from array at index %i\n",last_index+1);
+			/*printf("got data from array at index %i\n",last_index+1);*/
 			val = g_array_index(array,gfloat,last_index+1);
 			percent = 1.0-(val/(float)(v_value->upper-v_value->lower));
 			if (val > (v_value->max))
@@ -994,7 +1001,7 @@ void trace_update(gboolean redraw_all)
 					v_value->trace_gc,
 					w-lv_zoom-1,v_value->last_y,
 					w-1,(gint)(percent*(h-2))+1);
-			//printf("drawing from %i,%i to %i,%i\n",w-lv_zoom-1,v_value->last_y,w-1,(gint)(percent*(h-2))+1);
+			/*printf("drawing from %i,%i to %i,%i\n",w-lv_zoom-1,v_value->last_y,w-1,(gint)(percent*(h-2))+1);*/
 
 			v_value->last_y = (gint)((percent*(h-2))+1);
 
@@ -1009,7 +1016,7 @@ void trace_update(gboolean redraw_all)
 				adj_scale = FALSE;
 				if (newpos >= 100)
 					stop_tickler(LV_PLAYBACK_TICKLER);
-				//	printf("playback reset slider to position %i\n",(gint)(newpos*100.0));
+				/*	printf("playback reset slider to position %i\n",(gint)(newpos*100.0));*/
 			}
 			if (v_value->highlight)
 			{
@@ -1130,7 +1137,7 @@ void scroll_logviewer_traces()
 	 * OS where GTK+ runs.  grr.....
 	 */
 #ifdef __WIN32__
-	// Scroll the screen to the left... 
+	/* Scroll the screen to the left... */
 	gdk_draw_drawable(pmap,
 			widget->style->black_gc,
 			pixmap,
@@ -1146,7 +1153,7 @@ void scroll_logviewer_traces()
 			w-lv_data->info_width,h);
 #else
 
-	// Scroll the screen to the left... 
+	/* Scroll the screen to the left... */
 	gdk_draw_drawable(pixmap,
 			widget->style->black_gc,
 			pixmap,
@@ -1155,7 +1162,7 @@ void scroll_logviewer_traces()
 			w-lv_data->info_width-lv_zoom,h);
 #endif
 
-	// Init new "blank space" as black 
+	/* Init new "blank space" as black */
 	gdk_draw_rectangle(pixmap,
 			widget->style->black_gc,
 			TRUE,

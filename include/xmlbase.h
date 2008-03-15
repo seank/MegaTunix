@@ -22,17 +22,16 @@
 
 /* Prototypes */
 
-// import funcs
+/* import funcs */
 void generic_xml_gint_import(xmlNode *, gpointer);
 void generic_xml_gchar_import(xmlNode *, gpointer);
 void generic_xml_gfloat_import(xmlNode *, gpointer);
 void generic_xml_color_import(xmlNode *, gpointer);
 
-// export funcs
+/* export funcs */
 void generic_xml_gint_export(xmlNode *, gchar *, gint *);
 void generic_xml_gchar_export(xmlNode *, gchar *, gchar **);
 void generic_xml_gfloat_export(xmlNode *, gchar *, gfloat *);
 void generic_xml_color_export(xmlNode *, gchar *, GdkColor *);
-/* Prototypes */
 
 #endif

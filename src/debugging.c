@@ -20,7 +20,6 @@
 #include <glib/gstdio.h>
 #include <gui_handlers.h>
 #include <math.h>
-#include <structures.h>
 #include <time.h>
 
 
@@ -160,10 +159,10 @@ void populate_debugging(GtkWidget *parent)
 		gtk_table_attach (GTK_TABLE (table), button, j, j+1, k, k+1,
 				(GtkAttachOptions) (GTK_FILL),
 				(GtkAttachOptions) (0), 0, 0);
-		// If user set on turn on as well
+		/* If user set on turn on as well */
 		if ((dbg_lvl & mask) >> shift)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
-		// if hardcoded on, turn on..
+		/* if hardcoded on, turn on.. */
 		if (dbglevels[i].enabled)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 		j++;

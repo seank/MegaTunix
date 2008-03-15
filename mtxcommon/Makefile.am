@@ -12,7 +12,7 @@ libmtxcommon_la_LDFLAGS = @EXTRA_LIBS@ @GTK_LIBS@
 
 COMMON_FLAGS = @PROF_FLAGS@ @DEBUG_FLAGS@ 
 
-AM_CFLAGS = $(COMMON_FLAGS) -Wall 
+AM_CFLAGS = $(COMMON_FLAGS) -Wall -pedantic
 
 CLEANFILES = *~ core gmon.out nohup.out 
 

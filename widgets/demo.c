@@ -24,6 +24,7 @@ int main (int argc, char **argv)
 {
 	GtkWidget *window = NULL;
 	GtkWidget *gauge = NULL;
+	GdkColor  color = { 0, 50000,50000,0};
 
 	gtk_init (&argc, &argv);
 
@@ -43,7 +44,7 @@ int main (int argc, char **argv)
 		mtx_gauge_face_set_attribute(MTX_GAUGE_FACE(gauge),START_ANGLE, 135.0);
 		mtx_gauge_face_set_attribute(MTX_GAUGE_FACE(gauge),SWEEP_ANGLE, 270.0);
 		mtx_gauge_face_set_attribute(MTX_GAUGE_FACE (gauge), ANTIALIAS, (gfloat)TRUE);
-		GdkColor color = { 0, 50000,50000,0};
+		
 		color.red = 50000;
 		color.green = 0;
 		mtx_gauge_face_set_attribute(MTX_GAUGE_FACE (gauge), PRECISION, (gfloat)1);

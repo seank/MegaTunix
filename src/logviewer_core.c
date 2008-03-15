@@ -23,8 +23,8 @@
 #include <logviewer_gui.h>
 #include <math.h>
 #include <notifications.h>
+#include <rtv_map_loader.h>
 #include <string.h>
-#include <structures.h>
 #include <tabloader.h>
 #include <timeout_handlers.h>
 
@@ -186,10 +186,8 @@ read_again:
 			array = NULL;
 			object = NULL;
 			object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-			// ATTEMPTED FIX FOR GLIB 2.10
 			g_object_ref(object);
 			gtk_object_sink(GTK_OBJECT(object));
-			// ATTEMPTED FIX FOR GLIB 2.10
 			array = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
 			g_object_set_data(G_OBJECT(object),"data_array",(gpointer)array);
 			g_free(g_object_get_data(G_OBJECT(object),"lview_name"));
@@ -299,7 +297,7 @@ void read_log_data(GIOChannel *iochannel, Log_Info *log_info)
 			val = (gfloat)g_ascii_strtod(data[i],NULL);
 			g_array_append_val(tmp_array,val);
 
-			//printf("data[%i]=%s\n",i,data[i]);
+			/*printf("data[%i]=%s\n",i,data[i]);*/
 			if (x == 0) /* only check fir first line */
 			{
 				if (g_strrstr(data[i], ".") == NULL)

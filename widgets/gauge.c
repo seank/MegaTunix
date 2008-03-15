@@ -146,10 +146,11 @@ void mtx_gauge_face_set_value_font (MtxGaugeFace *gauge, gchar * new)
  */
 gint mtx_gauge_face_set_color_range_struct(MtxGaugeFace *gauge, MtxColorRange *range)
 {
+	MtxColorRange * newrange = NULL;
 	g_return_val_if_fail (MTX_IS_GAUGE_FACE (gauge),-1);
 
 	g_object_freeze_notify (G_OBJECT (gauge));
-	MtxColorRange * newrange = g_new0(MtxColorRange, 1);
+	newrange = g_new0(MtxColorRange, 1);
 	newrange = g_memdup(range,sizeof(MtxColorRange)); 
 	g_array_append_val(gauge->c_ranges,newrange);
 	g_object_thaw_notify (G_OBJECT (gauge));
@@ -167,10 +168,11 @@ gint mtx_gauge_face_set_color_range_struct(MtxGaugeFace *gauge, MtxColorRange *r
  */
 gint mtx_gauge_face_set_alert_range_struct(MtxGaugeFace *gauge, MtxAlertRange *range)
 {
+	MtxAlertRange * newrange = NULL;
 	g_return_val_if_fail (MTX_IS_GAUGE_FACE (gauge),-1);
 
 	g_object_freeze_notify (G_OBJECT (gauge));
-	MtxAlertRange * newrange = g_new0(MtxAlertRange, 1);
+	newrange = g_new0(MtxAlertRange, 1);
 	newrange = g_memdup(range,sizeof(MtxAlertRange)); 
 	g_array_append_val(gauge->a_ranges,newrange);
 	g_object_thaw_notify (G_OBJECT (gauge));
@@ -188,10 +190,11 @@ gint mtx_gauge_face_set_alert_range_struct(MtxGaugeFace *gauge, MtxAlertRange *r
  */
 gint mtx_gauge_face_set_text_block_struct(MtxGaugeFace *gauge, MtxTextBlock *tblock)
 {
+	MtxTextBlock * new_tblock = NULL;
 	g_return_val_if_fail (MTX_IS_GAUGE_FACE (gauge),-1);
 
 	g_object_freeze_notify (G_OBJECT (gauge));
-	MtxTextBlock * new_tblock = g_new0(MtxTextBlock, 1);
+	new_tblock = g_new0(MtxTextBlock, 1);
 	new_tblock->font = g_strdup(tblock->font);
 	new_tblock->text = g_strdup(tblock->text);
 	new_tblock->color = tblock->color;
@@ -214,10 +217,11 @@ gint mtx_gauge_face_set_text_block_struct(MtxGaugeFace *gauge, MtxTextBlock *tbl
  */
 gint mtx_gauge_face_set_tick_group_struct(MtxGaugeFace *gauge, MtxTickGroup *tgroup)
 {
+	MtxTickGroup * new_tgroup = NULL;
 	g_return_val_if_fail (MTX_IS_GAUGE_FACE (gauge),-1);
 
 	g_object_freeze_notify (G_OBJECT (gauge));
-	MtxTickGroup * new_tgroup = g_new0(MtxTickGroup, 1);
+	new_tgroup = g_new0(MtxTickGroup, 1);
 	new_tgroup->text = g_strdup(tgroup->text);
 	new_tgroup->text_color = tgroup->text_color;
 	new_tgroup->text_inset = tgroup->text_inset;
@@ -255,10 +259,11 @@ gint mtx_gauge_face_set_polygon_struct(MtxGaugeFace *gauge, MtxPolygon *poly)
 	gint size = 0;
 	MtxGenPoly * new = NULL;
 	MtxGenPoly * temp = NULL;
+	MtxPolygon * new_poly = NULL;
 	g_return_val_if_fail (MTX_IS_GAUGE_FACE (gauge),-1);
 
 	g_object_freeze_notify (G_OBJECT (gauge));
-	MtxPolygon * new_poly = g_new0(MtxPolygon, 1);
+	new_poly = g_new0(MtxPolygon, 1);
 	new_poly->type = poly->type;
 	new_poly->color = poly->color;
 	new_poly->filled = poly->filled;
@@ -287,7 +292,7 @@ gint mtx_gauge_face_set_polygon_struct(MtxGaugeFace *gauge, MtxPolygon *poly)
 		new = (MtxGenPoly *)new_poly->data;
 		temp = (MtxGenPoly *)poly->data;
 		new->points = g_memdup(temp->points,sizeof(MtxPoint)*temp->num_points);
-		//printf("copied over %i MTxPoints (%i bytes) \n",temp->num_points,sizeof(MtxPoint)*temp->num_points);
+		/*printf("copied over %i MTxPoints (%i bytes) \n",temp->num_points,sizeof(MtxPoint)*temp->num_points);*/
 	}
 	g_array_append_val(gauge->polygons,new_poly);
 	g_object_thaw_notify (G_OBJECT (gauge));
@@ -505,12 +510,12 @@ gboolean mtx_gauge_face_get_attribute(MtxGaugeFace *gauge,MtxGenAttr field, gflo
  */
 void mtx_gauge_face_alter_text_block(MtxGaugeFace *gauge, gint index,TbField field, void * value)
 {
+	MtxTextBlock *tblock = NULL;
 	g_return_if_fail (MTX_IS_GAUGE_FACE (gauge));
 	g_return_if_fail (field < TB_NUM_FIELDS);
 	g_return_if_fail (field >= 0);
 	g_object_freeze_notify (G_OBJECT (gauge));
 
-	MtxTextBlock *tblock = NULL;
 	tblock = g_array_index(gauge->t_blocks,MtxTextBlock *,index);
 	g_return_if_fail (tblock != NULL);
 	switch (field)
@@ -555,12 +560,12 @@ void mtx_gauge_face_alter_text_block(MtxGaugeFace *gauge, gint index,TbField fie
  */
 void mtx_gauge_face_alter_tick_group(MtxGaugeFace *gauge, gint index,TgField field, void * value)
 {
+	MtxTickGroup *tgroup = NULL;
 	g_return_if_fail (MTX_IS_GAUGE_FACE (gauge));
 	g_return_if_fail (field < TG_NUM_FIELDS);
 	g_return_if_fail (field >= 0);
 	g_object_freeze_notify (G_OBJECT (gauge));
 
-	MtxTickGroup *tgroup = NULL;
 	tgroup = g_array_index(gauge->tick_groups,MtxTickGroup *,index);
 	g_return_if_fail (tgroup != NULL);
 	switch (field)
@@ -639,15 +644,16 @@ void mtx_gauge_face_alter_tick_group(MtxGaugeFace *gauge, gint index,TgField fie
  */
 void mtx_gauge_face_alter_polygon(MtxGaugeFace *gauge, gint index,PolyField field, void * value)
 {
+	MtxPolygon *poly = NULL;
+	void *data = NULL;
+	gint i = 0;
+	gint num_points = 0;
+
 	g_return_if_fail (MTX_IS_GAUGE_FACE (gauge));
 	g_return_if_fail (field < POLY_NUM_FIELDS);
 	g_return_if_fail (field >= 0);
 	g_object_freeze_notify (G_OBJECT (gauge));
 
-	MtxPolygon *poly = NULL;
-	void *data = NULL;
-	gint i = 0;
-	gint num_points = 0;
 
 	poly = g_array_index(gauge->polygons,MtxPolygon *,index);
 	g_return_if_fail (poly != NULL);
@@ -750,12 +756,12 @@ void mtx_gauge_face_alter_polygon(MtxGaugeFace *gauge, gint index,PolyField fiel
  */
 void mtx_gauge_face_alter_color_range(MtxGaugeFace *gauge, gint index,CrField field, void * value)
 {
+	MtxColorRange *c_range = NULL;
 	g_return_if_fail (MTX_IS_GAUGE_FACE (gauge));
 	g_return_if_fail (field < CR_NUM_FIELDS);
 	g_return_if_fail (field >= 0);
 	g_object_freeze_notify (G_OBJECT (gauge));
 
-	MtxColorRange *c_range = NULL;
 	c_range = g_array_index(gauge->c_ranges,MtxColorRange *,index);
 	g_return_if_fail (c_range != NULL);
 	switch (field)
@@ -793,14 +799,14 @@ void mtx_gauge_face_alter_color_range(MtxGaugeFace *gauge, gint index,CrField fi
  \param field,  enumeration of the field to change
  \param value, new value
  */
-void mtx_gauge_face_alter_alert_range(MtxGaugeFace *gauge, gint index,AlrtField field, void * value)
+void mtx_gauge_face_alter_alert_range(MtxGaugeFace *gauge, gint index,AlertField field, void * value)
 {
+	MtxAlertRange *a_range = NULL;
 	g_return_if_fail (MTX_IS_GAUGE_FACE (gauge));
 	g_return_if_fail (field < ALRT_NUM_FIELDS);
 	g_return_if_fail (field >= 0);
 	g_object_freeze_notify (G_OBJECT (gauge));
 
-	MtxAlertRange *a_range = NULL;
 	a_range = g_array_index(gauge->a_ranges,MtxAlertRange *,index);
 	g_return_if_fail (a_range != NULL);
 	switch (field)

@@ -41,7 +41,7 @@ load_elements(MtxGaugeFace *gauge, xmlNode * a_node)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE) 
 		{
-//			printf("node type: Element, name: \"%s\"\n", cur_node->name);
+			/*printf("node type: Element, name: \"%s\"\n", cur_node->name);*/
 			xml_funcs = NULL;
 			xml_funcs = g_hash_table_lookup(gauge->xmlfunc_hash,cur_node->name);
 			/* If current element name has a set of function 
@@ -77,7 +77,6 @@ void mtx_gauge_face_import_xml(MtxGaugeFace *gauge, gchar * filename)
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
 	gchar *tmpbuf = NULL;
-	//gint i = 0;
 
 	/*
 	 * this initialize the library and check potential ABI mismatches
@@ -223,13 +222,13 @@ void mtx_gauge_gchar_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 
 void mtx_gauge_color_range_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxColorRange *range = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_color_range_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxColorRange *range = NULL;
 
 	range = g_new0(MtxColorRange, 1);
 	cur_node = node->children;
@@ -256,13 +255,13 @@ void mtx_gauge_color_range_import(MtxGaugeFace *gauge, xmlNode *node, gpointer d
 
 void mtx_gauge_alert_range_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxAlertRange *range = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_alert_range_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxAlertRange *range = NULL;
 
 	range = g_new0(MtxAlertRange, 1);
 	cur_node = node->children;
@@ -289,13 +288,13 @@ void mtx_gauge_alert_range_import(MtxGaugeFace *gauge, xmlNode *node, gpointer d
 
 void mtx_gauge_text_block_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxTextBlock *tblock = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_text_block_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxTextBlock *tblock = NULL;
 
 	tblock = g_new0(MtxTextBlock, 1);
 	cur_node = node->children;
@@ -324,13 +323,13 @@ void mtx_gauge_text_block_import(MtxGaugeFace *gauge, xmlNode *node, gpointer de
 
 void mtx_gauge_tick_group_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxTickGroup *tgroup = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_tick_group_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxTickGroup *tgroup = NULL;
 
 	tgroup = g_new0(MtxTickGroup, 1);
 	cur_node = node->children;
@@ -381,13 +380,13 @@ void mtx_gauge_tick_group_import(MtxGaugeFace *gauge, xmlNode *node, gpointer de
 
 void mtx_gauge_polygon_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxPolygon *poly = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_polygon_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxPolygon *poly = NULL;
 
 	poly = g_new0(MtxPolygon, 1);
 	cur_node = node->children;
@@ -438,13 +437,14 @@ void mtx_gauge_polygon_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 
 void mtx_gauge_poly_circle_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxCircle *data = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_poly_circle_import, xml node is empty!!\n");
 		return;	
 	}
-	xmlNode *cur_node = NULL;
-	MtxCircle *data = (MtxCircle *) dest;
+	data = (MtxCircle *) dest;
 
 	cur_node = node->children;
 	while (cur_node->next)
@@ -465,13 +465,14 @@ void mtx_gauge_poly_circle_import(MtxGaugeFace *gauge, xmlNode *node, gpointer d
 
 void mtx_gauge_poly_rectangle_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxRectangle *data = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_poly_rect_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxRectangle *data = (MtxRectangle *) dest;
+	data = (MtxRectangle *) dest;
 
 	cur_node = node->children;
 	while (cur_node->next)
@@ -494,13 +495,14 @@ void mtx_gauge_poly_rectangle_import(MtxGaugeFace *gauge, xmlNode *node, gpointe
 
 void mtx_gauge_poly_arc_import(MtxGaugeFace *gauge, xmlNode *node, gpointer dest)
 {
+	xmlNode *cur_node = NULL;
+	MtxArc *data = NULL;
 	if (!node->children)
 	{
 		printf("ERROR, mtx_gauge_poly_arc_import, xml node is empty!!\n");
 		return;
 	}
-	xmlNode *cur_node = NULL;
-	MtxArc *data = (MtxArc *) dest;
+	data = (MtxArc *) dest;
 
 	cur_node = node->children;
 	while (cur_node->next)

@@ -28,7 +28,6 @@
 #include <keyparser.h>
 #include <notifications.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <sys/types.h>
 #include <threads.h>
 #include <unistd.h>
@@ -246,7 +245,7 @@ void restore_all_ecu_settings(gchar *filename)
 						dload_val = atoi(keys[offset]);
 						if (dload_val != get_ecu_data_last(canID,page,offset,size))
 						{
-							//					printf("writing data for page %i, offset %i\n",page,offset);
+							/*printf("writing data for page %i, offset %i\n",page,offset);*/
 							send_to_ecu(canID,page,offset,size,dload_val, FALSE);
 						}
 					}

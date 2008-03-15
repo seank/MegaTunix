@@ -76,15 +76,15 @@ void load_tags(GObject *object, ConfigFile *cfgfile, gchar * section)
 			switch (num_attrs)
 			{
 				case 2:
-					//gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],NULL);
+					/*gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],NULL);*/
 					gtk_text_buffer_create_tag(textbuffer,key,attrs[0],attrs[1],NULL);
 					break;
 				case 4:
-					//gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],attrs[2],attrs[3],NULL);
+					/*gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],attrs[2],attrs[3],NULL);*/
 					gtk_text_buffer_create_tag(textbuffer,key,attrs[0],attrs[1],attrs[2],attrs[3],NULL);
 					break;
 				case 6:
-					//gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],attrs[2],attrs[3],attrs[4],attrs[5],NULL);
+					/*gtk_text_buffer_create_tag(textbuffer,g_strdup(key),attrs[0],attrs[1],attrs[2],attrs[3],attrs[4],attrs[5],NULL);*/
 					gtk_text_buffer_create_tag(textbuffer,key,attrs[0],attrs[1],attrs[2],attrs[3],attrs[4],attrs[5],NULL);
 					break;
 				default:

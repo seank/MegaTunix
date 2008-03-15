@@ -24,13 +24,13 @@
 #include <dep_loader.h>
 #include <multi_expr_loader.h>
 #include <enums.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <keyparser.h>
 #include "../mtxmatheval/mtxmatheval.h"
 #include <rtv_map_loader.h>
 #include <string.h>
 #include <stringmatch.h>
-#include <structures.h>
 
 Rtv_Map *rtv_map = NULL;
 gboolean rtvars_loaded = FALSE;
@@ -209,11 +209,9 @@ gboolean load_realtime_map(void )
 		}
 		/* Create object to hold all the data. (dynamically)*/
 		object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-		// ATTEMPTED FIX FOR GLIB 2.10
 		g_object_ref(object);
 		gtk_object_sink(GTK_OBJECT(object));
-		// ATTEMPTED FIX FOR GLIB 2.10
-		// /* History Array */
+		/* History Array */
 		history = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
 		g_object_set_data(object,"current_index",GINT_TO_POINTER(-1));
 		/* bind hostory array to object for future retrieval */

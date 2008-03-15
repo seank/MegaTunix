@@ -42,7 +42,7 @@
 #include <string.h>
 
 
-G_DEFINE_TYPE (MtxGaugeFace, mtx_gauge_face, GTK_TYPE_DRAWING_AREA);
+G_DEFINE_TYPE (MtxGaugeFace, mtx_gauge_face, GTK_TYPE_DRAWING_AREA)
 
 
 /*!
@@ -64,10 +64,10 @@ void mtx_gauge_face_class_init (MtxGaugeFaceClass *class_name)
 	widget_class->button_press_event = mtx_gauge_face_button_press;
 	widget_class->button_release_event = mtx_gauge_face_button_release;
 	/* Motion event not needed, as unused currently */
-//	widget_class->motion_notify_event = mtx_gauge_face_motion_event;
+	/*widget_class->motion_notify_event = mtx_gauge_face_motion_event;*/
 	widget_class->size_request = mtx_gauge_face_size_request;
 
-	//g_type_class_add_private (obj_class, sizeof (MtxGaugeFacePrivate));
+	/*g_type_class_add_private (obj_class, sizeof (MtxGaugeFacePrivate));*/
 }
 
 
@@ -90,18 +90,18 @@ void mtx_gauge_face_init (MtxGaugeFace *gauge)
 	gauge->xc = 0.0;
 	gauge->yc = 0.0;
 	gauge->radius = 0.0;
-	gauge->value = 0.0;//default values
+	gauge->value = 0.0;		/* default values */
 	gauge->lbound = 0.0;
 	gauge->ubound = 100.0;
 	gauge->precision = 2;
 	gauge->clamped = CLAMP_NONE;
-	gauge->start_angle = 135; // *lower left quadrant
-	gauge->sweep_angle = 270; // CW sweep
-	gauge->needle_width = 0.05;  /* % of radius */
+	gauge->start_angle = 135; 	/* lower left quadrant */
+	gauge->sweep_angle = 270; 	/* CW sweep */
+	gauge->needle_width = 0.05;  	/* % of radius */
 	gauge->needle_tip_width = 0.0;
 	gauge->needle_tail_width = 0.0;
-	gauge->needle_tail = 0.083;  /* % of radius */
-	gauge->needle_length = 0.850; /* % of radius */
+	gauge->needle_tail = 0.083;  	/* % of radius */
+	gauge->needle_length = 0.850; 	/* % of radius */
 	gauge->value_font = g_strdup("Bitstream Vera Sans");
 	gauge->value_xpos = 0.0;
 	gauge->value_ypos = 0.40;
@@ -163,8 +163,8 @@ void mtx_gauge_face_init_xml_hash(MtxGaugeFace *gauge)
 {
 	gint i = 0;
 	MtxXMLFuncs * funcs = NULL;
+	gint num_xml_funcs = sizeof(xml_functions) / sizeof(xml_functions[0]);
 	gauge->xmlfunc_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
-	 gint num_xml_funcs = sizeof(xml_functions) / sizeof(xml_functions[0]);
 
 	gauge->xmlfunc_array = g_array_sized_new(FALSE,TRUE,sizeof (MtxXMLFuncs *),num_xml_funcs);
 
@@ -658,7 +658,7 @@ gboolean mtx_gauge_face_configure (GtkWidget *widget, GdkEventConfigure *event)
 
 		gauge->xc = gauge->w / 2;
 		gauge->yc = gauge->h / 2;
-		gauge->radius = MIN (gauge->w/2, gauge->h/2); // - 5;
+		gauge->radius = MIN (gauge->w/2, gauge->h/2); 
 
 #ifdef HAVE_CAIRO
 		if (gauge->font_options)
@@ -678,9 +678,9 @@ gboolean mtx_gauge_face_configure (GtkWidget *widget, GdkEventConfigure *event)
 		gdk_gc_set_foreground (gc, &black);
 		gdk_draw_rectangle (gauge->bitmap,
 				gc,
-				TRUE,  // filled
-				0,     // x
-				0,     // y
+				TRUE,  /* filled */
+				0,     /* x */
+				0,     /* y */
 				gauge->w,
 				gauge->h);
 
@@ -691,42 +691,42 @@ gboolean mtx_gauge_face_configure (GtkWidget *widget, GdkEventConfigure *event)
 		{
 			gdk_draw_rectangle (gauge->bitmap,
 					gc,
-					TRUE,  // filled
-					0,     // x
-					0,     // y
+					TRUE,  /* filled */
+					0,     /* x */
+					0,     /* y */
 					DRAG_BORDER,
 					DRAG_BORDER);
 			gdk_draw_rectangle (gauge->bitmap,
 					gc,
-					TRUE,  // filled
-					gauge->w-DRAG_BORDER,     // x
-					0,     // y
+					TRUE,  /* filled */
+					gauge->w-DRAG_BORDER,     /* x */
+					0,     /* y */
 					DRAG_BORDER,
 					DRAG_BORDER);
 			gdk_draw_rectangle (gauge->bitmap,
 					gc,
-					TRUE,  // filled
-					gauge->w-DRAG_BORDER,     // x
-					gauge->h-DRAG_BORDER,     // y
+					TRUE,  /* filled */
+					gauge->w-DRAG_BORDER,     /* x */
+					gauge->h-DRAG_BORDER,     /* y */
 					DRAG_BORDER,
 					DRAG_BORDER);
 			gdk_draw_rectangle (gauge->bitmap,
 					gc,
-					TRUE,  // filled
-					0,     // x
-					gauge->h-DRAG_BORDER,     // y
+					TRUE,  /* filled */
+					0,     /* x */
+					gauge->h-DRAG_BORDER,     /* y */
 					DRAG_BORDER,
 					DRAG_BORDER);
 		}
 		gdk_draw_arc (gauge->bitmap,
 				gc,
-				TRUE,     // filled
+				TRUE,     /* filled */
 				gauge->xc-gauge->radius,
 				gauge->yc-gauge->radius,
 				2*(gauge->radius),
 				2*(gauge->radius),
-				0,        // angle 1
-				360*64);  // angle 2: full circle
+				0,        /* angle 1 */
+				360*64);  /* angle 2: full circle */
 
 	}
 	if (gauge->radius > 0)
@@ -912,7 +912,7 @@ void cairo_generate_gauge_background(MtxGaugeFace *gauge)
 		/* percent of full scale is (lbound-range_lbound)/(fullspan)*/
 		angle1 = (range->lowpoint-gauge->lbound)/(gauge->ubound-gauge->lbound);
 		angle2 = (range->highpoint-gauge->lbound)/(gauge->ubound-gauge->lbound);
-		//printf("gauge color range should be from %f, to %f of full scale\n",angle1, angle2);
+		/*printf("gauge color range should be from %f, to %f of full scale\n",angle1, angle2);*/
 		lwidth = gauge->radius*range->lwidth < 1 ? 1: gauge->radius*range->lwidth;
 		cairo_set_line_width (cr, lwidth);
 		cairo_arc(cr, gauge->xc, gauge->yc, (range->inset * gauge->radius),(gauge->start_angle+(angle1*(gauge->sweep_angle)))*(M_PI/180.0), (gauge->start_angle+(angle2*(gauge->sweep_angle)))*(M_PI/180.0));
@@ -1599,7 +1599,7 @@ gboolean mtx_gauge_face_button_press (GtkWidget *widget,GdkEventButton *event)
 {
 	MtxGaugeFace *gauge = MTX_GAUGE_FACE(widget);
 	GdkWindowEdge edge = -1;
-//	printf("gauge button event\n");
+	/*printf("gauge button event\n");*/
 	/* Right side of window */
 	if (event->x > (gauge->w-10))
 	{
@@ -1659,7 +1659,7 @@ gboolean mtx_gauge_face_button_press (GtkWidget *widget,GdkEventButton *event)
 				break;
 		}
 	}
-//	printf("gauge button event ENDING\n");
+	/*printf("gauge button event ENDING\n");*/
 	return FALSE;
 }
 
@@ -1674,7 +1674,7 @@ gboolean mtx_gauge_face_button_press (GtkWidget *widget,GdkEventButton *event)
 gboolean mtx_gauge_face_button_release (GtkWidget *gauge,GdkEventButton *event)
 					       
 {
-//	printf("button release\n");
+	/*printf("button release\n");*/
 	return FALSE;
 }
 
@@ -1682,7 +1682,7 @@ gboolean mtx_gauge_face_button_release (GtkWidget *gauge,GdkEventButton *event)
 gboolean mtx_gauge_face_motion_event (GtkWidget *gauge,GdkEventMotion *event)
 {
 	/* We don't care, but return FALSE to propogate properly */
-//	printf("motion in gauge, returning false\n");
+	/*printf("motion in gauge, returning false\n");*/
 	return FALSE;
 }
 					       

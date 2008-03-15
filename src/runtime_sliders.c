@@ -16,13 +16,15 @@
 #include <api-versions.h>
 #include <configfile.h>
 #include <debugging.h>
+#include <defines.h>
+#include <firmware.h>
 #include <getfiles.h>
 #include <glade/glade-xml.h>
 #include <glib.h>
+#include <rtv_map_loader.h>
 #include <runtime_sliders.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <widgetmgmt.h>
 
 GHashTable *rt_sliders = NULL;
@@ -133,7 +135,7 @@ void load_sliders()
 			g_free(ctrl_name);
 			g_free(source);
 		}
-		// Now warmup wizard.....
+		/* Now warmup wizard... */
 do_ww_sliders:
 		if (!cfg_read_int(cfgfile,"global","ww_total_sliders",&count))
 		{

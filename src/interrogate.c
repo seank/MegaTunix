@@ -32,7 +32,6 @@
 #include <notifications.h>
 #include <serialio.h>
 #include <stdlib.h>
-#include <structures.h>
 #include <string.h>
 #include <stringmatch.h>
 #include <sys/stat.h>
@@ -70,7 +69,6 @@ void interrogate_ecu()
 	gint tests_to_run = 0;
 	gint total_read = 0;
 	gint total_wanted = 0;
-	//gint read_amount = 0;
 	gint zerocount = 0;
 	gchar *string = NULL;
 	guchar buf[size];
@@ -106,10 +104,6 @@ void interrogate_ecu()
 	/* how many tests.... */
 	tests_to_run = tests->len;
 
-	//	/* Force page to zero,  non page firmware should ignore this */
-	//	write(serial_params->fd,"P",1);
-	//	write(serial_params->fd,&i,1);
-	//	flush_serial(serial_params->fd,TCIOFLUSH);
 	for (i=0;i<tests_to_run;i++)
 	{
 		flush_serial(serial_params->fd,TCIOFLUSH);
@@ -166,7 +160,7 @@ void interrogate_ecu()
 
 			if (dbg_lvl & INTERROGATOR)
 				dbg_func(g_strdup_printf("\tInterrogation for command %s read %i bytes, running total %i\n",test->test_name,res,total_read));
-			// If we get nothing back (i.e. timeout, assume done)
+			/* If we get nothing back (i.e. timeout, assume done)*/
 			if (res <= 0)
 				zerocount++;
 
@@ -275,7 +269,7 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 	}
 	g_strfreev(filenames);
 	g_array_free(classes,TRUE);
-	// Update the screen with the data... 
+	/* Update the screen with the data... */
 	for (i=0;i<num_tests;i++)
 	{
 		test = g_array_index(tests,Detection_Test *,i);
@@ -286,7 +280,7 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 						test->num_bytes));
 
 	}
-	if (match == FALSE) // (we DID NOT find one)
+	if (match == FALSE) /* (we DID NOT find one) */
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__":\n\tdetermine_ecu()\n\tFirmware NOT DETECTED, Enable Interrogation debugging, retry interrogation,\nclose megatunix, and send ~/MTXlog.txt to the author for analysis with a note\ndescribing which firmware you are attempting to talk to.\n"));
@@ -883,14 +877,14 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 	g_free(filename);
 
 
-	// Allocate RAM for the Req_Fuel_Params structures. 
+	/* Allocate RAM for the Req_Fuel_Params structures.*/
 	firmware->rf_params = g_new0(Req_Fuel_Params *,firmware->total_tables);
 
-	// Allocate RAM for the Table_Params structures and copy data in.. 
+	/* Allocate RAM for the Table_Params structures and copy data in..*/
 	for (i=0;i<firmware->total_tables;i++)
 	{
 		firmware->rf_params[i] = g_new0(Req_Fuel_Params ,1);
-		// Check for multi source table handling /
+		/* Check for multi source table handling */
 		if (firmware->table_params[i]->x_multi_source)
 		{
 			firmware->table_params[i]->x_multi_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,free_multi_source);
@@ -924,7 +918,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		}
 		else
 			firmware->table_params[i]->x_eval = evaluator_create(firmware->table_params[i]->x_conv_expr);
-		// Check for multi source table handling 
+		/* Check for multi source table handling */
 		if (firmware->table_params[i]->y_multi_source)
 		{
 			firmware->table_params[i]->y_multi_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,free_multi_source);
@@ -959,7 +953,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		else
 			firmware->table_params[i]->y_eval = evaluator_create(firmware->table_params[i]->y_conv_expr);
 
-		// Check for multi source table handling 
+		/* Check for multi source table handling */
 		if (firmware->table_params[i]->z_multi_source)
 		{
 			firmware->table_params[i]->z_multi_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,free_multi_source);
@@ -998,7 +992,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 
 	mem_alloc();
 
-	// Display firmware version in the window... 
+	/* Display firmware version in the window... */
 
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup_printf(__FILE__": determine_ecu()\n\tDetected Firmware: %s\n",firmware->name));
@@ -1181,7 +1175,7 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 	for (i=0;i<g_strv_length(match_on);i++)
 	{
 		pass = FALSE;
-//		printf("checking for match on %s\n",match_on[i]);
+		/*printf("checking for match on %s\n",match_on[i]);*/
 		test = g_hash_table_lookup(tests_hash,match_on[i]);
 		if (!test)
 			printf("ERROR test data not found for test %s\n",match_on[i]);
@@ -1204,7 +1198,7 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 		if (g_strv_length(vector) != 2)
 			printf("ERROR interrogation check_for match vector does NOT have two args it has %i\n",g_strv_length(vector));
 		class = translate_string(vector[0]);
-//		printf("potential data is %s\n",vector[1]);
+		/*printf("potential data is %s\n",vector[1]);*/
 		switch (class)
 		{
 			case COUNT:
