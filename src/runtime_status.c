@@ -12,6 +12,7 @@
  */
 
 
+#include <args.h>
 #include <apicheck.h>
 #include <api-versions.h>
 #include <configfile.h>

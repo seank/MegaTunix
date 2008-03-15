@@ -14,6 +14,7 @@
 #include <config.h>
 #include <defines.h>
 #include <debugging.h>
+#include <serialio.h>
 #include <structures.h>
 #include <termios.h>
 #include <winserialio.h>

@@ -12,6 +12,7 @@
  */
 
 #include <3d_vetable.h>
+#include <args.h>
 #include <config.h>
 #include <conversions.h>
 #include <datamgmt.h>
@@ -2458,7 +2459,7 @@ gboolean prompt_r_u_sure(void)
 	GdkPixbuf *pixbuf = NULL;
 	GtkWidget *image = NULL;
 
-	dialog = gtk_dialog_new_with_buttons("Quiet MegaTunix yes/no ",
+	dialog = gtk_dialog_new_with_buttons("Quit MegaTunix, yes/no ?",
 			GTK_WINDOW(main_window),GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_STOCK_YES,GTK_RESPONSE_YES,
 			GTK_STOCK_NO,GTK_RESPONSE_NO,

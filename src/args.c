@@ -17,6 +17,7 @@
 #include <glib.h>
 #include <stdlib.h>
 #include <structures.h>
+#include <time.h>
 #include <unistd.h>
 
 
@@ -32,6 +33,8 @@ void handle_args(gint argc, gchar * argv[])
 	CmdLineArgs *args = NULL;
 	GOptionContext *context = NULL;
 	extern GObject *global_data;
+	struct tm *tm = NULL;
+	time_t *t = NULL;
 
 	args = init_args();
 	GOptionEntry entries[] =
@@ -43,7 +46,7 @@ void handle_args(gint argc, gchar * argv[])
 		{"no-status",'s',0,G_OPTION_ARG_NONE,&args->hide_status,"Hide ECU Status window",NULL},
 		{"no-maingui",'h',0,G_OPTION_ARG_NONE,&args->hide_maingui,"Hide Main Gui window (i.e, dash only)",NULL},
 		{"autolog",'a',0,G_OPTION_ARG_NONE,&args->autolog_dump,"Automatically dump datalog to file every N minutes",NULL},
-		{"minutes",'m',0,G_OPTION_ARG_INT,&args->autolog_minutes,"How many minutes of data logged per logfile","N"},
+		{"minutes",'m',0,G_OPTION_ARG_INT,&args->autolog_minutes,"How many minutes of data logged per logfile (default 5 minutes)","N"},
 		{"log_dir",'l',0,G_OPTION_ARG_FILENAME,&args->autolog_dump_dir,"Directory to put datalogs into",NULL},
 		{"log_basename",'b',0,G_OPTION_ARG_FILENAME,&args->autolog_basename,"Base filename for logs.",NULL},
 		{ NULL },
@@ -59,6 +62,22 @@ void handle_args(gint argc, gchar * argv[])
 	{
 		printf("%i.%i.%i\n",_MAJOR_,_MINOR_,_MICRO_);
 		exit(0);
+	}
+	if (args->autolog_dump)
+	{
+
+		if (args->autolog_minutes == 0)
+			args->autolog_minutes = 5;
+		if (!args->autolog_dump_dir)
+			args->autolog_dump_dir = (gchar *)HOME();
+		if (!args->autolog_basename)
+		{
+			t = g_malloc(sizeof(time_t));
+			time(t);
+			tm = localtime(t);
+			g_free(t);
+			args->autolog_basename = g_strdup_printf("datalog_%.2i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year));
+		}
 	}
 	if (args->debug)
 	{

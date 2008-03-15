@@ -309,7 +309,7 @@ gboolean all_table_export(GIOChannel *iochannel)
 		output = g_string_append(output, "EVEME 1.0\n");
 		output = g_string_append(output, "UserRev: 1.00\n");
 		output = g_string_append(output, g_strdup_printf("UserComment: Table %i; (%s) %s\n",table,firmware->table_params[table]->table_name,vex_comment));
-		output = g_string_append(output, g_strdup_printf("Date: %i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year)));
+		output = g_string_append(output, g_strdup_printf("Date: %.2i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year)));
 
 		output = g_string_append(output, g_strdup_printf("Time: %.2i:%.2i\n",tm->tm_hour,tm->tm_min));
 		output = g_string_append(output, g_strdup_printf("Page %i\n",z_page));

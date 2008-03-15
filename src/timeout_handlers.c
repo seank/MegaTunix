@@ -20,6 +20,7 @@
 #include <logviewer_gui.h>
 #include <notifications.h>
 #include <rtv_processor.h>
+#include <serialio.h>
 #include <structures.h>
 #include <timeout_handlers.h>
 #include <threads.h>
@@ -117,7 +118,7 @@ void start_tickler(TicklerType type)
 			if (trigmon_id == 0)
 			{
 				signal_toothtrig_read(TRIGMON_TICKLER);
-				trigmon_id = g_timeout_add(500,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TRIGMON_TICKLER));
+				trigmon_id = g_timeout_add(750,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TRIGMON_TICKLER));
 			}
 			else
 			{

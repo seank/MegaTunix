@@ -35,7 +35,6 @@ TTMon_Data *ttm_data;
 /*!
  \brief 
  */
-
 void bind_ttm_to_page(gint page)
 {
 	ttm_data->page = page;
@@ -76,6 +75,9 @@ EXPORT void setup_logger_display(GtkWidget * src_widget)
 	ttm_data->current = g_new0(gushort,93);
 	ttm_data->last = g_new0(gushort,93);
 	ttm_data->font_desc = NULL;
+	ttm_data->missing = 0;
+	ttm_data->sample_time = 0;
+	ttm_data->captures = g_new0(gushort, 93);
 
 	g_object_set_data(G_OBJECT(src_widget),"ttmon_data",(gpointer)ttm_data);
 	return;
@@ -144,21 +146,16 @@ void crunch_trigtooth_data(gint page)
 	gint tmp = 0;
 	gint min = -1;
 	gint max = -1;
-	gint captures[93];
 	gint cap_idx = 0;
 	gfloat ratio = 0.0;
-	gfloat current = 0.0;
 	gfloat suggested_sample_time= 0.0;
 	gint min_sampling_time = 0;
-	gint sample_time = 0;
 	extern gint toothmon_id;
 	gint lower = 0;
 	gint upper = 0;
-	gint missing = 0;
 	gushort total = 0;
 	gint position = get_ecu_data(canID,page,CTR,size);
 	gint index = 0;
-	static gint last_sample_time = 500;
 
 /*
 	g_printf("Counter position on page %i is %i\n",page,position);
@@ -219,7 +216,7 @@ void crunch_trigtooth_data(gint page)
 	 * patterns
 	 */
 	ratio = (float)max/(float)min;
-	if (page == 9) /* TOOTH logger, we should searh for min/max's */
+	if (page == 9) /* TOOTH logger, we should search for min/max's */
 	{
 		/* ttm_data->current is the array containing the entire
 		 * sample of data organized so the beginning of the array
@@ -237,59 +234,58 @@ void crunch_trigtooth_data(gint page)
 		cap_idx = 0;
 		for (i=0;i<93;i++)
 		{
-			captures[i] = 0;
+			ttm_data->captures[i] = 0;
 			/* Crude test,  ok for m-n wheels, but not complex*/
 			if ((ttm_data->current[i] > (1.5*min)) && (min != 0))
-				captures[cap_idx++] = i;
+				ttm_data->captures[cap_idx++] = i;
 		}
 		upper = (gint)ceil(ratio);
 		lower = (gint)floor(ratio);
 		if ((ratio-lower) < 0.5)
-			missing = lower - 1;
+			ttm_data->missing = lower - 1;
 		else 
-			missing = upper - 1;
+			ttm_data->missing = upper - 1;
 		for (i=1;i<cap_idx;i++)
-			printf("read %i trigger times followed by %i missing, thus %i-%i wheel\n",captures[i]-captures[i-1],missing,missing+captures[i]-captures[i-1],missing);
+			printf("read %i trigger times followed by %i missing, thus %i-%i wheel\n",ttm_data->captures[i]-ttm_data->captures[i-1],ttm_data->missing,ttm_data->missing+ttm_data->captures[i]-ttm_data->captures[i-1],ttm_data->missing);
 		for (i=0;i<cap_idx;i++)
-			printf("Missing teeth at index %i\n",captures[i]);
+			printf("Missing teeth at index %i\n",ttm_data->captures[i]);
 
 		//		printf("max/min is %f\n ceil %f. floor %f",ratio,ceil(ratio),floor(ratio) );
-		//		printf("wheel is a missing %i style\n",missing);
+		//		printf("wheel is a missing %i style\n",ttm_data->missing);
 
 
-		printf("Data for this block\n");
-		for (i=0;i<93;i++)
-		{
-			printf("%.4x ", ttm_data->current[i]);
-			if (!((i+1)%16))
-				printf("\n");
-		}
-		printf("\n");
-	}
 
-	printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
-	lookup_current_value("rpm",&current);
-	printf("Current RPM %f\n",current);
-	printf ("Teeth per second is %f\n",1.0/(((float)min*ttm_data->units)/1000000.0));
-	suggested_sample_time = 186000/((1.0/(((float)min*ttm_data->units)/1000000.0)));
-	if (suggested_sample_time < 0)
-		suggested_sample_time = 0;
-	min_sampling_time = 500; /* milliseconds */
+		printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
+		lookup_current_value("rpm",&ttm_data->rpm);
+		printf("Current RPM %f\n",ttm_data->rpm);
+		printf ("Teeth per second is %f\n",1.0/(((float)min*ttm_data->units)/1000000.0));
+		suggested_sample_time = 186000/((1.0/(((float)min*ttm_data->units)/1000000.0)));
+		if (suggested_sample_time < 0)
+			suggested_sample_time = 0;
+		min_sampling_time = 500; /* milliseconds */
 
-	sample_time = suggested_sample_time < min_sampling_time ? min_sampling_time : suggested_sample_time;
+		ttm_data->sample_time = suggested_sample_time < min_sampling_time ? min_sampling_time : suggested_sample_time;
 
-	printf("Suggested Sampling time is %f ms.\n",suggested_sample_time);
-	printf("Sampling time should be %i ms.\n",sample_time);
+		printf("Suggested Sampling time is %f ms.\n",suggested_sample_time);
+		printf("Sampling time set to %i ms.\n",ttm_data->sample_time);
 
 		g_source_remove(toothmon_id);
-		toothmon_id = g_timeout_add(sample_time,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+		toothmon_id = g_timeout_add(ttm_data->sample_time,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
 
-
+	}
+	printf("Data for this block\n");
+	for (i=0;i<93;i++)
+	{
+		printf("%.4x ", ttm_data->current[i]);
+		if (!((i+1)%16))
+			printf("\n");
+	}
+	printf("\n");
 	/* vertical scale calcs:
 	 * PROBLEM:  max_time can be anywhere from 0-65535, need to 
-	 * develop a way to have nice seven scale along hte Y axis so you
+	 * develop a way to have nice even scale along the Y axis so you
 	 * know what the values are
-	 *  for values of 0-100000
+	 * for values of 0-100000
 	 */
 	ttm_data->peak = ttm_data->max_time *1.25; // Add 25% padding 
 	tmp = ttm_data->peak;
@@ -427,6 +423,17 @@ void cairo_update_trigtooth_display(gint page)
 	cairo_move_to(cr,ttm_data->usable_begin+((w)/2)-(extents.width/2),20);
 	cairo_show_text(cr,message);
 	g_free(message);
+
+	cairo_set_font_size(cr,12);
+	message = g_strdup_printf("Engine RPM:  %.1f",ttm_data->rpm);
+	cairo_text_extents (cr, message, &extents);
+	cairo_move_to(cr,ttm_data->usable_begin+5,35);
+	cairo_show_text(cr,message);
+
+	message = g_strdup_printf("Sample Time: %i ms.",ttm_data->sample_time);
+	cairo_text_extents (cr, message, &extents);
+	cairo_move_to(cr,ttm_data->usable_begin+5,35+extents.height*1.1);
+	cairo_show_text(cr,message);
 
 	cairo_stroke(cr);
 	cairo_destroy(cr);

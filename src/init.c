@@ -21,6 +21,7 @@
 #include <init.h>
 #include <listmgmt.h>
 #include "../mtxmatheval/mtxmatheval.h"
+#include <serialio.h>
 #include <structures.h>
 #include <stdlib.h>
 #include <string.h>

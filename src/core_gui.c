@@ -12,6 +12,7 @@
  */
 
 #include <about_gui.h>
+#include <args.h>
 #include <comms_gui.h>
 #include <config.h>
 #include <configfile.h>
@@ -25,6 +26,7 @@
 #include <getfiles.h>
 #include <logo.h>
 #include <menu_handlers.h>
+#include <serialio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <structures.h>
