@@ -73,6 +73,7 @@ void interrogate_ecu()
 	gchar *string = NULL;
 	guchar buf[size];
 	guchar *ptr = NULL;
+	gchar * message = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
 	/* prevent multiple runs of interrogator simultaneously */
@@ -176,7 +177,9 @@ void interrogate_ecu()
 			if (dbg_lvl & (SERIAL_RD|INTERROGATOR))
 			{
 				dbg_func(g_strdup_printf(__FILE__": interrogate_ecu()\n\tRead the following from the %s command\n",test->test_name));
-				dbg_func(g_strdup_printf(__FILE__": interrogate.c()\n\tDumping Output string: \"%s\"\n",g_strndup(((gchar *)buf),total_read)));
+				message = g_strndup(((gchar *)buf),total_read);
+				dbg_func(g_strdup_printf(__FILE__": interrogate.c()\n\tDumping Output string: \"%s\"\n",message));
+				g_free(message);
 				dbg_func(g_strdup("Data is in HEX!!\n"));
 			}
 			for (j=0;j<total_read;j++)
@@ -202,7 +205,7 @@ void interrogate_ecu()
 		if (total_read == 0)
 			test->result_str = g_strdup("");
 		else
-			test->result_str = g_memdup(ptr, total_read);
+			test->result_str = g_strndup((gchar *)ptr, total_read);
 	}
 
 	interrogated = determine_ecu(tests,tests_hash);	
@@ -1171,6 +1174,7 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 	if (cfg_read_string(cfgfile,"interrogation","match_on",&tmpbuf) == FALSE)
 		printf("ERROR:!! match_on key missing from interrogation profile\n");
 	match_on = g_strsplit(tmpbuf,",",-1);
+	g_free(tmpbuf);
 
 	for (i=0;i<g_strv_length(match_on);i++)
 	{
@@ -1189,6 +1193,7 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 				dbg_func(g_strdup_printf("\n"__FILE__": check_for_match()\n\tMISMATCH,\"%s\" is NOT a match...\n\n",filename));
 			cfg_free(cfgfile);
 			g_free(cfgfile);
+			g_strfreev(match_on);
 			return FALSE;
 		}
 		vector = g_strsplit(tmpbuf,",",-1);
@@ -1229,10 +1234,12 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 				dbg_func(g_strdup_printf("\n"__FILE__": check_for_match()\n\tMISMATCH,\"%s\" is NOT a match...\n\n",filename));
 			cfg_free(cfgfile);
 			g_free(cfgfile);
+			g_strfreev(match_on);
 			return FALSE;
 		}
 
 	}
+	g_strfreev(match_on);
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup_printf("\n"__FILE__": check_for_match()\n\t\"%s\" is a match for all conditions ...\n\n",filename));
 	cfg_free(cfgfile);
@@ -1257,6 +1264,8 @@ void free_tests_array(GArray *tests)
 			g_free(test->test_desc);
 		if (test->actual_test)
 			g_free(test->actual_test);
+		if (test->result_str)
+			g_free(test->result_str);
 		if (test->test_vector)
 			g_strfreev(test->test_vector);
 		if (test->test_arg_types)

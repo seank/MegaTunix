@@ -75,6 +75,7 @@ EXPORT gboolean select_datalog_for_import(GtkWidget *widget, gpointer data)
 	update_logbar("dlog_view",NULL,g_strdup("DataLog ViewFile Opened\n"),FALSE,FALSE);
 	load_logviewer_file(iochannel);
 	g_io_channel_shutdown(iochannel,FALSE,NULL);
+	g_io_channel_unref(iochannel);
 
 	update_logbar("dlog_view",NULL,g_strdup("LogView File Closed\n"),FALSE,FALSE);
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_controls_hbox"),TRUE);

@@ -98,6 +98,7 @@ EXPORT gboolean select_vex_for_export(GtkWidget *widget, gpointer data)
 		update_logbar("tools_view",NULL,g_strdup("VEX File Opened. VEX Comment already stored.\n"),FALSE,FALSE);
 	all_table_export(iochannel);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 	free_mtxfileio(fileio);
 	return TRUE;
 }
@@ -148,6 +149,7 @@ void select_table_for_export(gint table_num)
 		update_logbar("tools_view",NULL,g_strdup("VEX File Opened. VEX Comment already stored.\n"),FALSE,FALSE);
 	single_table_export(iochannel,table_num);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 	free_mtxfileio(fileio);
 	return;
 }
@@ -190,6 +192,7 @@ EXPORT gboolean select_vex_for_import(GtkWidget *widget, gpointer data)
 
 	all_table_import(iochannel);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 	free_mtxfileio(fileio);
 	return TRUE;
 }
@@ -238,6 +241,7 @@ void select_table_for_import(gint table_num)
 
 	single_table_import(iochannel,table_num);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 	free_mtxfileio(fileio);
 	return;
 }

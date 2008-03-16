@@ -76,6 +76,7 @@ gboolean update_runtime_vars()
 	static gint count = 0;
 	static gboolean conn_status = FALSE;
 	extern gint * algorithm;
+	extern GStaticMutex dash_mutex;
 
 	if (!firmware)
 		return FALSE;
@@ -228,8 +229,10 @@ breakout:
 		}
 	}
 
+	g_static_mutex_lock(&dash_mutex);
 	if (dash_gauges)
 		g_hash_table_foreach(dash_gauges,update_dash_gauge,NULL);
+	g_static_mutex_unlock(&dash_mutex);
 
 	if ((active_page == VETABLES_TAB) ||(active_page == SPARKTABLES_TAB)||(active_page == AFRTABLES_TAB)||(active_page == BOOSTTABLES_TAB)||(active_page == ROTARYTABLES_TAB) || (forced_update))
 	{

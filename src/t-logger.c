@@ -216,6 +216,8 @@ void crunch_trigtooth_data(gint page)
 	 * patterns
 	 */
 	ratio = (float)max/(float)min;
+	lookup_current_value("rpm",&ttm_data->rpm);
+	printf("Current RPM %f\n",ttm_data->rpm);
 	if (page == 9) /* TOOTH logger, we should search for min/max's */
 	{
 		/* ttm_data->current is the array containing the entire
@@ -254,8 +256,6 @@ void crunch_trigtooth_data(gint page)
 		/*printf("wheel is a missing %i style\n",ttm_data->missing);*/
 
 		printf("Minimum tooth time: %i, max tooth time %i\n",min,max);
-		lookup_current_value("rpm",&ttm_data->rpm);
-		printf("Current RPM %f\n",ttm_data->rpm);
 		printf ("Teeth per second is %f\n",1.0/(((float)min*ttm_data->units)/1000000.0));
 		suggested_sample_time = 186000/((1.0/(((float)min*ttm_data->units)/1000000.0)));
 		if (suggested_sample_time < 0)
@@ -267,8 +267,11 @@ void crunch_trigtooth_data(gint page)
 		printf("Suggested Sampling time is %f ms.\n",suggested_sample_time);
 		printf("Sampling time set to %i ms.\n",ttm_data->sample_time);
 
-		g_source_remove(toothmon_id);
-		toothmon_id = g_timeout_add(ttm_data->sample_time,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+		if (toothmon_id != 0)
+		{
+			g_source_remove(toothmon_id);
+			toothmon_id = g_timeout_add(ttm_data->sample_time,(GtkFunction)signal_toothtrig_read,GINT_TO_POINTER(TOOTHMON_TICKLER));
+		}
 
 	}
 	printf("Data for this block\n");
@@ -417,7 +420,7 @@ void cairo_update_trigtooth_display(gint page)
 			message = g_strdup("Trigger times in msec.");
 
 	cairo_text_extents (cr, message, &extents);
-	cairo_move_to(cr,ttm_data->usable_begin+((w)/2)-(extents.width/2),20);
+	cairo_move_to(cr,ttm_data->usable_begin+((w)/2)-(extents.width/2),extents.height/4);
 	cairo_show_text(cr,message);
 	g_free(message);
 
@@ -426,11 +429,13 @@ void cairo_update_trigtooth_display(gint page)
 	cairo_text_extents (cr, message, &extents);
 	cairo_move_to(cr,ttm_data->usable_begin+5,35);
 	cairo_show_text(cr,message);
+	g_free(message);
 
 	message = g_strdup_printf("Sample Time: %i ms.",ttm_data->sample_time);
 	cairo_text_extents (cr, message, &extents);
 	cairo_move_to(cr,ttm_data->usable_begin+5,35+extents.height*1.1);
 	cairo_show_text(cr,message);
+	g_free(message);
 
 	cairo_stroke(cr);
 	cairo_destroy(cr);
@@ -563,9 +568,23 @@ void gdk_update_trigtooth_display(gint page)
 	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
 	cur_pos = (h-y_shift)*(1-(ctr/ttm_data->peak)); 
 
-	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+((w-ttm_data->usable_begin)/2)-(logical_rect.width/2),logical_rect.height/2,ttm_data->layout);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+((w-ttm_data->usable_begin)/2)-(logical_rect.width/2),logical_rect.height/4,ttm_data->layout);
 	g_free(message);
 
+	ttm_data->font_desc = pango_font_description_from_string("Sans 12");
+	pango_layout_set_font_description(ttm_data->layout,ttm_data->font_desc);
+	message = g_strdup_printf("Engine RPM:  %.1f",ttm_data->rpm);
+
+	pango_layout_set_text(ttm_data->layout,message,-1);
+	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,35,ttm_data->layout);
+	g_free(message);
+
+	message = g_strdup_printf("Sample Time: %i ms.",ttm_data->sample_time);
+	pango_layout_set_text(ttm_data->layout,message,-1);
+	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,35+logical_rect.height*1.1,ttm_data->layout);
+	g_free(message);
 
 	/* Trigger redraw to main screen */
 	if (!ttm_data->darea->window) 

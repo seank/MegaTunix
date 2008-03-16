@@ -33,6 +33,7 @@
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
 extern gint dbg_lvl;
 static gboolean timer_active = FALSE;
+GStaticMutex dash_mutex = G_STATIC_MUTEX_INIT;
 
 
 /*!
@@ -405,24 +406,30 @@ void dash_shape_combine(GtkWidget *dash, gboolean hide_resizers)
 	gint i = 0;
 	GList *children = NULL;
 	GdkGC *gc1 = NULL;
-	GdkColormap *colormap = NULL;
-	GdkColor black;
-	GdkColor white;
 	GdkBitmap *bitmap = NULL;
 	GtkRequisition req;
 	gint width = 0;
 	gint height = 0;
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+	static GdkColormap *colormap = NULL;
+	static GdkColor black;
+	static GdkColor white;
 
-	g_static_mutex_lock(&mutex);
+	if(!GTK_IS_WIDGET(dash))
+		return;
+	if(!GTK_IS_WINDOW(gtk_widget_get_toplevel(dash)))
+		return;
+
+	g_static_mutex_lock(&dash_mutex);
 	gtk_window_get_size(GTK_WINDOW(gtk_widget_get_toplevel(dash)),&width,&height);
+	if (!colormap)
+	{
+		colormap = gdk_colormap_get_system ();
+		gdk_color_parse ("black", & black);
+		gdk_colormap_alloc_color(colormap, &black,TRUE,TRUE);
+		gdk_color_parse ("white", & white);
+		gdk_colormap_alloc_color(colormap, &white,TRUE,TRUE);
+	}
 	bitmap = gdk_pixmap_new(NULL,width,height,1);
-
-	colormap = gdk_colormap_get_system ();
-	gdk_color_parse ("black", & black);
-	gdk_colormap_alloc_color(colormap, &black,TRUE,TRUE);
-	gdk_color_parse ("white", & white);
-	gdk_colormap_alloc_color(colormap, &white,TRUE,TRUE);
 	gc1 = gdk_gc_new (bitmap);
 	gdk_gc_set_foreground (gc1, &black);
 	gdk_draw_rectangle(bitmap,gc1,TRUE,0,0,width,height);
@@ -492,7 +499,7 @@ void dash_shape_combine(GtkWidget *dash, gboolean hide_resizers)
 	g_object_unref(colormap);
 	g_object_unref(gc1);
 	g_object_unref(bitmap);
-	g_static_mutex_unlock(&mutex);
+	g_static_mutex_unlock(&dash_mutex);
 	return;
 }
 
@@ -712,6 +719,8 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 
 	if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		return FALSE;
+
+	g_static_mutex_lock(&dash_mutex);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),FALSE);
 	label = g_object_get_data(G_OBJECT(widget),"label");
 	if (GTK_IS_WIDGET(label))
@@ -730,6 +739,7 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 	}
 	if (dash_gauges)
 		g_hash_table_foreach_remove(dash_gauges,remove_dashcluster,data);
+	g_static_mutex_unlock(&dash_mutex);
 	return TRUE;
 }
 
@@ -742,7 +752,7 @@ gboolean remove_dashcluster(gpointer key, gpointer value, gpointer user_data)
 	if (g_strrstr((gchar *)key,tmpbuf) != NULL)
 	{
 		g_free(tmpbuf);
-		/* Foudn gauge in soon to be destroyed dash */
+		/* Found gauge in soon to be destroyed dash */
 		d_gauge = (Dash_Gauge *)value;
 		g_free(d_gauge->source);
 		if (GTK_IS_WIDGET(d_gauge->dash))
@@ -817,7 +827,8 @@ void update_tab_gauges()
 
 gboolean hide_dash_resizers(gpointer data)
 {
-	dash_shape_combine(data,TRUE);
+	if (GTK_IS_WIDGET(data))
+		dash_shape_combine(data,TRUE);
 	timer_active = FALSE;
 	return FALSE;
 }

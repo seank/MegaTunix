@@ -161,7 +161,10 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	}
 
 	if (iochannel)	
+	{
 		g_io_channel_shutdown(iochannel,TRUE,NULL);
+		g_io_channel_unref(iochannel);
+	}
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after iochannel\n"));
 

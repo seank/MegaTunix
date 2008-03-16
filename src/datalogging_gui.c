@@ -11,6 +11,7 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
+#include <args.h>
 #include <config.h>
 #include <datalogging_gui.h>
 #include <defines.h>
@@ -209,7 +210,10 @@ void stop_datalogging()
 	update_logbar("dlog_view",NULL,g_strdup("DataLogging Stopped...\n"),FALSE,FALSE);
 	iochannel = (GIOChannel *) g_object_get_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data");
 	if (iochannel)
+	{
 		g_io_channel_shutdown(iochannel,TRUE,NULL);
+		g_io_channel_unref(iochannel);
+	}
 
 	g_object_set_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data",NULL);
 
@@ -479,6 +483,28 @@ EXPORT gboolean select_datalog_for_export(GtkWidget *widget, gpointer data)
 }
 
 
+gboolean autolog_dump(gpointer data)
+{
+	extern GObject *global_data;
+	CmdLineArgs *args = NULL;
+	gchar *filename = NULL;
+	GIOChannel *iochannel = NULL;
+	static gint dlog_index = 0;
+
+	args = (CmdLineArgs *)g_object_get_data(G_OBJECT(global_data),"args");
+
+	filename = g_strdup_printf("%s%s%s_%.3i.log",args->autolog_dump_dir,PSEP,args->autolog_basename,dlog_index);
+
+	iochannel = g_io_channel_new_file(filename, "a+",NULL);
+	dump_log_to_disk(iochannel);
+	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
+	dlog_index++;
+	update_logbar("dlog_view",NULL,g_strdup_printf("Autolog dump (log number %i) successfully completed.\n",dlog_index),FALSE,FALSE);
+	g_free(filename);
+	return TRUE;
+}
+
 
 EXPORT gboolean internal_datalog_dump(GtkWidget *widget, gpointer data)
 {
@@ -508,8 +534,10 @@ EXPORT gboolean internal_datalog_dump(GtkWidget *widget, gpointer data)
 		update_logbar("dlog_view",NULL,g_strdup("File opened successfully for internal log dump\n"),FALSE,FALSE);
 	dump_log_to_disk(iochannel);
 	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 	update_logbar("dlog_view",NULL,g_strdup("Internal datalog successfully dumped to disk\n"),FALSE,FALSE);
 	free_mtxfileio(fileio);
+	g_free(filename);
 	return TRUE;
 
 }

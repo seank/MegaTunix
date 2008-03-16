@@ -123,7 +123,8 @@ gboolean load_table(gchar *table_name, gchar *filename)
 		}
 		g_string_free(a_line,TRUE);
 	}
-	g_io_channel_shutdown(iochannel,FALSE,NULL);
+	g_io_channel_shutdown(iochannel,TRUE,NULL);
+	g_io_channel_unref(iochannel);
 
 	vector = g_strsplit(filename,PSEP,-1);
 	lookuptable = g_new0(LookupTable, 1);

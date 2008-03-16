@@ -206,17 +206,14 @@ void group_free(gpointer value)
 {
 	Group *group = value;
 	gint i = 0;
-	gchar *data = NULL;
 
 	for (i=0;i<group->num_keys;i++)
 	{
 		if (group->keytypes[i] == MTX_STRING)
-		{
-			data = (gchar *) g_object_get_data(group->object,group->keys[i]);
-			g_free(data);
-		}
+			g_free(g_object_get_data(group->object,group->keys[i]));
 		g_object_set_data(group->object,group->keys[i],NULL);
 	}
+	//g_object_destroy(group->object);
 	g_object_unref(group->object);
 	g_strfreev(group->keys);
 	g_free(group->keytypes);
@@ -294,6 +291,7 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 				dbg_func(g_strdup_printf(__FILE__": load_groups()\n\tNumber of keys (%i) and keytypes(%i) does\n\tNOT match for widget %s in file %s, CRITICAL!!!\n",group->num_keys,group->num_keytypes,section,cfgfile->filename));
 			g_strfreev(group->keys);
 			g_free(group->keytypes);
+			g_free(group);
 			return NULL;
 
 		}

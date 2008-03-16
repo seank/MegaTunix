@@ -14,6 +14,7 @@
 
 #include <args.h>
 #include <config.h>
+#include <datalogging_gui.h>
 #include <defines.h>
 #include <glib.h>
 #include <stdlib.h>
@@ -75,21 +76,22 @@ void handle_args(gint argc, gchar * argv[])
 			time(t);
 			tm = localtime(t);
 			g_free(t);
-			args->autolog_basename = g_strdup_printf("datalog_%.2i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year));
+			args->autolog_basename = g_strdup_printf("datalog_%.2i-%.2i-%i",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year));
 		}
+		g_timeout_add(args->autolog_minutes*60000,(GtkFunction)autolog_dump,NULL);
 	}
 	if (args->debug)
 	{
-		printf("debug option %i\n",args->debug);
-		printf("version option %i\n",args->version);
-		printf("quiet option %i\n",args->be_quiet);
-		printf("no rttext option %i\n",args->hide_rttext);
-		printf("no status option %i\n",args->hide_status);
-		printf("no maingui option %i\n",args->hide_maingui);
-		printf("autolog_dump %i\n",args->autolog_dump);
-		printf("autolog_minutes %i\n",args->autolog_minutes);
-		printf("autolog_dump_dir %s\n",args->autolog_dump_dir);
-		printf("autolog_basename %s\n",args->autolog_basename);
+		printf("debug option \"%i\"\n",args->debug);
+		printf("version option \"%i\"\n",args->version);
+		printf("quiet option \"%i\"\n",args->be_quiet);
+		printf("no rttext option \"%i\"\n",args->hide_rttext);
+		printf("no status option \"%i\"\n",args->hide_status);
+		printf("no maingui option \"%i\"\n",args->hide_maingui);
+		printf("autolog_dump \"%i\"\n",args->autolog_dump);
+		printf("autolog_minutes \"%i\"\n",args->autolog_minutes);
+		printf("autolog_dump_dir \"%s\"\n",args->autolog_dump_dir);
+		printf("autolog_basename \"%s\"\n",args->autolog_basename);
 	}
 	g_object_set_data(G_OBJECT(global_data),"args",args);
 	g_option_context_free(context);
