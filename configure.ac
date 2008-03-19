@@ -101,11 +101,11 @@ AC_ARG_ENABLE(debug,
 
 if test "$enable_debug" = yes ; then
 DEBUG_FLAGS="$DEBUG_FLAGS -g -DDEBUG"
+CFLAGS="-O0"
+else
+CFLAGS="-O2"
 fi
 AC_SUBST(DEBUG_FLAGS)
-
-dnl optimizations
-CFLAGS="-O2"
 AC_SUBST(CFLAGS)
 
 AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)

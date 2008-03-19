@@ -1380,11 +1380,17 @@ void update_ve_const()
 	union config12 cfg12;
 	extern Firmware_Details *firmware;
 	extern volatile gboolean leaving;
+	extern volatile gboolean offline;
+	extern gboolean connected;
 	canID = firmware->canID;
 
 	if (leaving)
 		return;
+	if (!((connected) || (offline)))
+		return;
 
+	set_title(g_strdup("Updating Controls..."));
+	paused_handlers = TRUE;
 	/* DualTable Fuel Calculations
 	 * DT code no longer uses the "alternate" firing mode as each table
 	 * is pretty much independant from the other,  so the calcs are a 
@@ -1452,17 +1458,17 @@ void update_ve_const()
 		 */
 		if (firmware->capabilities & DUALTABLE)
 		{
-		/*	printf("DT\n"); */
+			/*	printf("DT\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else if ((firmware->capabilities & MSNS_E) && (((get_ecu_data(canID,firmware->table_params[i]->dtmode_page,firmware->table_params[i]->dtmode_offset,size)& 0x10) >> 4) == 1))
 		{
-		/*	printf("MSnS-E DT\n"); */
+			/*	printf("MSnS-E DT\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else
 		{
-		/*	printf("B&G\n"); */
+			/*	printf("B&G\n"); */
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/((float)(firmware->rf_params[i]->divider)*((float)(firmware->rf_params[i]->alternate)+1.0));
 		}
 
@@ -1499,7 +1505,10 @@ void update_ve_const()
 						update_widget,NULL);
 		}
 	}
-	
+
+	paused_handlers = FALSE;
+	set_title(g_strdup("Ready..."));
+	return;
 
 }
 

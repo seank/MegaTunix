@@ -12,6 +12,7 @@
  */
 
 #include <config.h>
+#include <comms_gui.h>
 #include <debugging.h>
 #include <defines.h>
 #include <enums.h>
@@ -27,6 +28,7 @@
 gint realtime_id = 0;
 gint playback_id = 0;
 gint toothmon_id = 0;
+gint statuscounts_id = 0;
 static gint trigmon_id = 0;
 static gboolean restart_realtime = FALSE;
 
@@ -45,6 +47,9 @@ void start_tickler(TicklerType type)
 	extern Serial_Params *serial_params;
 	extern volatile gboolean offline;
 	extern gboolean rtvars_loaded;
+	extern gboolean connected;
+	extern gboolean volatile offline;
+	extern gboolean interrogated;
 	switch (type)
 	{
 		case RTV_TICKLER:
@@ -125,6 +130,19 @@ void start_tickler(TicklerType type)
 					dbg_func(g_strdup(__FILE__": start_tickler()\n\tTrigmon tickler already active \n"));
 			}
 			break;
+		case SCOUNTS_TICKLER:
+			if (offline)
+				break;
+			if (!((connected) && (interrogated)))
+				break;
+			if (statuscounts_id != 0)
+				statuscounts_id = g_timeout_add(100,(GtkFunction)update_errcounts,NULL);
+			else
+			{
+				if (dbg_lvl & CRITICAL)
+					dbg_func(g_strdup(__FILE__": start_tickler()\n\tStatuscounts tickler already active \n"));
+			}
+			break;
 
 	}
 }
@@ -187,11 +205,15 @@ void stop_tickler(TicklerType type)
 				start_tickler(RTV_TICKLER);
 			}
 			break;
+		case SCOUNTS_TICKLER:
+			if (statuscounts_id)
+				g_source_remove(statuscounts_id);
+				statuscounts_id = 0;
+			break;
 
 	}
-
-
 }
+
 
 
 /*!

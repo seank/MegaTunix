@@ -67,9 +67,13 @@ void populate_dlog_choices()
 	extern gint preferred_delimiter;
 	extern gboolean tabs_loaded;
 	extern gboolean rtvars_loaded;
+	extern gboolean connected;
+	extern gboolean interrogated;
 	extern volatile gboolean leaving;
 
 	if ((!tabs_loaded) || (leaving))
+		return;
+	if (!((connected) && (interrogated)))
 		return;
 	if (!rtvars_loaded)
 	{
@@ -315,6 +319,11 @@ void run_datalog(void)
 	gchar buf[G_ASCII_DTOSTR_BUF_SIZE];
 	gchar *tmpbuf = NULL;
 	extern GHashTable *dynamic_widgets;
+	extern gboolean interrogated;
+	extern gboolean connected;
+
+	if (!((connected) && (interrogated)))
+		return;
 
 	if (!logging_active) /* Logging isn't enabled.... */
 		return;

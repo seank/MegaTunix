@@ -22,6 +22,7 @@
 #include <glade/glade-xml.h>
 #include <glib.h>
 #include <gui_handlers.h>
+#include <notifications.h>
 #include <rtv_map_loader.h>
 #include <runtime_status.h>
 #include <runtime_text.h>
@@ -62,8 +63,12 @@ void load_rt_text()
 	extern gboolean rtvars_loaded;
 	extern Firmware_Details *firmware;
 	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	extern gboolean connected;
+	extern gboolean interrogated;
 
-	if ((!tabs_loaded) || (!firmware) || (leaving))
+	if (!((connected) && (interrogated)))
+		return;
+	if ((!tabs_loaded) || (leaving))
 		return;
 	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
 	{
@@ -73,6 +78,7 @@ void load_rt_text()
 			dbg_func(g_strdup(__FILE__": load_rt_text()\n\tCRITICAL ERROR, Realtime Variable definitions NOT LOADED!!!\n\n"));
 		return;
 	}
+	set_title(g_strdup("Loading RT Text..."));
 	if (!rtt_hash)
 		rtt_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
 
@@ -86,6 +92,7 @@ void load_rt_text()
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup_printf(__FILE__": load_rtt()\n\tRuntime Text profile API mismatch (%i.%i != %i.%i):\n\tFile %s will be skipped\n",major,minor,RT_TEXT_MAJOR_API,RT_TEXT_MINOR_API,filename));
 			g_free(filename);
+			set_title(g_strdup("ERROR RT Text API MISMATCH!!!"));
 			return;
 		}
 
@@ -93,6 +100,7 @@ void load_rt_text()
 		{
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup_printf(__FILE__": load_rtt()\n\t could NOT read \"rtt_total\" value from\n\t file \"%s\"\n",filename));
+			set_title(g_strdup("ERROR RT Text cfgfile problem!!!"));
 			return;
 		}
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -154,6 +162,8 @@ void load_rt_text()
 			dbg_func(g_strdup_printf(__FILE__": load_rt_text()\n\t Filename \"%s\" NOT FOUND Critical error!!\n\n",filename));
 	}
 	g_free(filename);
+	set_title(g_strdup("RT Text Loaded..."));
+	return;
 }
 
 

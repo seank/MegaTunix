@@ -25,6 +25,7 @@
 #include <math.h>
 #include <mode_select.h>
 #include <multi_expr_loader.h>
+#include <notifications.h>
 #include <rtv_map_loader.h>
 #include <rtv_processor.h>
 #include <runtime_gui.h>
@@ -77,6 +78,10 @@ gboolean update_runtime_vars()
 	static gboolean conn_status = FALSE;
 	extern gint * algorithm;
 	extern GStaticMutex dash_mutex;
+	extern gboolean interrogated;
+
+	if (!interrogated)
+		return FALSE;
 
 	if (!firmware)
 		return FALSE;

@@ -20,10 +20,11 @@
 #include <getfiles.h>
 #include <firmware.h>
 #include <glib.h>
+#include <gui_handlers.h>
 #include <keybinder.h>
 #include <keyparser.h>
 #include <listmgmt.h>
-#include <gui_handlers.h>
+#include <notifications.h>
 #include <runtime_status.h>
 #include <widgetmgmt.h>
 
@@ -66,8 +67,12 @@ void load_status(void)
 	extern GObject *global_data;
 	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
 	GdkColor color;
+	extern gboolean connected;
+	extern gboolean interrogated;
 
 
+	if (!((connected) && (interrogated)))
+		return;
 	if (!firmware->status_map_file)
 	{
 		if (dbg_lvl & CRITICAL)
@@ -75,6 +80,7 @@ void load_status(void)
 		return;
 	}
 
+	set_title(g_strdup("Loading RT Status..."));
 	filename = get_file(g_strconcat(RTSTATUS_DATA_DIR,PSEP,firmware->status_map_file,NULL),g_strdup("status_conf"));
         cfgfile = cfg_open_file(filename);
         if (cfgfile)
@@ -85,6 +91,7 @@ void load_status(void)
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup_printf(__FILE__": load_status()\n\tRuntime Status profile API mismatch (%i.%i != %i.%i):\n\tFile %s will be skipped\n",major,minor,RT_STATUS_MAJOR_API,RT_STATUS_MINOR_API,filename));
 			g_free(filename);
+			set_title(g_strdup("ERROR RT Status API MISMATCH!!!"));
 			return;
 		}
 
@@ -92,6 +99,7 @@ void load_status(void)
 		{
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup_printf(__FILE__": load_status()\n\t could NOT read \"total_status\" value from\n\t file \"%s\"\n",filename));
+			set_title(g_strdup("ERROR RT Status cfgfile problem!!!"));
 			return;
 		}
 
@@ -224,6 +232,7 @@ void load_status(void)
 	}
 
 	g_free(filename);
+	set_title(g_strdup("RT Status Loaded..."));
 	return;
 }
 

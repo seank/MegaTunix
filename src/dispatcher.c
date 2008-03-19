@@ -51,7 +51,6 @@ extern gboolean connected;			/* valid connection with MS */
 extern volatile gboolean offline;			/* Offline mode */
 extern gboolean tabs_loaded;			/* Tabs loaded? */
 extern gboolean interrogated;			/* valid detection with MS */
-gint statuscounts_id = -1;
 gboolean force_page_change = FALSE;
 
 
@@ -77,7 +76,6 @@ gboolean dispatcher(gpointer data)
 	Widget_Update *w_update = NULL;
 	QFunction *qfunc = NULL;
 	extern gint temp_units;
-	extern gboolean paused_handlers;
 	extern gboolean forced_update;
 	extern volatile gboolean leaving;
 	extern gint mem_view_style[];
@@ -150,55 +148,26 @@ trypop:
 					message->payload = NULL;
 					break;
 				case UPD_POPULATE_DLOGGER:
-					if ((connected) && (interrogated))
-					{
 						set_title(g_strdup("Populating Datalogger..."));
-						populate_dlog_choices();
-					}
+					populate_dlog_choices();
 					break;
 				case UPD_LOAD_RT_STATUS:
-					if ((connected) && (interrogated))
-					{
-						set_title(g_strdup("Loading RT Status..."));
-						load_status();
-						set_title(g_strdup("RT Status Loaded..."));
-					}
+					load_status();
 					break;
 				case UPD_LOAD_RT_SLIDERS:
-					if ((connected) && (interrogated))
-					{
-						set_title(g_strdup("Loading RT Sliders..."));
-						load_sliders();
-						reset_temps(GINT_TO_POINTER(temp_units));
-						set_title(g_strdup("RT Sliders Loaded..."));
-					}
+					load_sliders();
+					reset_temps(GINT_TO_POINTER(temp_units));
 					break;
 				case UPD_LOAD_RT_TEXT:
-					if ((connected) && (interrogated))
-					{
-						set_title(g_strdup("Loading RT Text..."));
-						load_rt_text();
-						reset_temps(GINT_TO_POINTER(temp_units));
-						set_title(g_strdup("RT Text Loaded..."));
-					}
+					load_rt_text();
+					reset_temps(GINT_TO_POINTER(temp_units));
 					break;
 				case UPD_LOAD_REALTIME_MAP:
-					if ((interrogated) && ((connected) || (offline)))
-					{
-						set_title(g_strdup("Loading RT Map..."));
-						load_realtime_map();
-						set_title(g_strdup("RT Map Loaded..."));
-					}
+					load_realtime_map();
 					break;
 				case UPD_LOAD_GUI_TABS:
-					if ((((connected) || (offline))) && (!tabs_loaded))
-					{
-						set_title(g_strdup("Loading Gui Tabs..."));
-						load_gui_tabs();
-						reset_temps(GINT_TO_POINTER(temp_units));
-
-						set_title(g_strdup("Gui Tabs Loaded..."));
-					}
+					load_gui_tabs();
+					reset_temps(GINT_TO_POINTER(temp_units));
 					break;
 				case UPD_READ_VE_CONST:
 					if ((connected) || (offline))
@@ -218,25 +187,17 @@ trypop:
 					g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 					break;
 				case UPD_START_STATUSCOUNTS:
-					if ((connected) && (interrogated))
-						statuscounts_id = g_timeout_add(100,(GtkFunction)update_errcounts,NULL);
+					start_tickler(SCOUNTS_TICKLER);
 					break;
 				case UPD_START_REALTIME:
 					start_tickler(RTV_TICKLER);
 					break;
 				case UPD_REALTIME:
-					if (interrogated)
-						update_runtime_vars();
+					update_runtime_vars();
 					break;
 				case UPD_VE_CONST:
-					set_title(g_strdup("Updating Controls..."));
-					paused_handlers = TRUE;
-					if ((connected) || (offline))
-						update_ve_const();
-
-					paused_handlers = FALSE;
+					update_ve_const();
 					setup_menu_handlers();
-					set_title(g_strdup("Ready..."));
 					break;
 				case UPD_TRIGTOOTHMON:
 					crunch_trigtooth_data(message->page);
@@ -254,16 +215,13 @@ trypop:
 					g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 					break;
 				case UPD_LOGVIEWER:
-					if ((connected) && (interrogated))
-						rt_update_logview_traces(FALSE);
+					rt_update_logview_traces(FALSE);
 					break;
 				case UPD_RAW_MEMORY:
-					if ((connected) && (interrogated))
-						update_raw_memory_view(mem_view_style[message->offset],message->offset);
+					update_raw_memory_view(mem_view_style[message->offset],message->offset);
 					break;
 				case UPD_DATALOGGER:
-					if ((connected) && (interrogated))
-						run_datalog();
+					run_datalog();
 					break;
 				case UPD_COMMS_STATUS:
 					update_comms_status();

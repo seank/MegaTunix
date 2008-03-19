@@ -33,6 +33,7 @@ void dlog_select_defaults(void);
 void dlog_select_all(void);
 void dlog_deselect_all(void);
 void dump_log_to_disk(GIOChannel *);
+gboolean autolog_dump(gpointer);
 /* Prototypes */
 
 #endif

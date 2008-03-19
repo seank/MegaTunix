@@ -830,9 +830,15 @@ void draw_valtext(gboolean force_draw)
  */
 gboolean rt_update_logview_traces(gboolean force_redraw)
 {
+	extern gboolean connected;
+	extern gboolean interrogated;
 
 	if (playback_mode)
 		return TRUE;
+
+	if (!((connected) && (interrogated)))
+		return FALSE;
+
 	if ((lv_data->traces) && (g_list_length(lv_data->tlist) > 0))
 	{
 		adj_scale = TRUE;

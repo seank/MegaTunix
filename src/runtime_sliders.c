@@ -21,6 +21,7 @@
 #include <getfiles.h>
 #include <glade/glade-xml.h>
 #include <glib.h>
+#include <notifications.h>
 #include <rtv_map_loader.h>
 #include <runtime_sliders.h>
 #include <stdio.h>
@@ -59,8 +60,13 @@ void load_sliders()
 	gint i = 0;
 	extern gboolean tabs_loaded;
 	extern gboolean rtvars_loaded;
+	extern gboolean connected;
+	extern gboolean interrogated;
 
-	if ((!tabs_loaded) || (!firmware) || (leaving))
+	if (!((connected) && (interrogated)))
+		return;
+
+	if ((!tabs_loaded) || (leaving))
 		return;
 	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
 	{
@@ -73,6 +79,7 @@ void load_sliders()
 			dbg_func(g_strdup(__FILE__": load_sliders()\n\tCRITICAL ERROR, Realtime Variable definitions NOT LOADED!!!\n\n"));
 		return;
 	}
+	set_title(g_strdup("Loading RT Sliders..."));
 	if (!rt_sliders)
 		rt_sliders = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
 	if (!ww_sliders)
@@ -88,6 +95,7 @@ void load_sliders()
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup_printf(__FILE__": load_sliders()\n\tRuntime Sliders profile API mismatch (%i.%i != %i.%i):\n\tFile %s will be skipped\n",major,minor,RT_SLIDERS_MAJOR_API,RT_SLIDERS_MINOR_API,filename));
 			g_free(filename);
+			set_title(g_strdup("ERROR RT Sliders API MISMATCH!!!"));
 			return;
 		}
 		if(!cfg_read_int(cfgfile,"global","rt_total_sliders",&count))
@@ -190,6 +198,8 @@ finish_off:
 			dbg_func(g_strdup_printf(__FILE__": load_sliders()\n\t Filename \"%s\" NOT FOUND Critical error!!\n\n",filename));
 	}
 	g_free(filename);
+	set_title(g_strdup("RT Sliders Loaded..."));
+	return;
 }
 
 

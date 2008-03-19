@@ -326,6 +326,7 @@ void cairo_update_trigtooth_display(gint page)
 	gint w = 0;
 	gint h = 0;
 	gint i = 0;
+	gint space = 0;
 	gfloat tmpx = 0.0;
 	gfloat ctr = 0.0;
 	gfloat cur_pos = 0.0;
@@ -420,20 +421,23 @@ void cairo_update_trigtooth_display(gint page)
 			message = g_strdup("Trigger times in msec.");
 
 	cairo_text_extents (cr, message, &extents);
-	cairo_move_to(cr,ttm_data->usable_begin+((w)/2)-(extents.width/2),extents.height/4);
+	cairo_move_to(cr,ttm_data->usable_begin+((w)/2)-(extents.width/2),extents.height*1.125);
+	space = extents.height*1.25;
 	cairo_show_text(cr,message);
 	g_free(message);
 
 	cairo_set_font_size(cr,12);
 	message = g_strdup_printf("Engine RPM:  %.1f",ttm_data->rpm);
 	cairo_text_extents (cr, message, &extents);
-	cairo_move_to(cr,ttm_data->usable_begin+5,35);
+	space +=extents.height;
+	cairo_move_to(cr,ttm_data->usable_begin+5,space+extents.height/8);
 	cairo_show_text(cr,message);
 	g_free(message);
 
 	message = g_strdup_printf("Sample Time: %i ms.",ttm_data->sample_time);
 	cairo_text_extents (cr, message, &extents);
-	cairo_move_to(cr,ttm_data->usable_begin+5,35+extents.height*1.1);
+	space +=extents.height;
+	cairo_move_to(cr,ttm_data->usable_begin+5,space+extents.height/8);
 	cairo_show_text(cr,message);
 	g_free(message);
 
@@ -452,6 +456,7 @@ void gdk_update_trigtooth_display(gint page)
 	gint w = 0;
 	gint h = 0;
 	gint i = 0;
+	gint space = 0;
 	gint lwidth = 0;
 	gint x_pos = 0;
 	gint gap = 0;
@@ -555,35 +560,36 @@ void gdk_update_trigtooth_display(gint page)
 
 	if (ttm_data->units == 1)
 		if (ttm_data->page == 9)
-		message = g_strdup("Tooth times in usec.");
+			message = g_strdup("Tooth times in usec.");
 		else
-		message = g_strdup("Trigger times in usec.");
+			message = g_strdup("Trigger times in usec.");
 	else
 		if (ttm_data->page == 9)
-		message = g_strdup("Tooth times in msec.");
+			message = g_strdup("Tooth times in msec.");
 		else
-		message = g_strdup("Trigger times in msec.");
+			message = g_strdup("Trigger times in msec.");
 
 	pango_layout_set_text(ttm_data->layout,message,-1);
 	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
 	cur_pos = (h-y_shift)*(1-(ctr/ttm_data->peak)); 
 
-	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+((w-ttm_data->usable_begin)/2)-(logical_rect.width/2),logical_rect.height/4,ttm_data->layout);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+((w-ttm_data->usable_begin)/2)-(ink_rect.width/2),ink_rect.height/8,ttm_data->layout);
+	space = ink_rect.height*1.25;
 	g_free(message);
 
-	ttm_data->font_desc = pango_font_description_from_string("Sans 12");
+	ttm_data->font_desc = pango_font_description_from_string("Sans 11");
 	pango_layout_set_font_description(ttm_data->layout,ttm_data->font_desc);
 	message = g_strdup_printf("Engine RPM:  %.1f",ttm_data->rpm);
 
 	pango_layout_set_text(ttm_data->layout,message,-1);
 	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
-	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,35,ttm_data->layout);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,space,ttm_data->layout);
 	g_free(message);
 
 	message = g_strdup_printf("Sample Time: %i ms.",ttm_data->sample_time);
 	pango_layout_set_text(ttm_data->layout,message,-1);
 	pango_layout_get_pixel_extents(ttm_data->layout,&ink_rect,&logical_rect);
-	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,35+logical_rect.height*1.1,ttm_data->layout);
+	gdk_draw_layout(ttm_data->pixmap,ttm_data->trace_gc,ttm_data->usable_begin+5,space+ink_rect.height*1.1,ttm_data->layout);
 	g_free(message);
 
 	/* Trigger redraw to main screen */

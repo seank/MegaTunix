@@ -65,7 +65,11 @@ gboolean load_gui_tabs(void)
 	extern GHashTable *dynamic_widgets;
 	extern GObject *global_data;
 	gboolean * hidden_list = NULL;
+	extern gboolean connected;
+	extern volatile gboolean offline;
 
+	if (!((((connected) || (offline))) && (!tabs_loaded)))
+		return FALSE;
 	if (!firmware)
 		return FALSE;
 	if (!firmware->tab_list)
@@ -73,6 +77,7 @@ gboolean load_gui_tabs(void)
 	if (!firmware->tab_confs)
 		return FALSE;
 
+	set_title(g_strdup("Loading Gui Tabs..."));
 	bindgroup = g_new0(BindGroup,1);
 	notebook = g_hash_table_lookup(dynamic_widgets,"toplevel_notebook");
 	hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
@@ -130,6 +135,7 @@ gboolean load_gui_tabs(void)
 			{
 				if (dbg_lvl & (TABLOADER|CRITICAL))
 					dbg_func(g_strdup(__FILE__": load_gui_tabs()\n\t\"topframe\" not found in xml, ABORTING!!\n"));
+				set_title(g_strdup("ERROR Gui Tabs XML problem!!!"));
 				return FALSE;
 			}
 			else
@@ -192,6 +198,7 @@ gboolean load_gui_tabs(void)
 	if (dbg_lvl & TABLOADER)
 		dbg_func(g_strdup(__FILE__": load_gui_tabs()\n\t All is well, leaving...\n\n"));
 	g_free(bindgroup);
+	set_title(g_strdup("Gui Tabs Loaded..."));
 	return TRUE;
 }
 

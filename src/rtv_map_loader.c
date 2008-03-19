@@ -27,6 +27,7 @@
 #include <firmware.h>
 #include <getfiles.h>
 #include <keyparser.h>
+#include <notifications.h>
 #include "../mtxmatheval/mtxmatheval.h"
 #include <rtv_map_loader.h>
 #include <string.h>
@@ -65,17 +66,21 @@ gboolean load_realtime_map(void )
 	GList * list = NULL;
 	GArray *history = NULL;
 	extern gboolean interrogated;
+	extern gboolean connected;
+	extern volatile gboolean offline;
 
 	rtvars_loaded = FALSE;
 
-	if (!interrogated)
+	if (!((interrogated) && ((connected) || (offline))))
 		return FALSE;
 
+	set_title(g_strdup("Loading RT Map..."));
 	filename = get_file(g_strconcat(REALTIME_MAPS_DATA_DIR,PSEP,firmware->rtv_map_file,NULL),g_strdup("rtv_map"));
 	if (!filename)
 	{
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\t File not found!!, exiting function\n"));
+		set_title(g_strdup("ERROR RT Map file DOES NOT EXIST!!!"));
 		return FALSE;
 	}
 	cfgfile = cfg_open_file(filename);
@@ -84,6 +89,7 @@ gboolean load_realtime_map(void )
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tCan't find realtime vars map file %s\n\n",filename));
 		g_free(filename);
+		set_title(g_strdup("ERROR RT Map file could NOT be opened!!!"));
 		return FALSE;
 	}
 	get_file_api(cfgfile,&major,&minor);
@@ -92,6 +98,7 @@ gboolean load_realtime_map(void )
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tRealTimeMap profile API mismatch (%i.%i != %i.%i):\n\tFile %s will be skipped\n",major,minor,RTV_MAP_MAJOR_API,RTV_MAP_MINOR_API,filename));
 		g_free(filename);
+		set_title(g_strdup("ERROR RT Map API MISMATCH!!!"));
 		return FALSE;
 	}
 	else
@@ -108,6 +115,7 @@ gboolean load_realtime_map(void )
 			dbg_func(g_strdup(__FILE__": load_realtime_map()\n\tCan't find \"applicable_firmwares\" key, ABORTING!!\n"));
 		cfg_free(cfgfile);
 		g_free(cfgfile);
+		set_title(g_strdup("ERROR RT Map missing data!!!"));
 		return FALSE;
 	}
 	if (strstr(tmpbuf,firmware->name) == NULL)	
@@ -117,6 +125,7 @@ gboolean load_realtime_map(void )
 		cfg_free(cfgfile);
 		g_free(cfgfile);
 		g_free(tmpbuf);
+		set_title(g_strdup("ERROR RT Map signature MISMATCH!!!"));
 		return FALSE;
 
 	}
@@ -169,6 +178,7 @@ gboolean load_realtime_map(void )
 			if (dbg_lvl & (RTMLOADER|CRITICAL))
 				dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tCan't find \"keys\" in the \"[%s]\" section, ABORTING!!!\n\n ",section));
 			g_free(section);
+		set_title(g_strdup("ERROR RT Map missing data problem!!!"));
 			return FALSE;
 		}
 		else
@@ -182,6 +192,7 @@ gboolean load_realtime_map(void )
 			if (dbg_lvl & (RTMLOADER|CRITICAL))
 				dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tCan't find \"key_types\" in the \"[%s]\" section, ABORTING!!\n\n",section));
 			g_free(section);
+		set_title(g_strdup("ERROR RT Map missing data problem!!!"));
 			return FALSE;
 		}
 		else
@@ -196,6 +207,7 @@ gboolean load_realtime_map(void )
 			g_free(section);
 			g_free(keytypes);
 			g_strfreev(keys);
+		set_title(g_strdup("ERROR RT Map key/data problem!!!"));
 			return FALSE;
 		}
 		if (!cfg_read_int(cfgfile,section,"offset",&offset))
@@ -205,6 +217,7 @@ gboolean load_realtime_map(void )
 			g_free(section);
 			g_free(keytypes);
 			g_strfreev(keys);
+			set_title(g_strdup("ERROR RT Map offset missing!!!"));
 			return FALSE;
 		}
 		/* Create object to hold all the data. (dynamically)*/
@@ -318,6 +331,7 @@ gboolean load_realtime_map(void )
 	if (dbg_lvl & RTMLOADER)
 		dbg_func(g_strdup(__FILE__": load_realtime_map()\n\t All is well, leaving...\n\n"));
 	rtvars_loaded = TRUE;
+	set_title(g_strdup("RT Map loaded..."));
 	return TRUE;
 }
 
