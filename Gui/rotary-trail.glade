@@ -2592,6 +2592,7 @@ In the Split table (to the left):
 
 	  <child>
 	    <widget class="GtkFrame" id="Cmd_Frame">
+	      <property name="border_width">5</property>
 	      <property name="visible">True</property>
 	      <property name="label_xalign">0</property>
 	      <property name="label_yalign">0.5</property>

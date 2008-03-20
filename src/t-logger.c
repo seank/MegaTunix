@@ -202,10 +202,10 @@ void crunch_trigtooth_data(gint page)
 	}
 
 	min = 65535;
-	max = 0;
+	max = 1;
 	for (i=0;i<93;i++)
 	{
-		if (ttm_data->current[i] < min)
+		if ((ttm_data->current[i] < min) && (ttm_data->current[i] != 0))
 			min = ttm_data->current[i];
 		if (ttm_data->current[i] > max)
 			max = ttm_data->current[i];
