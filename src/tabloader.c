@@ -258,6 +258,7 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 	else
 		return NULL;
 
+
 	groups = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,group_free);
 
 	for (x=0;x<num_groups;x++)
@@ -275,7 +276,9 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 		else
 		{
 			if (dbg_lvl & TABLOADER)
-				dbg_func(g_strdup_printf(__FILE__": load_groups()\n\t\"keys\" section NOT found, aborting this group %s\n",section));
+				dbg_func(g_strdup_printf(__FILE__": load_groups()\n\t\"keys\" key in section \"%s\" NOT found, aborting this group.\n",section));
+			g_free(group);
+			g_free(section);
 			continue;
 		}
 		if(cfg_read_string(cfgfile,section,"key_types",&tmpbuf))
@@ -289,6 +292,9 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 		{
 			if (dbg_lvl & TABLOADER)
 				dbg_func(g_strdup_printf(__FILE__": load_groups()\n\t\"key_types\" section NOT found, aborting this group %s\n",section));
+			g_free(group->keys);
+			g_free(group);
+			g_free(section);
 			continue;
 		}
 
@@ -299,7 +305,8 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 			g_strfreev(group->keys);
 			g_free(group->keytypes);
 			g_free(group);
-			return NULL;
+			g_free(section);
+			continue;;
 
 		}
 		if (cfg_read_int(cfgfile,section,"page",&tmpi))
@@ -325,7 +332,10 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 		g_free(section);
 	}
 	g_strfreev(groupnames);
-	return groups;
+	if (group)
+		return groups;
+	else
+		return NULL;
 }
 
 
@@ -399,6 +409,11 @@ void bind_to_lists(GtkWidget * widget, gchar * lists)
 	GList *tmp_list = NULL;
 	gint i = 0;
 
+	if (!lists)
+	{
+		printf(__FILE__": Error, bind_to_lists(), lists is NULL\n");
+		return;
+	}
 	/*printf("Widget %s is being bound to lists \"%s\"\n",(gchar *)glade_get_widget_name(widget),lists);*/
 	tmpvector = parse_keys(lists,&bind_num_keys,",");
 
@@ -477,7 +492,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	{
 		keytypes = parse_keytypes(tmpbuf, &num_keytypes,",");
 		if (dbg_lvl & TABLOADER)
-			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tNumberk of keytypes for %s is %i\n",section,num_keys));
+			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tNumber of keytypes for %s is %i\n",section,num_keys));
 		g_free(tmpbuf);
 	}
 	else

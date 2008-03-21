@@ -1391,6 +1391,7 @@ void update_ve_const()
 
 	set_title(g_strdup("Updating Controls..."));
 	paused_handlers = TRUE;
+
 	/* DualTable Fuel Calculations
 	 * DT code no longer uses the "alternate" firing mode as each table
 	 * is pretty much independant from the other,  so the calcs are a 
@@ -1452,8 +1453,8 @@ void update_ve_const()
 
 
 		/* Calcs vary based on firmware. 
-		 * DT uses nim_inj/divider
-		 * MSnS-E use the SAME in DT mode only
+		 * DT uses num_inj/divider
+		 * MSnS-E uses the SAME in DT mode only
 		 * MSnS-E uses B&G form in single table mode
 		 */
 		if (firmware->capabilities & DUALTABLE)
@@ -1509,7 +1510,6 @@ void update_ve_const()
 	paused_handlers = FALSE;
 	set_title(g_strdup("Ready..."));
 	return;
-
 }
 
 
@@ -2524,8 +2524,11 @@ void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
 	gchar **groups = NULL;
 	gchar * group_states = NULL;
 	gchar * toggle_groups = NULL;
+	extern gboolean ready;
 	extern GHashTable *widget_group_states;
 
+	if (!ready)
+		return;
 	group_states = (gchar *)g_object_get_data(G_OBJECT(widget),
 			"group_states");
 	toggle_groups = (gchar *)g_object_get_data(G_OBJECT(widget),

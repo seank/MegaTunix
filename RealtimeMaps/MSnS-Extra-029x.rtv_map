@@ -6,7 +6,7 @@ minor=0
 applicable_firmwares=MegaSquirtnSpark-Extra 029x,MegaSquirtnSpark-Extra 029yx
 applicable_signatures=MSnS-extra format 029q *********,MS1/Extra format 029y3 *********
 raw_total=39
-derived_total=55
+derived_total=54
 raw_list=raw_secl,baroadc,barovolt,barokpa,mapadc,mapvolt,mapkpa,matadc,matvolt,matdeg,cltadc,cltvolt,cltdeg,tpsadc,tpsvolt,tpspercent,battadc,battvolt,o2adc,o2volt,afr,egocorr,aircorr,warmcorr,raw_rpm,pw,tpsaccel,barocorr,gammae,vecurr,sparkangle
 
 [derived_0]
@@ -64,10 +64,9 @@ lower_limit=0
 upper_limit=25500
 is_float=FALSE
 complex_expr=TRUE
-ul_conv_expr=(60000000 *(2-stroke))/(((iTimeX*65536)+((ctimeH*256)+ctimeL))*(cyls+1))
-#ul_conv_expr=((12000/(stroke+1))/(cyls+1))/(((ctimeH*256)+ctimeL)/10000)
-expr_symbols=stroke,cyls,iTimeX,ctimeH,ctimeL
-expr_types=_VE_EMB_BIT_,_VE_EMB_BIT_,_RAW_VAR_,_RAW_VAR_,_RAW_VAR_
+ul_conv_expr=(60000000 *(2-stroke))/(((iTimeX*65536)+(iTime))*(cyls+1))
+expr_symbols=stroke,cyls,iTimeX,iTime
+expr_types=_VE_EMB_BIT_,_VE_EMB_BIT_,_RAW_VAR_,_RAW_VAR_
 stroke_page=1
 stroke_offset=182
 stroke_bitmask=4
@@ -78,8 +77,9 @@ cyls_offset=182
 cyls_bitmask=240
 cyls_bitshift=4
 iTimeX_offset=37
-ctimeH_offset=22
-ctimeL_offset=23
+iTimeX_size=_U08_
+iTime_offset=22
+iTime_size=_U16_
 tooltip="RPM" is the Engine RPM in more common units (actual RPM, not rpm/100), resolution of about 1-5 RPM with this firmware but NOT below 500 RPM. 
 log_by_default=FALSE
 
@@ -580,16 +580,19 @@ cyls_bitmask=240
 cyls_bitshift=4
 divider_page=1
 divider_offset=149
+divider_size=_U08_
 alternate_page=1
 alternate_offset=150
 alternate_bitmask=1
 alternate_bitshift=0
 raw_pw1_offset=14
+raw_pw1_size=_U08_
 stroke_page=1
 stroke_offset=182
 stroke_bitmask=4
 stroke_bitshift=2
 raw_rpm_offset=13
+raw_rpm_size=_U08_
 is_float=TRUE
 tooltip="Dcycle1" is the injector Duty cycle for injector channel 1.
 log_by_default=TRUE
@@ -604,25 +607,28 @@ offset=19
 lower_limit=0
 upper_limit=100
 complex_expr=TRUE
-ul_conv_expr=100*(((cyls+1)/divider)/(alternate+1))*((raw_pw1/10)/((1200/(stroke+1))/raw_rpm))
-expr_symbols=cyls,divider,alternate,raw_pw1,stroke,raw_rpm
+ul_conv_expr=100*(((cyls+1)/divider)/(alternate+1))*((raw_pw2/10)/((1200/(stroke+1))/raw_rpm))
+expr_symbols=cyls,divider,alternate,raw_pw2,stroke,raw_rpm
 expr_types=_VE_EMB_BIT_,_VE_VAR_,_VE_EMB_BIT_,_RAW_VAR_,_VE_EMB_BIT_,_RAW_VAR_
 cyls_page=2
-cyls_offset=181
+cyls_offset=182
 cyls_bitmask=240
 cyls_bitshift=4
 divider_page=2
-divider_offset=148
+divider_offset=149
+divider_size=_U08_
 alternate_page=2
-alternate_offset=149
+alternate_offset=150
 alternate_bitmask=1
 alternate_bitshift=0
-raw_pw1_offset=14
+raw_pw2_offset=19
+raw_pw2_size=_U08_
 stroke_page=2
-stroke_offset=181
+stroke_offset=182
 stroke_bitmask=4
 stroke_bitshift=2
 raw_rpm_offset=13
+raw_rpm_size=_U08_
 is_float=TRUE
 tooltip="Dcycle2" is the injector Duty cycle for injector channel 2.
 log_by_default=TRUE
@@ -703,36 +709,22 @@ tooltip="Spark Adv." is the Current spark advance being run.
 log_by_default=TRUE
 
 [derived_41]
-keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
-key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
-internal_name=ctimeh
-dlog_gui_name=Ctime H
-dlog_field_name=CTimeH
+keys=internal_name,dlog_gui_name,dlog_field_name,offset,size,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
+key_types=_STRING_,_STRING_,_STRING_,_INT_,_ENUM_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
+internal_name=iTime
+dlog_gui_name=iTime
+dlog_field_name=iTime
 offset=22
+size=_U16_
 lower_limit=0
-upper_limit=255
+upper_limit=65535
 dl_conv_expr=x/1
 ul_conv_expr=x*1
 is_float=FALSE
-tooltip="Ctime H" is the upper byte of the High Res RPM Calculation specific to MSnEDIS/MSnSpark
+tooltip="iTime" is the lower 16 bits of the iTimeX 24 bit value for the High Res RPM Calculation specific to MSnEDIS/MSnSpark
 log_by_default=FALSE
 
 [derived_42]
-keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
-key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
-internal_name=ctimel
-dlog_gui_name=Ctime L
-dlog_field_name=CTimeL
-offset=23
-lower_limit=0
-upper_limit=255
-dl_conv_expr=x/1
-ul_conv_expr=x*1
-is_float=FALSE
-tooltip="Ctime L" is the lower byte of the High Res RPM Calculation specific to MSnEDIS/MSnSpark
-log_by_default=FALSE
-
-[derived_43]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=fueladc
@@ -747,7 +739,7 @@ is_float=FALSE
 tooltip="Fuel ADC" is the raw ADC value from X7 (second O2, Fuel pressure or VSS sensor input)
 log_by_default=TRUE
 
-[derived_44]
+[derived_43]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=egtadc
@@ -762,7 +754,7 @@ is_float=FALSE
 tooltip="EGT ADC" is the raw ADC value from X6, If EGT then temp F equals egtADCx7.15625, tempC equals egtADCx3.90625, if VSS Volts equals egtADCx0.019
 log_by_default=TRUE
 
-[derived_45]
+[derived_44]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=cltiatangle
@@ -777,7 +769,7 @@ is_float=TRUE
 tooltip="CLT IAT angle" is the Spark angle aded/removed for the IAT/CLT temp. 
 log_by_default=FALSE
 
-[derived_46]
+[derived_45]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=knockangle
@@ -792,7 +784,7 @@ is_float=TRUE
 tooltip="Knock angle" is the Spark angle removed due to knock system compensation
 log_by_default=TRUE
 
-[derived_47]
+[derived_46]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=egocorr2
@@ -807,7 +799,7 @@ is_float=FALSE
 tooltip="EGO Corr 2" is the EGO correction factor for O2 Sensor two when it's fitted...
 log_by_default=FALSE
 
-[derived_48]
+[derived_47]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=porta
@@ -822,7 +814,7 @@ is_float=FALSE
 tooltip="PORT A" is the raw status of PORT A for displaying status indicators..
 log_by_default=FALSE
 
-[derived_49]
+[derived_48]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=portb
@@ -837,7 +829,7 @@ is_float=FALSE
 tooltip="PORT B" is the raw status of PORT B for displaying status indicators..
 log_by_default=FALSE
 
-[derived_50]
+[derived_49]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=portc
@@ -852,7 +844,7 @@ is_float=FALSE
 tooltip="PORT C" is the raw status of PORT C for displaying status indicators..
 log_by_default=FALSE
 
-[derived_51]
+[derived_50]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=portd
@@ -867,7 +859,7 @@ is_float=FALSE
 tooltip="PORT D" is the raw status of PORT D for displaying status indicators..
 log_by_default=FALSE
 
-[derived_52]
+[derived_51]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=tpslast
@@ -882,7 +874,7 @@ is_float=FALSE
 tooltip="TPS Last" is the last TPS value (raw ADC?) for use in the accel wizard (to be written)
 log_by_default=TRUE
 
-[derived_53]
+[derived_52]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=stackL
@@ -897,7 +889,7 @@ is_float=FALSE
 tooltip="STACK Last" is the low byte of the Stack from the ECU (debugging ONLY)
 log_by_default=FALSE
 
-[derived_54]
+[derived_53]
 keys=internal_name,dlog_gui_name,dlog_field_name,offset,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
 internal_name=bcDC
@@ -911,4 +903,3 @@ ul_conv_expr=x*(3922/10000)
 is_float=FALSE
 tooltip="Boost DC" is the Duty Cycle of the Bost Controller Ouput signal.
 log_by_default=FALSE
-

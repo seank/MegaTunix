@@ -44,17 +44,16 @@ extern gint dbg_lvl;
 void process_rt_vars(void *incoming)
 {
 	extern Rtv_Map *rtv_map;
-	extern Firmware_Details *firmware;
 	extern gint temp_units;
 	guchar *raw_realtime = incoming;
 	GObject * object = NULL;
 	gchar * expr = NULL;
-	gint num_raw =  0;
 	GList * list= NULL;
 	gint i = 0;
 	gint j = 0;
 	gfloat x = 0;
 	gint offset = 0;
+	DataSize size = MTX_U08;
 	gfloat result = 0.0;
 	gfloat tmpf = 0.0;
 	gboolean temp_dep = FALSE;
@@ -70,13 +69,6 @@ void process_rt_vars(void *incoming)
 	gint minutes = 0;
 	gint seconds = 0;
 
-	num_raw = firmware->rtvars_size;
-	if (num_raw != rtv_map->raw_total)
-	{
-		if (dbg_lvl & (COMPLEX_EXPR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\tlength of buffer(%i) and realtime map raw_length(%i)\n\tDO NOT match, critical ERROR!\n",num_raw,rtv_map->raw_total));
-		return;
-	}
 	/* Store timestamps in ringbuffer */
 
 	g_get_current_time(&timeval);
@@ -95,7 +87,7 @@ void process_rt_vars(void *incoming)
 		thread_update_logbar("dlog_view",NULL,g_strdup_printf("Currently %i samples stored, Total Logged Time (HH:MM:SS) (%02i:%02i:%02i)\n",rtv_map->ts_array->len,hours,minutes,seconds),FALSE,FALSE);
 	}
 
-	for (i=0;i<num_raw;i++)
+	for (i=0;i<rtv_map->raw_total;i++)
 	{
 		/* Get list of derived vars for raw offset "i" */
 		list = g_array_index(rtv_map->rtv_array,GList *,i);
@@ -149,6 +141,7 @@ void process_rt_vars(void *incoming)
 			else
 				assert(evaluator);
 			offset = (gint)g_object_get_data(object,"offset");
+			size = (DataSize)g_object_get_data(object,"size");
 			if (g_object_get_data(object,"complex_expr"))
 			{
 				tmpf = handle_complex_expr(object,incoming,UPLOAD);
@@ -165,7 +158,8 @@ void process_rt_vars(void *incoming)
 			{
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\tNo Lookuptable needed for var using offset %i\n",offset));
-				x = raw_realtime[offset];
+				x = _get_sized_data((guint8 *)incoming,0,offset,size);
+				/*x = raw_realtime[offset];*/
 			}
 
 
@@ -213,18 +207,17 @@ store_it:
  */
 gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 {
-	extern Firmware_Details *firmware;
 	gchar **symbols = NULL;
 	gint *expr_types = NULL;
 	guchar *raw_data = incoming;
 	gint total_symbols = 0;
 	gint i = 0;
 	gint page = 0;
+	DataSize size = MTX_U08;
 	gint offset = 0;
 	gint bitmask = 0;
 	gint bitshift = 0;
 	gint canID = 0;
-	DataSize size = 0;
 	void * evaluator = NULL;
 	gchar **names = NULL;
 	gdouble * values = NULL;
@@ -256,9 +249,6 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_canID",symbols[i]);
 				canID = (gint) g_object_get_data(object,tmpbuf);
-				g_free(tmpbuf);
-				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
-				size = (DataSize) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_bitmask",symbols[i]);
 				bitmask = (gint) g_object_get_data(object,tmpbuf);
@@ -293,8 +283,12 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
 				offset = (gint) g_object_get_data(object,tmpbuf);
 				g_free(tmpbuf);
+				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
+				size = (DataSize) g_object_get_data(object,tmpbuf);
+				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
-				values[i]=(gdouble)raw_data[offset];
+				values[i]=(gdouble)_get_sized_data(raw_data,0,offset,size);
+				/*values[i]=(gdouble)raw_data[offset];*/
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": handle_complex_expr()\n\t RAW Variable, name: %s, value %f\n",names[i],values[i]));
 				break;

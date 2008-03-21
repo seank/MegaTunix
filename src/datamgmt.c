@@ -29,7 +29,7 @@
 gint get_ecu_data(gint canID, gint page, gint offset, DataSize size) 
 {
 	extern Firmware_Details *firmware;
-	return _get_ecu_data(firmware->ecu_data[page],page,offset,size);
+	return _get_sized_data(firmware->ecu_data[page],page,offset,size);
 }
 
 
@@ -43,7 +43,7 @@ gint get_ecu_data(gint canID, gint page, gint offset, DataSize size)
 gint get_ecu_data_last(gint canID, gint page, gint offset, DataSize size) 
 {
 	extern Firmware_Details *firmware;
-	return _get_ecu_data(firmware->ecu_data_last[page],page,offset,size);
+	return _get_sized_data(firmware->ecu_data_last[page],page,offset,size);
 }
 
 
@@ -57,18 +57,18 @@ gint get_ecu_data_last(gint canID, gint page, gint offset, DataSize size)
 gint get_ecu_data_backup(gint canID, gint page, gint offset, DataSize size) 
 {
 	extern Firmware_Details *firmware;
-	return _get_ecu_data(firmware->ecu_data_backup[page],page,offset,size);
+	return _get_sized_data(firmware->ecu_data_backup[page],page,offset,size);
 }
 
 /*!
- \brief _get_ecu_data() is a func to return the data requested.
+ \brief _get_sized_data() is a func to return the data requested.
  The data is casted to the passed type.
  \param data array of data to pull from.
  \param page ( ecu firmware page)
  \param offset (RAW BYTE offset)
  \param size (size to be returned...
  */
-gint _get_ecu_data(guint8 *data, gint page, gint offset, DataSize size) 
+gint _get_sized_data(guint8 *data, gint page, gint offset, DataSize size) 
 {
 	/* canID unused currently */
 	extern Firmware_Details *firmware;

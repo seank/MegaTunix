@@ -19,7 +19,6 @@
 
 
 static GHashTable *str_2_enum = NULL;
-void dump_hash(gpointer,gpointer,gpointer);
 extern gint dbg_lvl;
 
 

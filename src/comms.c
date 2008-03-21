@@ -404,9 +404,6 @@ void writeto_ecu(Io_Message *message)
  */
 void burn_ecu_flash()
 {
-	extern Firmware_Details *firmware;
-	guint8 **ecu_data = firmware->ecu_data;
-	guint8 **ecu_data_last = firmware->ecu_data_last;
 	gint res = 0;
 	gint i = 0;
 	gchar * err_text = NULL;
@@ -450,7 +447,7 @@ void burn_ecu_flash()
 copyover:
 	/* sync temp buffer with current burned settings */
 	for (i=0;i<firmware->total_pages;i++)
-		memcpy(ecu_data_last[i],ecu_data[i],firmware->page_params[i]->length);
+		backup_current_data(firmware->canID,i);
 
 	g_static_mutex_unlock(&serio_mutex);
 	g_static_mutex_unlock(&mutex);

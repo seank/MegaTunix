@@ -227,6 +227,8 @@ gboolean load_realtime_map(void )
 		/* History Array */
 		history = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
 		g_object_set_data(object,"current_index",GINT_TO_POINTER(-1));
+		/* Assume default size of 8 bit unsigned */
+		g_object_set_data(object,"size",GINT_TO_POINTER(MTX_U08));
 		/* bind hostory array to object for future retrieval */
 		g_object_set_data(object,"history",(gpointer)history);
 
@@ -422,17 +424,6 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
-				name=g_strdup_printf("%s_size",expr_symbols[i]);
-				if (!cfg_read_string(cfgfile,section,name,&tmpbuf))
-					tmpi = MTX_U08;
-				else
-				{
-					tmpi = translate_string(tmpbuf);
-					g_free(tmpbuf);
-				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
-				g_free(name);
-				name=NULL;
 				name=g_strdup_printf("%s_bitmask",expr_symbols[i]);
 				if (!cfg_read_int(cfgfile,section,name,&tmpi))
 				{
@@ -504,6 +495,20 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
+				name=g_strdup_printf("%s_size",expr_symbols[i]);
+				if (!cfg_read_string(cfgfile,section,name,&tmpbuf))
+				{
+					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
+						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tRAW_VAR, failure looking for:%s\n",name));
+					tmpi = MTX_U08;
+				}
+				else
+				{
+					tmpi = translate_string(tmpbuf);
+					g_free(tmpbuf);
+				}
+				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				g_free(name);
 				break;
 			default:
 				if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
