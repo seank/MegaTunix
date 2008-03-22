@@ -21,6 +21,7 @@
 
 
 static GtkWidget *vis_window = NULL;
+extern GObject *global_data;
 
 EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 {
@@ -32,19 +33,18 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 	GtkWidget *child = NULL;
 	GtkWidget *label = NULL;
 	GtkWidget *button = NULL;
-	extern GObject *global_data;
 	gboolean *hidden_list = NULL;
 	gint rows = 0;
 	gint i = 0;
 
 	if (!(GTK_IS_WIDGET(vis_window)))
 	{
-		main_xml = (GladeXML *)g_object_get_data(global_data,"main_xml");
+		main_xml = (GladeXML *)OBJ_GET(global_data,"main_xml");
 		if (!main_xml)
 			return FALSE;
 
 		notebook = glade_xml_get_widget(main_xml,"toplevel_notebook");
-		hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
+		hidden_list = (gboolean *)OBJ_GET(global_data,"hidden_list");
 
 		xml = glade_xml_new(main_xml->filename,"tab_visibility_top_vbox",NULL);
 
@@ -61,7 +61,7 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 			printf("ERROR, glade element not found!\n");
 
 		rows = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
-		g_object_set_data(G_OBJECT(global_data),"notebook_rows",GINT_TO_POINTER(rows));
+		OBJ_SET(global_data,"notebook_rows",GINT_TO_POINTER(rows));
 		table = glade_xml_get_widget(xml,"tab_visibility_table");
 		gtk_table_resize(GTK_TABLE(table),rows,2);
 
@@ -89,7 +89,6 @@ EXPORT gboolean show_tab_visibility_window(GtkWidget * widget, gpointer data)
 
 gboolean hide_tab(GtkWidget *widget, gpointer data)
 {
-	extern GObject *global_data;
 	GtkWidget *child;
 	GtkWidget *label;
 	GtkWidget *notebook;
@@ -99,13 +98,13 @@ gboolean hide_tab(GtkWidget *widget, gpointer data)
 	extern GdkColor black;
 	extern GHashTable *dynamic_widgets;
 	gint index = (gint)data;
-	gint total = (gint)g_object_get_data(G_OBJECT(global_data),"notebook_rows");
+	gint total = (gint)OBJ_GET(global_data,"notebook_rows");
 	gint i = 0;
 	gboolean hidden = FALSE;
 	gint *hidden_list;
 
-	main_xml = (GladeXML *)g_object_get_data(global_data,"main_xml");
-	hidden_list = (gboolean *)g_object_get_data(global_data,"hidden_list");
+	main_xml = (GladeXML *)OBJ_GET(global_data,"main_xml");
+	hidden_list = (gboolean *)OBJ_GET(global_data,"hidden_list");
 	notebook = glade_xml_get_widget(main_xml,"toplevel_notebook");
 
 	child = gtk_notebook_get_nth_page(GTK_NOTEBOOK(notebook),index);

@@ -33,6 +33,7 @@
 #include <vetable_gui.h>
 
 
+extern GObject *global_data;
 /*!
  \brief rescale_table() is called to rescale a subset of a Table (doesn't
  matter what kind of table). 
@@ -74,11 +75,11 @@ void rescale_table(GtkWidget *widget)
 	gboolean use_color = FALSE;
 	extern gboolean forced_update;
 
-	widget_name = (gchar *) g_object_get_data(G_OBJECT(widget),"data");
+	widget_name = (gchar *) OBJ_GET(widget,"data");
 
 	scaler = g_hash_table_lookup(dynamic_widgets,widget_name);
 	g_return_if_fail(GTK_IS_WIDGET(scaler));
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(scaler),"table_num");
+	tmpbuf = (gchar *)OBJ_GET(scaler,"table_num");
 	table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 
 	z_base = firmware->table_params[table_num]->z_base;
@@ -95,17 +96,17 @@ void rescale_table(GtkWidget *widget)
 			for (j=0;j<g_list_length(list);j++)
 			{
 				tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
-				if ((gboolean)g_object_get_data(G_OBJECT(tmpwidget),"marked"))
+				if ((gboolean)OBJ_GET(tmpwidget,"marked"))
 				{
-					canID = (gint)g_object_get_data(G_OBJECT(tmpwidget),"canID");
-					page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
-					size = (DataSize)g_object_get_data(G_OBJECT(tmpwidget),"size");
-					offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
-					use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
-					if (g_object_get_data(G_OBJECT(tmpwidget),"raw_upper") != NULL)
-						raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
-					if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
-						raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
+					canID = (gint)OBJ_GET(tmpwidget,"canID");
+					page = (gint)OBJ_GET(tmpwidget,"page");
+					size = (DataSize)OBJ_GET(tmpwidget,"size");
+					offset = (gint)OBJ_GET(tmpwidget,"offset");
+					use_color = (gint)OBJ_GET(tmpwidget,"use_color");
+					if (OBJ_GET(tmpwidget,"raw_upper") != NULL)
+						raw_upper = (gint)OBJ_GET(tmpwidget,"raw_upper");
+					if (OBJ_GET(tmpwidget,"raw_lower") != NULL)
+						raw_lower = (gint)OBJ_GET(tmpwidget,"raw_lower");
 					value = get_ecu_data(canID,page,offset,size);
 					value = (value*percentage)/100.0;
 					if (value < raw_lower)
@@ -196,20 +197,20 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	extern gboolean forced_update;
 
 	g_return_if_fail(GTK_IS_WIDGET(widget));
-	if (!g_object_get_data(G_OBJECT(widget),"applicable_tables"))
+	if (!OBJ_GET(widget,"applicable_tables"))
 	{
 		printf("applicable tables not defined!!!\n");
 		return;
 	}
-	if (!g_object_get_data(G_OBJECT(widget),"table_num"))
+	if (!OBJ_GET(widget,"table_num"))
 	{
 		printf("table_num not defined!!!\n");
 		return;
 	}
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"applicable_tables");
+	tmpbuf = (gchar *)OBJ_GET(widget,"applicable_tables");
 	table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"data");
+	tmpbuf = (gchar *)OBJ_GET(widget,"data");
 	tmpwidget = g_hash_table_lookup(dynamic_widgets,tmpbuf);
 	g_return_if_fail(GTK_IS_WIDGET(tmpwidget));
 	/*new_reqfuel = gtk_spin_button_get_value(GTK_SPIN_BUTTON(tmpwidget));*/
@@ -222,7 +223,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	check_req_fuel_limits(table_num);
 
 
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"applicable_tables");
+	tmpbuf = (gchar *)OBJ_GET(widget,"applicable_tables");
 	vector = g_strsplit(tmpbuf,",",-1);
 	if (!vector)
 		return;
@@ -248,15 +249,15 @@ void reqfuel_rescale_table(GtkWidget *widget)
 					tmpwidget = (GtkWidget *)g_list_nth_data(list,j);
 					if (GTK_IS_ENTRY(tmpwidget))
 					{
-						canID = (gint)g_object_get_data(G_OBJECT(tmpwidget),"canID");
-						page = (gint)g_object_get_data(G_OBJECT(tmpwidget),"page");
-						offset = (gint)g_object_get_data(G_OBJECT(tmpwidget),"offset");
-						size = (DataSize)g_object_get_data(G_OBJECT(tmpwidget),"size");
-						use_color = (gint)g_object_get_data(G_OBJECT(tmpwidget),"use_color");
-						if (g_object_get_data(G_OBJECT(tmpwidget),"raw_upper") != NULL)
-							raw_upper = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_upper");
-						if (g_object_get_data(G_OBJECT(tmpwidget),"raw_lower") != NULL)
-							raw_lower = (gint)g_object_get_data(G_OBJECT(tmpwidget),"raw_lower");
+						canID = (gint)OBJ_GET(tmpwidget,"canID");
+						page = (gint)OBJ_GET(tmpwidget,"page");
+						offset = (gint)OBJ_GET(tmpwidget,"offset");
+						size = (DataSize)OBJ_GET(tmpwidget,"size");
+						use_color = (gint)OBJ_GET(tmpwidget,"use_color");
+						if (OBJ_GET(tmpwidget,"raw_upper") != NULL)
+							raw_upper = (gint)OBJ_GET(tmpwidget,"raw_upper");
+						if (OBJ_GET(tmpwidget,"raw_lower") != NULL)
+							raw_lower = (gint)OBJ_GET(tmpwidget,"raw_lower");
 						value = get_ecu_data(canID,page,offset,size);
 						value *= percentage;
 						if (value < raw_lower)

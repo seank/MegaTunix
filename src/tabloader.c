@@ -35,6 +35,7 @@
 
 gboolean tabs_loaded = FALSE;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!
@@ -63,7 +64,6 @@ gboolean load_gui_tabs(void)
 	extern GdkColor red;
 	extern volatile gboolean leaving;
 	extern GHashTable *dynamic_widgets;
-	extern GObject *global_data;
 	gboolean * hidden_list = NULL;
 	extern gboolean connected;
 	extern volatile gboolean offline;
@@ -80,7 +80,7 @@ gboolean load_gui_tabs(void)
 	set_title(g_strdup("Loading Gui Tabs..."));
 	bindgroup = g_new0(BindGroup,1);
 	notebook = g_hash_table_lookup(dynamic_widgets,"toplevel_notebook");
-	hidden_list = (gboolean *)g_object_get_data(G_OBJECT(global_data),"hidden_list");
+	hidden_list = (gboolean *)OBJ_GET(global_data,"hidden_list");
 
 	while (firmware->tab_list[i])
 	{
@@ -217,8 +217,8 @@ void group_free(gpointer value)
 	for (i=0;i<group->num_keys;i++)
 	{
 		if (group->keytypes[i] == MTX_STRING)
-			g_free(g_object_get_data(group->object,group->keys[i]));
-		g_object_set_data(group->object,group->keys[i],NULL);
+			g_free(OBJ_GET(group->object,group->keys[i]));
+		OBJ_SET(group->object,group->keys[i],NULL);
 	}
 	//g_object_destroy(group->object);
 	g_object_unref(group->object);
@@ -366,8 +366,8 @@ gint bind_group_data(GtkWidget *widget, GHashTable *groups, gchar *groupname)
 	}
 	/* Copy data from the group object to the */
 	/* Grab hidden data if it exists */
-	if (g_object_get_data(group->object, "dep_object"))
-		g_object_set_data(G_OBJECT(widget),"dep_object",g_object_get_data(group->object, "dep_object"));
+	if (OBJ_GET(group->object, "dep_object"))
+		OBJ_SET(widget,"dep_object",OBJ_GET(group->object, "dep_object"));
 
 	for (i=0;i<group->num_keys;i++)
 	{
@@ -376,15 +376,15 @@ gint bind_group_data(GtkWidget *widget, GHashTable *groups, gchar *groupname)
 			case MTX_INT:
 			case MTX_BOOL:
 			case MTX_ENUM:
-				tmpi = (gint)g_object_get_data(group->object,group->keys[i]);
-				g_object_set_data(G_OBJECT(widget),group->keys[i],GINT_TO_POINTER(tmpi));
+				tmpi = (gint)OBJ_GET(group->object,group->keys[i]);
+				OBJ_SET(widget,group->keys[i],GINT_TO_POINTER(tmpi));
 				break;
 			case MTX_STRING:
-				g_object_set_data(G_OBJECT(widget),group->keys[i],g_strdup(g_object_get_data(group->object,group->keys[i])));
-				if (g_object_get_data(G_OBJECT(widget),"tooltip") != NULL)
-					gtk_tooltips_set_tip(tip,widget,(gchar *)g_object_get_data(G_OBJECT(widget),"tooltip"),NULL);
-				if (g_object_get_data(G_OBJECT(group->object), "bind_to_list"))
-					bind_to_lists(widget,(gchar *)g_object_get_data(G_OBJECT(group->object), "bind_to_list"));
+				OBJ_SET(widget,group->keys[i],g_strdup(OBJ_GET(group->object,group->keys[i])));
+				if (OBJ_GET(widget,"tooltip") != NULL)
+					gtk_tooltips_set_tip(tip,widget,(gchar *)OBJ_GET(widget,"tooltip"),NULL);
+				if (OBJ_GET(group->object, "bind_to_list"))
+					bind_to_lists(widget,(gchar *)OBJ_GET(group->object, "bind_to_list"));
 				break;
 			default:
 				break;
@@ -460,8 +460,6 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	gint widget_type = 0;
 	gchar * initializer = NULL;
 	GdkColor color;
-	extern GObject *global_data;
-	extern gint temp_units;
 	extern GtkTooltips *tip;
 	extern GList ***ve_widgets;
 	extern Firmware_Details *firmware;
@@ -476,8 +474,8 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	{
 		return;
 	}
-	g_free(g_object_get_data(G_OBJECT(widget),"name"));
-	g_object_set_data(G_OBJECT(widget),"name",g_strdup(section));
+	g_free(OBJ_GET(widget,"name"));
+	OBJ_SET(widget,"name",g_strdup(section));
 	if(cfg_read_string(cfgfile,section,"keys",&tmpbuf))
 	{
 		keys = parse_keys(tmpbuf,&num_keys,",");
@@ -584,7 +582,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	*/
 	if (cfg_read_string(cfgfile,section,"temp_dep",&tmpbuf))
 	{
-		g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(temp_units));
+		OBJ_SET(widget,"widget_temp",OBJ_GET(global_data,"temp_units"));
 		g_free(tmpbuf);
 	}
 
@@ -604,14 +602,14 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		switch (widget_type)
 		{
 			case MTX_RANGE:
-				gtk_range_set_value(GTK_RANGE(widget),(gint)g_object_get_data(global_data,initializer));
+				gtk_range_set_value(GTK_RANGE(widget),(gint)OBJ_GET(global_data,initializer));
 				break;
 
 			case MTX_SPINBUTTON:
-				gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),(gint)g_object_get_data(global_data,initializer));
+				gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),(gint)OBJ_GET(global_data,initializer));
 				break;
 			case MTX_ENTRY:
-				gtk_entry_set_text(GTK_ENTRY(widget),(gchar *)g_object_get_data(global_data,initializer));
+				gtk_entry_set_text(GTK_ENTRY(widget),(gchar *)OBJ_GET(global_data,initializer));
 
 			default:
 				break;

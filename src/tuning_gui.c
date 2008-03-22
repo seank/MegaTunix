@@ -16,6 +16,7 @@
 #include <tuning_gui.h>
 
 
+extern GObject *global_data;
 /*!
  \brief build_tuning() should build the tuning gui, except for now it's just
  a stub function which doesn't do anything yet as this is yet to be written

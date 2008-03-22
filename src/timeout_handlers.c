@@ -33,6 +33,7 @@ static gint trigmon_id = 0;
 static gboolean restart_realtime = FALSE;
 
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief start_tickler() starts up a GTK+ timeout function based on the
@@ -43,12 +44,10 @@ extern gint dbg_lvl;
  */
 void start_tickler(TicklerType type)
 {
-	extern GObject *global_data;
 	extern Serial_Params *serial_params;
 	extern volatile gboolean offline;
 	extern gboolean rtvars_loaded;
 	extern gboolean connected;
-	extern gboolean volatile offline;
 	extern gboolean interrogated;
 	switch (type)
 	{
@@ -73,7 +72,7 @@ void start_tickler(TicklerType type)
 			break;
 		case LV_PLAYBACK_TICKLER:
 			if (playback_id == 0)
-				playback_id = g_timeout_add((gint)g_object_get_data(global_data,"lv_scroll_delay"),(GtkFunction)pb_update_logview_traces,GINT_TO_POINTER(FALSE));
+				playback_id = g_timeout_add((gint)OBJ_GET(global_data,"lv_scroll_delay"),(GtkFunction)pb_update_logview_traces,GINT_TO_POINTER(FALSE));
 			else
 			{
 				if (dbg_lvl & CRITICAL)
@@ -135,13 +134,11 @@ void start_tickler(TicklerType type)
 				break;
 			if (!((connected) && (interrogated)))
 				break;
-			if (statuscounts_id != 0)
+			if (statuscounts_id == 0)
 				statuscounts_id = g_timeout_add(100,(GtkFunction)update_errcounts,NULL);
 			else
-			{
 				if (dbg_lvl & CRITICAL)
 					dbg_func(g_strdup(__FILE__": start_tickler()\n\tStatuscounts tickler already active \n"));
-			}
 			break;
 
 	}

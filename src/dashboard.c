@@ -34,6 +34,7 @@ gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
 extern gint dbg_lvl;
 static gboolean timer_active = FALSE;
 GStaticMutex dash_mutex = G_STATIC_MUTEX_INIT;
+extern GObject *global_data;
 
 
 /*!
@@ -55,7 +56,6 @@ void load_dashboard(gchar *filename, gpointer data)
 	gint y = 0;
 	gfloat * ratio = NULL;
 	extern GdkColor black;
-	extern GObject * global_data;
 	extern GtkWidget * main_window;
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
@@ -104,7 +104,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	dash = gtk_fixed_new();
 	gtk_fixed_set_has_window(GTK_FIXED(dash),TRUE);
 	gtk_widget_modify_bg(GTK_WIDGET(dash),GTK_STATE_NORMAL,&black);
-	g_object_set_data(G_OBJECT(window),"dash",dash);
+	OBJ_SET(window,"dash",dash);
 	gtk_container_add(GTK_CONTAINER(ebox),dash);
 
 	/*Get the root element node */
@@ -119,24 +119,24 @@ void load_dashboard(gchar *filename, gpointer data)
 	/* Store global info about this dash */
 	prefix = g_strdup_printf("dash_%i",(gint)data);
 	key = g_strdup_printf("%s_name",prefix);
-	g_free(g_object_get_data(global_data,key));
-	g_object_set_data(global_data,key, g_strdup(filename));
+	g_free(OBJ_GET(global_data,key));
+	OBJ_SET(global_data,key, g_strdup(filename));
 	g_free(key);
 	/* retrieve coord info from global store */
 	key = g_strdup_printf("%s_x_origin",prefix);
-	x = (gint)g_object_get_data(global_data,key);
+	x = (gint)OBJ_GET(global_data,key);
 	g_free(key);
 	key = g_strdup_printf("%s_y_origin",prefix);
-	y = (gint)g_object_get_data(global_data,key);
+	y = (gint)OBJ_GET(global_data,key);
 	g_free(key);
 	key = g_strdup_printf("%s_size_ratio",prefix);
-	ratio = (gfloat *)g_object_get_data(global_data,key);
+	ratio = (gfloat *)OBJ_GET(global_data,key);
 	g_free(key);
 	g_free(prefix);
 	g_free(filename);
 
-	width = (gint)g_object_get_data(G_OBJECT(dash),"orig_width");
-	height = (gint)g_object_get_data(G_OBJECT(dash),"orig_height");
+	width = (gint)OBJ_GET(dash,"orig_width");
+	height = (gint)OBJ_GET(dash,"orig_height");
 	/*printf("move/resize to %i,%i, %ix%i\n",x,y,width,height); */
 	gtk_window_move(GTK_WINDOW(window), x,y);
 	if (ratio)
@@ -165,12 +165,12 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	GtkWidget * dash  = NULL;
 
 
-	dash = g_object_get_data(G_OBJECT(widget),"dash");
+	dash = OBJ_GET(widget,"dash");
 	if (!GTK_IS_WIDGET(dash))
 		return FALSE;
 
-	orig_width = (gint) g_object_get_data(G_OBJECT(dash),"orig_width");
-	orig_height = (gint) g_object_get_data(G_OBJECT(dash),"orig_height");
+	orig_width = (gint) OBJ_GET(dash,"orig_width");
+	orig_height = (gint) OBJ_GET(dash,"orig_height");
 	cur_width =  event->width;
 	cur_height =  event->height;
 
@@ -185,10 +185,10 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	{
 		child = g_list_nth_data(children,i);
 		gauge = child->widget;
-		child_x = (gint)g_object_get_data(G_OBJECT(gauge),"orig_x_offset");
-		child_y = (gint)g_object_get_data(G_OBJECT(gauge),"orig_y_offset");
-		child_w = (gint)g_object_get_data(G_OBJECT(gauge),"orig_width");
-		child_h = (gint)g_object_get_data(G_OBJECT(gauge),"orig_height");
+		child_x = (gint)OBJ_GET(gauge,"orig_x_offset");
+		child_y = (gint)OBJ_GET(gauge,"orig_y_offset");
+		child_w = (gint)OBJ_GET(gauge,"orig_width");
+		child_h = (gint)OBJ_GET(gauge,"orig_height");
 		gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x,ratio*child_y);
 		gtk_widget_set_size_request(gauge,child_w*ratio,child_h*ratio);
 	}
@@ -246,8 +246,8 @@ void load_geometry(GtkWidget *dash, xmlNode *node)
 		cur_node = cur_node->next;
 
 	}
-	g_object_set_data(G_OBJECT(dash),"orig_width", GINT_TO_POINTER(width));
-	g_object_set_data(G_OBJECT(dash),"orig_height", GINT_TO_POINTER(height));
+	OBJ_SET(dash,"orig_width", GINT_TO_POINTER(width));
+	OBJ_SET(dash,"orig_height", GINT_TO_POINTER(height));
 	
 	hints.min_width = 100;
 	hints.min_height = 100;
@@ -301,12 +301,12 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 		mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),filename);
 		gtk_widget_set_size_request(gauge,width,height);
 		g_free(filename);
-		g_free(g_object_get_data(G_OBJECT(gauge),"datasource"));
-		g_object_set_data(G_OBJECT(gauge),"datasource",g_strdup(datasource));
-		g_object_set_data(G_OBJECT(gauge),"orig_width",GINT_TO_POINTER(width));
-		g_object_set_data(G_OBJECT(gauge),"orig_height",GINT_TO_POINTER(height));
-		g_object_set_data(G_OBJECT(gauge),"orig_x_offset",GINT_TO_POINTER(x_offset));
-		g_object_set_data(G_OBJECT(gauge),"orig_y_offset",GINT_TO_POINTER(y_offset));
+		g_free(OBJ_GET(gauge,"datasource"));
+		OBJ_SET(gauge,"datasource",g_strdup(datasource));
+		OBJ_SET(gauge,"orig_width",GINT_TO_POINTER(width));
+		OBJ_SET(gauge,"orig_height",GINT_TO_POINTER(height));
+		OBJ_SET(gauge,"orig_x_offset",GINT_TO_POINTER(x_offset));
+		OBJ_SET(gauge,"orig_y_offset",GINT_TO_POINTER(y_offset));
 		g_free(xml_name);
 		g_free(datasource);
 	}
@@ -338,7 +338,7 @@ void link_dash_datasources(GtkWidget *dash,gpointer data)
 	for (i=0;i<len;i++)
 	{
 		child = g_list_nth_data(children,i);
-		source = (gchar *)g_object_get_data(G_OBJECT(child->widget),"datasource");
+		source = (gchar *)OBJ_GET(child->widget,"datasource");
 		if (!source)
 			continue;
 
@@ -378,8 +378,8 @@ void update_dash_gauge(gpointer key, gpointer value, gpointer user_data)
 	gauge = d_gauge->gauge;
 	/*printf("updating gauge %s\n",(gchar *)key);*/
 
-	history = (GArray *)g_object_get_data(d_gauge->object,"history");
-	current_index = (gint)g_object_get_data(d_gauge->object,"current_index");
+	history = (GArray *)OBJ_GET(d_gauge->object,"history");
+	current_index = (gint)OBJ_GET(d_gauge->object,"current_index");
 	g_static_mutex_lock(&rtv_mutex);
 	current = g_array_index(history, gfloat, current_index);
 	if (current_index > 0)
@@ -629,13 +629,12 @@ void initialize_dashboards()
 	gchar * tmpstr = NULL;
 	gboolean nodash1 = TRUE;
 	gboolean nodash2 = TRUE;
-	extern GObject *global_data;
 	extern GHashTable *dynamic_widgets;
-	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	CmdLineArgs *args = OBJ_GET(global_data,"args");
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_1_label");
-	if (g_object_get_data(global_data,"dash_1_name") != NULL)
-		tmpbuf = (gchar *)g_object_get_data(global_data,"dash_1_name");
+	if (OBJ_GET(global_data,"dash_1_name") != NULL)
+		tmpbuf = (gchar *)OBJ_GET(global_data,"dash_1_name");
 	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 	{
 		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
@@ -647,8 +646,8 @@ void initialize_dashboards()
 	}
 
 	label = g_hash_table_lookup(dynamic_widgets,"dash_2_label");
-	if (g_object_get_data(global_data,"dash_2_name") != NULL)
-		tmpbuf = (gchar *)g_object_get_data(global_data,"dash_2_name");
+	if (OBJ_GET(global_data,"dash_2_name") != NULL)
+		tmpbuf = (gchar *)OBJ_GET(global_data,"dash_2_name");
 	if ((GTK_IS_LABEL(label)) && (tmpbuf != NULL) && (strlen(tmpbuf) != 0))
 	{
 		tmpstr = g_filename_to_utf8(tmpbuf,-1,NULL,NULL,NULL);
@@ -697,7 +696,7 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 			g_hash_table_foreach_remove(dash_gauges,remove_dashcluster,data);
 		if (GTK_IS_WIDGET(widget))
 		{
-			label = g_object_get_data(G_OBJECT(widget),"label");
+			label = OBJ_GET(widget,"label");
 			if (GTK_IS_LABEL(label))
 				gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
 		}
@@ -715,26 +714,25 @@ gboolean remove_dashboard(GtkWidget *widget, gpointer data)
 {
 	extern GHashTable *dash_gauges;
 	GtkWidget *label = NULL;
-	extern GObject *global_data;
 
 	if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)))
 		return FALSE;
 
 	g_static_mutex_lock(&dash_mutex);
 	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget),FALSE);
-	label = g_object_get_data(G_OBJECT(widget),"label");
+	label = OBJ_GET(widget,"label");
 	if (GTK_IS_WIDGET(label))
 	{
 		gtk_label_set_text(GTK_LABEL(label),"Choose a Dashboard File");
 		if ((gint)data == 1)
 		{
-			g_free(g_object_get_data(global_data,"dash_1_name"));
-			g_object_set_data(global_data,"dash_1_name",NULL);
+			g_free(OBJ_GET(global_data,"dash_1_name"));
+			OBJ_SET(global_data,"dash_1_name",NULL);
 		}
 		if ((gint)data == 2)
 		{
-			g_free(g_object_get_data(global_data,"dash_2_name"));
-			g_object_set_data(global_data,"dash_2_name",NULL);
+			g_free(OBJ_GET(global_data,"dash_2_name"));
+			OBJ_SET(global_data,"dash_2_name",NULL);
 		}
 	}
 	if (dash_gauges)
@@ -782,7 +780,7 @@ EXPORT void create_gauge(GtkWidget *widget)
 
 	gauge = mtx_gauge_face_new();
 	gtk_container_add(GTK_CONTAINER(widget),gauge);
-	xml_name = g_object_get_data(G_OBJECT(widget),"gaugexml");
+	xml_name = OBJ_GET(widget,"gaugexml");
 	if (xml_name)
 		filename = get_file(g_strconcat(GAUGES_DATA_DIR,PSEP,xml_name,NULL),NULL);
 	if (filename)
@@ -790,9 +788,9 @@ EXPORT void create_gauge(GtkWidget *widget)
 		mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),filename);
 		g_free(filename);
 	}
-	g_free(g_object_get_data(G_OBJECT(gauge),"datasource"));
-	g_object_set_data(G_OBJECT(gauge),"datasource",g_object_get_data(G_OBJECT(widget),"datasource"));
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
+	g_free(OBJ_GET(gauge,"datasource"));
+	OBJ_SET(gauge,"datasource",OBJ_GET(widget,"datasource"));
+	tmpbuf = (gchar *)OBJ_GET(widget,"table_num");
 	table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 	tab_gauges[table_num] = g_list_prepend(tab_gauges[table_num],gauge);
 }
@@ -815,7 +813,7 @@ void update_tab_gauges()
 	for (i=0;i<g_list_length(list);i++)
 	{
 		gauge = g_list_nth_data(list,i);
-		source = g_object_get_data(G_OBJECT(gauge),"datasource");
+		source = OBJ_GET(gauge,"datasource");
 		lookup_current_value(source,&current);
 		lookup_previous_value(source,&previous);
 		if ((current != previous) || (forced_update))

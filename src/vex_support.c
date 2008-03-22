@@ -33,6 +33,7 @@
 
 gchar *vex_comment;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief import_handlers structure is used to hold the list of string 

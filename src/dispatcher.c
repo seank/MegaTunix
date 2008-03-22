@@ -52,6 +52,7 @@ extern volatile gboolean offline;			/* Offline mode */
 extern gboolean tabs_loaded;			/* Tabs loaded? */
 extern gboolean interrogated;			/* valid detection with MS */
 gboolean force_page_change = FALSE;
+extern GObject *global_data;
 
 
 /*!
@@ -75,7 +76,6 @@ gboolean dispatcher(gpointer data)
 	Text_Message *t_message = NULL;
 	Widget_Update *w_update = NULL;
 	QFunction *qfunc = NULL;
-	extern gint temp_units;
 	extern gboolean forced_update;
 	extern volatile gboolean leaving;
 	extern gint mem_view_style[];
@@ -156,18 +156,18 @@ trypop:
 					break;
 				case UPD_LOAD_RT_SLIDERS:
 					load_sliders();
-					reset_temps(GINT_TO_POINTER(temp_units));
+					reset_temps(OBJ_GET(global_data,"temp_units"));
 					break;
 				case UPD_LOAD_RT_TEXT:
 					load_rt_text();
-					reset_temps(GINT_TO_POINTER(temp_units));
+					reset_temps(OBJ_GET(global_data,"temp_units"));
 					break;
 				case UPD_LOAD_REALTIME_MAP:
 					load_realtime_map();
 					break;
 				case UPD_LOAD_GUI_TABS:
 					load_gui_tabs();
-					reset_temps(GINT_TO_POINTER(temp_units));
+					reset_temps(OBJ_GET(global_data,"temp_units"));
 					break;
 				case UPD_READ_VE_CONST:
 					if ((connected) || (offline))

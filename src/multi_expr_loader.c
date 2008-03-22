@@ -27,6 +27,7 @@
 
 
 extern gint dbg_lvl;
+extern GObject *global_data;
 /*!
  \brief multi_exprt_loader() is called when a "multi_expr_keys" key is found in
  a realtimemap, and triggers the loading of al lthe keys/values that
@@ -140,7 +141,7 @@ void load_multi_expressions(GObject *object, ConfigFile *cfgfile,gchar * section
 	g_strfreev(dl_exprs);
 	g_strfreev(ul_exprs);
 	g_strfreev(keys);
-	g_object_set_data(G_OBJECT(object),"multi_expr_hash",hash);
+	OBJ_SET(object,"multi_expr_hash",hash);
 
 }
 

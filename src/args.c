@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 
+extern GObject *global_data;
 /*!
  \brief handle_args() handles parsing of cmd line arguments to megatunix
  \param argc (gint) count of command line arguments
@@ -33,7 +34,6 @@ void handle_args(gint argc, gchar * argv[])
 	GError *error = NULL;
 	CmdLineArgs *args = NULL;
 	GOptionContext *context = NULL;
-	extern GObject *global_data;
 	struct tm *tm = NULL;
 	time_t *t = NULL;
 
@@ -93,7 +93,7 @@ void handle_args(gint argc, gchar * argv[])
 		printf("autolog_dump_dir \"%s\"\n",args->autolog_dump_dir);
 		printf("autolog_basename \"%s\"\n",args->autolog_basename);
 	}
-	g_object_set_data(G_OBJECT(global_data),"args",args);
+	OBJ_SET(global_data,"args",args);
 	g_option_context_free(context);
 }
 

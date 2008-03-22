@@ -143,7 +143,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 		vbox = gtk_vbox_new(FALSE,0);
 		gtk_container_add(GTK_CONTAINER(ebox),vbox);
 		table = gtk_table_new(1,1,FALSE);
-		g_object_set_data(G_OBJECT(ebox),"table",table);
+		OBJ_SET((ebox),"table",table);
 		gtk_box_pack_start(GTK_BOX(vbox),table,TRUE,TRUE,0);
 		label = gtk_label_new("Unsorted");
 		t_num = gtk_notebook_append_page(GTK_NOTEBOOK(notebook),swin,label);
@@ -197,7 +197,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 				gtk_container_add(GTK_CONTAINER(ebox),vbox);
 				table = gtk_table_new(1,1,FALSE);
 				gtk_box_pack_start(GTK_BOX(vbox),table,TRUE,TRUE,0);
-				g_object_set_data(G_OBJECT(ebox),"table",table);
+				OBJ_SET((ebox),"table",table);
 				label = gtk_label_new(d_name);
 				t_num = gtk_notebook_append_page(
 						GTK_NOTEBOOK(notebook),
@@ -275,7 +275,7 @@ EXPORT gboolean create_preview_list(GtkWidget *widget, gpointer data)
 				gtk_container_add(GTK_CONTAINER(ebox),vbox);
 				table = gtk_table_new(1,1,FALSE);
 				gtk_box_pack_start(GTK_BOX(vbox),table,TRUE,TRUE,0);
-				g_object_set_data(G_OBJECT(ebox),"table",table);
+				OBJ_SET((ebox),"table",table);
 				label = gtk_label_new(d_name);
 				t_num = gtk_notebook_append_page(
 						GTK_NOTEBOOK(notebook),
@@ -345,7 +345,7 @@ EXPORT gboolean gauge_choice_button_event(GtkWidget *widget, GdkEventButton *eve
 	x_cur = (gint)event->x_root-origin_x;
 	y_cur = (gint)event->y_root-origin_y;
 
-	table = g_object_get_data(G_OBJECT(widget),"table");
+	table = OBJ_GET((widget),"table");
 
 	if (GTK_IS_TABLE(table))
 		total_gauges = g_list_length(GTK_TABLE(table)->children);
@@ -677,7 +677,7 @@ void update_properties(GtkWidget * widget, Choice choice)
 
 		combo_box = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
 		gtk_table_attach(GTK_TABLE(table),combo_box,0,2,1,2,GTK_FILL|GTK_EXPAND,GTK_FILL,0,0);
-		g_object_set_data(G_OBJECT(widget),"combo",combo_box);
+		OBJ_SET((widget),"combo",combo_box);
 
 		sep = gtk_hseparator_new();
 		gtk_table_attach(GTK_TABLE(table),sep,0,2,1,2,GTK_FILL|GTK_EXPAND,GTK_FILL,0,5);
@@ -688,18 +688,18 @@ void update_properties(GtkWidget * widget, Choice choice)
 		renderer = gtk_cell_renderer_text_new();
 		gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combo_box),renderer,FALSE);
 		gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(combo_box),renderer,"text",1,NULL);
-		if (g_object_get_data(G_OBJECT(widget),"datasource"))
-			set_combo_to_source(combo_box,g_object_get_data(G_OBJECT(widget),"datasource"));
+		if (OBJ_GET((widget),"datasource"))
+			set_combo_to_source(combo_box,OBJ_GET((widget),"datasource"));
 
 		vbox = glade_xml_get_widget(prop_xml,"prop_top_vbox");
-		g_object_set_data(G_OBJECT(widget),"prop_table",table);
+		OBJ_SET((widget),"prop_table",table);
 		gtk_box_pack_start(GTK_BOX(vbox),table,FALSE,TRUE,0);
 		gtk_widget_show_all(vbox);
 	}
 	else if (choice == GAUGE_REMOVE)
 	{
 		/*printf ("gauge removal\n");*/
-		table = g_object_get_data(G_OBJECT(widget),"prop_table");
+		table = OBJ_GET((widget),"prop_table");
 		gtk_widget_destroy(table);
 	}
 

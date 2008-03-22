@@ -18,6 +18,7 @@
 #include <threads.h>
 
 gchar *states[] = {"FALSE","TRUE"};
+extern GObject *global_data;
 
 
 /*!

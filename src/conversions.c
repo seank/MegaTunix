@@ -31,6 +31,7 @@
 
 
 extern gint dbg_lvl;
+extern GObject *global_data;
 /*!
  \brief convert_before_download() converts the value passed using the
  conversions bound to the widget
@@ -47,8 +48,9 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	void *evaluator = NULL;
 	gint page = -1;
 	gint offset = -1;
-	gint lower = -1;
-	gint upper = -1;
+	DataSize size = MTX_U08;
+	signed long int lower = -1;
+	signed long int upper = -1;
 	gint i = 0;
 	GHashTable *hash = NULL;
 	gchar *key_list = NULL;
@@ -66,25 +68,69 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 
 	g_static_mutex_lock(&mutex);
 
-	if (NULL == g_object_get_data(G_OBJECT(widget),"raw_lower"))
-		lower = 0; /* BAD assumption */
-	else
-		lower = (gint)g_object_get_data(G_OBJECT(widget),"raw_lower");
+	size = (DataSize)OBJ_GET(widget,"size");
 
-	if (NULL == g_object_get_data(G_OBJECT(widget),"raw_upper"))
-		upper = 255; /* BAD assumption */
-	else
-		upper = (gint)g_object_get_data(G_OBJECT(widget),"raw_upper");
-
-	page = (gint)g_object_get_data(G_OBJECT(widget),"page");
-	offset = (gint)g_object_get_data(G_OBJECT(widget),"offset");
-	if (g_object_get_data(G_OBJECT(widget),"multi_expr_keys"))
+	if (NULL == OBJ_GET(widget,"raw_lower"))
 	{
-		if (!g_object_get_data(G_OBJECT(widget),"dl_eval_hash"))
+		switch (size)
+		{
+			case MTX_U08:
+			case MTX_U16:
+			case MTX_U32:
+				lower = 0;
+				break;
+			case MTX_CHAR:
+			case MTX_S08:
+				lower = -128;
+				break;
+			case MTX_S16:
+				lower = -32768;
+				break;
+			case MTX_S32:
+				lower = -2147483648;
+				break;
+		}
+	}
+	else
+		lower = (gint)OBJ_GET(widget,"raw_lower");
+
+	if (NULL == OBJ_GET(widget,"raw_upper"))
+	{
+		switch (size)
+		{
+			case MTX_U08:
+				upper = 255;
+				break;
+			case MTX_CHAR:
+			case MTX_S08:
+				upper = 127;
+				break;
+			case MTX_U16:
+				upper = 65535;
+				break;
+			case MTX_S16:
+				upper = 32767;
+				break;
+			case MTX_S32:
+				upper = 2147483647;
+				break;
+			case MTX_U32:
+				upper = 4294967295;
+				break;
+		}
+	}
+	else
+		upper = (gint)OBJ_GET(widget,"raw_upper");
+
+	page = (gint)OBJ_GET(widget,"page");
+	offset = (gint)OBJ_GET(widget,"offset");
+	if (OBJ_GET(widget,"multi_expr_keys"))
+	{
+		if (!OBJ_GET(widget,"dl_eval_hash"))
 		{
 			hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,evaluator_destroy);
-			key_list = g_object_get_data(G_OBJECT(widget),"multi_expr_keys");
-			expr_list = g_object_get_data(G_OBJECT(widget),"dl_conv_exprs");
+			key_list = OBJ_GET(widget,"multi_expr_keys");
+			expr_list = OBJ_GET(widget,"dl_conv_exprs");
 			keys = g_strsplit(key_list,",",-1);
 			exprs = g_strsplit(expr_list,",",-1);
 			for (i=0;i<MIN(g_strv_length(keys),g_strv_length(exprs));i++)
@@ -95,14 +141,14 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 			g_strfreev(keys);
 			g_strfreev(exprs);
 
-			g_object_set_data(G_OBJECT(widget),"dl_eval_hash",hash);
+			OBJ_SET(widget,"dl_eval_hash",hash);
 		}
-		hash = g_object_get_data(G_OBJECT(widget),"dl_eval_hash");
-		source_key = g_object_get_data(G_OBJECT(widget),"source_key");
+		hash = OBJ_GET(widget,"dl_eval_hash");
+		source_key = OBJ_GET(widget,"source_key");
 		if (!source_key)
 			printf("big problem, source key is undefined!!\n");
 		hash_key = (gchar *)g_hash_table_lookup(sources_hash,source_key);
-		tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
+		tmpbuf = (gchar *)OBJ_GET(widget,"table_num");
 		if (tmpbuf)
 			table_num = (gint)strtol(tmpbuf,NULL,10);
 		if (table_num == -1)
@@ -143,14 +189,14 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	}
 	else
 	{
-		conv_expr = (gchar *)g_object_get_data(G_OBJECT(widget),"dl_conv_expr");
-		evaluator = (void *)g_object_get_data(G_OBJECT(widget),"dl_evaluator");
+		conv_expr = (gchar *)OBJ_GET(widget,"dl_conv_expr");
+		evaluator = (void *)OBJ_GET(widget,"dl_evaluator");
 
 		if ((conv_expr) && (!evaluator))
 		{
 			evaluator = evaluator_create(conv_expr);
 			assert(evaluator);
-			g_object_set_data(G_OBJECT(widget),"dl_evaluator",(gpointer)evaluator);
+			OBJ_SET(widget,"dl_evaluator",(gpointer)evaluator);
 		}
 	}
 	if (!evaluator)
@@ -194,7 +240,7 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	}
 
 	tmpi = return_value;
-	 if (g_object_get_data(G_OBJECT(widget),"lookuptable"))
+	 if (OBJ_GET(widget,"lookuptable"))
 		return_value = reverse_lookup(G_OBJECT(widget),tmpi);
 
 	g_static_mutex_unlock(&mutex);
@@ -236,24 +282,24 @@ gfloat convert_after_upload(GtkWidget * widget)
 
 	g_static_mutex_lock(&mutex);
 
-	ul_complex = (gboolean)g_object_get_data(G_OBJECT(widget),"ul_complex");
+	ul_complex = (gboolean)OBJ_GET(widget,"ul_complex");
 	if (ul_complex)
 	{
 		g_static_mutex_unlock(&mutex);
 		return handle_complex_expr(G_OBJECT(widget),NULL,UPLOAD);
 	}
 
-	page = (gint)g_object_get_data(G_OBJECT(widget),"page");
-	offset = (gint)g_object_get_data(G_OBJECT(widget),"offset");
-	size = (DataSize)g_object_get_data(G_OBJECT(widget),"size");
-	canID = (gint)g_object_get_data(G_OBJECT(widget),"canID");
-	if (g_object_get_data(G_OBJECT(widget),"multi_expr_keys"))
+	page = (gint)OBJ_GET(widget,"page");
+	offset = (gint)OBJ_GET(widget,"offset");
+	size = (DataSize)OBJ_GET(widget,"size");
+	canID = (gint)OBJ_GET(widget,"canID");
+	if (OBJ_GET(widget,"multi_expr_keys"))
 	{
-		if (!g_object_get_data(G_OBJECT(widget),"ul_eval_hash"))
+		if (!OBJ_GET(widget,"ul_eval_hash"))
 		{
 			hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,evaluator_destroy);
-			key_list = g_object_get_data(G_OBJECT(widget),"multi_expr_keys");
-			expr_list = g_object_get_data(G_OBJECT(widget),"ul_conv_exprs");
+			key_list = OBJ_GET(widget,"multi_expr_keys");
+			expr_list = OBJ_GET(widget,"ul_conv_exprs");
 			keys = g_strsplit(key_list,",",-1);
 			exprs = g_strsplit(expr_list,",",-1);
 			for (i=0;i<MIN(g_strv_length(keys),g_strv_length(exprs));i++)
@@ -264,14 +310,14 @@ gfloat convert_after_upload(GtkWidget * widget)
 			g_strfreev(keys);
 			g_strfreev(exprs);
 
-			g_object_set_data(G_OBJECT(widget),"ul_eval_hash",hash);
+			OBJ_SET(widget,"ul_eval_hash",hash);
 		}
-		hash = g_object_get_data(G_OBJECT(widget),"ul_eval_hash");
-		source_key = g_object_get_data(G_OBJECT(widget),"source_key");
+		hash = OBJ_GET(widget,"ul_eval_hash");
+		source_key = OBJ_GET(widget,"source_key");
 		if (!source_key)
 			printf("big problem, source key is undefined!!\n");
 		hash_key = (gchar *)g_hash_table_lookup(sources_hash,source_key);
-		tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
+		tmpbuf = (gchar *)OBJ_GET(widget,"table_num");
 		if (tmpbuf)
 			table_num = (gint)strtol(tmpbuf,NULL,10);
 		if (table_num == -1)
@@ -312,17 +358,17 @@ gfloat convert_after_upload(GtkWidget * widget)
 	}
 	else
 	{
-		conv_expr = (gchar *)g_object_get_data(G_OBJECT(widget),"ul_conv_expr");
-		evaluator = (void *)g_object_get_data(G_OBJECT(widget),"ul_evaluator");
+		conv_expr = (gchar *)OBJ_GET(widget,"ul_conv_expr");
+		evaluator = (void *)OBJ_GET(widget,"ul_evaluator");
 		if ((conv_expr) && (!evaluator)) 	/* if no evaluator create one */
 		{
 			evaluator = evaluator_create(conv_expr);
 			assert(evaluator);
-			g_object_set_data(G_OBJECT(widget),"ul_evaluator",(gpointer)evaluator);
+			OBJ_SET(widget,"ul_evaluator",(gpointer)evaluator);
 		}
 
 	}
-	if (g_object_get_data(G_OBJECT(widget),"lookuptable"))
+	if (OBJ_GET(widget,"lookuptable"))
 		tmpi = lookup_data(G_OBJECT(widget),get_ecu_data(canID,page,offset,size));
 	else
 	{
@@ -374,8 +420,8 @@ void convert_temps(gpointer widget, gpointer units)
 	 */
 	if ((!widget) || (leaving))
 		return;
-	dep_obj = (GObject *)g_object_get_data(G_OBJECT(widget),"dep_object");
-	widget_temp = (gint)g_object_get_data(G_OBJECT(widget),"widget_temp");
+	dep_obj = (GObject *)OBJ_GET(widget,"dep_object");
+	widget_temp = (gint)OBJ_GET(widget,"widget_temp");
 	if (dep_obj)
 		state = check_dependancies(G_OBJECT(dep_obj));
 
@@ -385,12 +431,12 @@ void convert_temps(gpointer widget, gpointer units)
 		if (GTK_IS_LABEL(widget))
 		{
 			if ((dep_obj) && (state))	
-				text = (gchar *)g_object_get_data(G_OBJECT(widget),"alt_f_label");
+				text = (gchar *)OBJ_GET(widget,"alt_f_label");
 			else
-				text = (gchar *)g_object_get_data(G_OBJECT(widget),"f_label");
+				text = (gchar *)OBJ_GET(widget,"f_label");
 			gtk_label_set_text(GTK_LABEL(widget),text);
 			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 
 		}
 
@@ -411,7 +457,7 @@ void convert_temps(gpointer widget, gpointer units)
 					GTK_SPIN_BUTTON(widget),
 					adj->value);
 			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 		}
 		if ((GTK_IS_RANGE(widget)) && (widget_temp == CELSIUS))
 		{
@@ -425,7 +471,7 @@ void convert_temps(gpointer widget, gpointer units)
 			adj->upper = (upper *(9.0/5.0))+32;
 
 			gtk_range_set_adjustment(GTK_RANGE(widget),adj);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 		}
 	}
 	else
@@ -433,12 +479,12 @@ void convert_temps(gpointer widget, gpointer units)
 		if (GTK_IS_LABEL(widget))
 		{
 			if ((dep_obj) && (state))	
-				text = (gchar *)g_object_get_data(G_OBJECT(widget),"alt_c_label");
+				text = (gchar *)OBJ_GET(widget,"alt_c_label");
 			else
-				text = (gchar *)g_object_get_data(G_OBJECT(widget),"c_label");
+				text = (gchar *)OBJ_GET(widget,"c_label");
 			gtk_label_set_text(GTK_LABEL(widget),text);
 			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 		}
 
 		if ((GTK_IS_SPIN_BUTTON(widget)) && (widget_temp == FAHRENHEIT))
@@ -456,7 +502,7 @@ void convert_temps(gpointer widget, gpointer units)
 					GTK_SPIN_BUTTON(widget),
 					adj->value);
 			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 		}
 		if ((GTK_IS_RANGE(widget)) && (widget_temp == FAHRENHEIT))
 		{
@@ -470,7 +516,7 @@ void convert_temps(gpointer widget, gpointer units)
 			adj->upper = (upper-32)*(5.0/9.0);
 
 			gtk_range_set_adjustment(GTK_RANGE(widget),adj);
-			g_object_set_data(G_OBJECT(widget),"widget_temp",GINT_TO_POINTER(units));
+			OBJ_SET(widget,"widget_temp",GINT_TO_POINTER(units));
 		}
 	}
 

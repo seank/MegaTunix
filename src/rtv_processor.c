@@ -36,6 +36,7 @@
 
 extern GStaticMutex rtv_mutex;
 extern gint dbg_lvl;
+extern GObject *global_data;
 /*!
  \brief process_rt_vars() processes incoming realtime variables. It's a pretty
  complex function so read the sourcecode.. ;)
@@ -44,7 +45,7 @@ extern gint dbg_lvl;
 void process_rt_vars(void *incoming)
 {
 	extern Rtv_Map *rtv_map;
-	extern gint temp_units;
+	gint temp_units;
 	guchar *raw_realtime = incoming;
 	GObject * object = NULL;
 	gchar * expr = NULL;
@@ -71,6 +72,7 @@ void process_rt_vars(void *incoming)
 
 	/* Store timestamps in ringbuffer */
 
+	temp_units = (gint)OBJ_GET(global_data,"temp_units");
 	g_get_current_time(&timeval);
 	g_array_append_val(rtv_map->ts_array,timeval);
 	if (rtv_map->ts_array->len%250 == 0)
@@ -105,28 +107,28 @@ void process_rt_vars(void *incoming)
 					dbg_func(g_strdup_printf(__FILE__": rtv_processor()\n\t Object bound to list at offset %i is invalid!!!!\n",i));
 				continue;
 			}
-			temp_dep = (gboolean)g_object_get_data(object,"temp_dep");
-			special = (gchar *)g_object_get_data(object,"special");
+			temp_dep = (gboolean)OBJ_GET(object,"temp_dep");
+			special = (gchar *)OBJ_GET(object,"special");
 			if (special)
 			{
 				tmpf = handle_special(object,special);
 				goto store_it;
 			}
-			hash = (GHashTable *)g_object_get_data(object,"multi_expr_hash");
+			hash = (GHashTable *)OBJ_GET(object,"multi_expr_hash");
 			if (hash)
 			{
 				tmpf = handle_multi_expression(object,raw_realtime,hash);
 				goto store_it;
 			}
 
-			evaluator = (void *)g_object_get_data(object,"ul_evaluator");
+			evaluator = (void *)OBJ_GET(object,"ul_evaluator");
 			if (!evaluator)
 			{
-				expr = g_object_get_data(object,"ul_conv_expr");
+				expr = OBJ_GET(object,"ul_conv_expr");
 				if (expr == NULL)
 				{
 					if (dbg_lvl & (COMPLEX_EXPR|CRITICAL))
-						dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\t \"ul_conv_expr\" was NULL for control \"%s\", EXITING!\n",(gchar *)g_object_get_data(object,"internal_name")));
+						dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\t \"ul_conv_expr\" was NULL for control \"%s\", EXITING!\n",(gchar *)OBJ_GET(object,"internal_name")));
 					exit (-3);
 				}
 				evaluator = evaluator_create(expr);
@@ -136,19 +138,19 @@ void process_rt_vars(void *incoming)
 						dbg_func(g_strdup_printf(__FILE__": rtv_processor()\n\t Creating of evaluator for function \"%s\" FAILED!!!\n\n",expr));
 				}
 				assert(evaluator);
-				g_object_set_data(object,"ul_evaluator",evaluator);
+				OBJ_SET(object,"ul_evaluator",evaluator);
 			}
 			else
 				assert(evaluator);
-			offset = (gint)g_object_get_data(object,"offset");
-			size = (DataSize)g_object_get_data(object,"size");
-			if (g_object_get_data(object,"complex_expr"))
+			offset = (gint)OBJ_GET(object,"offset");
+			size = (DataSize)OBJ_GET(object,"size");
+			if (OBJ_GET(object,"complex_expr"))
 			{
 				tmpf = handle_complex_expr(object,incoming,UPLOAD);
 				goto store_it;
 			}
 
-			if (g_object_get_data(object,"lookuptable"))
+			if (OBJ_GET(object,"lookuptable"))
 			{
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\tgetting Lookuptable for var using offset %i\n",offset));
@@ -177,17 +179,17 @@ store_it:
 			else
 				result = tmpf;
 			/* Get history array and current index point */
-			history = (GArray *)g_object_get_data(object,"history");
-			current_index = (gint)g_object_get_data(object,"current_index");
+			history = (GArray *)OBJ_GET(object,"history");
+			current_index = (gint)OBJ_GET(object,"current_index");
 			/* Store data in history buffer */
 			g_static_mutex_lock(&rtv_mutex);
 			g_array_append_val(history,result);
 			/*printf("array size %i, current index %i, appended %f, readback %f previous %f\n",history->len,current_index,result,g_array_index(history, gfloat, current_index+1),g_array_index(history, gfloat, current_index));*/
 			current_index++;
-			g_object_set_data(object,"current_index",GINT_TO_POINTER(current_index));
+			OBJ_SET(object,"current_index",GINT_TO_POINTER(current_index));
 			g_static_mutex_unlock(&rtv_mutex);
 
-			/*printf("Result of %s is %f\n",(gchar *)g_object_get_data(object,"internal_name"),result);*/
+			/*printf("Result of %s is %f\n",(gchar *)OBJ_GET(object,"internal_name"),result);*/
 
 		}
 	}
@@ -225,9 +227,9 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 	gdouble result = 0.0;
 
 
-	symbols = (gchar **)g_object_get_data(object,"expr_symbols");
-	expr_types = (gint *)g_object_get_data(object,"expr_types");
-	total_symbols = (gint)g_object_get_data(object,"total_symbols");
+	symbols = (gchar **)OBJ_GET(object,"expr_symbols");
+	expr_types = (gint *)OBJ_GET(object,"expr_types");
+	total_symbols = (gint)OBJ_GET(object,"total_symbols");
 
 	names = g_new0(gchar *, total_symbols);
 	values = g_new0(gdouble, total_symbols);
@@ -242,19 +244,19 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 		{
 			case VE_EMB_BIT:
 				tmpbuf = g_strdup_printf("%s_page",symbols[i]);
-				page = (gint) g_object_get_data(object,tmpbuf);
+				page = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
-				offset = (gint) g_object_get_data(object,tmpbuf);
+				offset = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_canID",symbols[i]);
-				canID = (gint) g_object_get_data(object,tmpbuf);
+				canID = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_bitmask",symbols[i]);
-				bitmask = (gint) g_object_get_data(object,tmpbuf);
+				bitmask = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_bitshift",symbols[i]);
-				bitshift = (gint) g_object_get_data(object,tmpbuf);
+				bitshift = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
 				values[i]=(gdouble)(((get_ecu_data(canID,page,offset,size))&bitmask) >> bitshift);
@@ -263,16 +265,16 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				break;
 			case VE_VAR:
 				tmpbuf = g_strdup_printf("%s_page",symbols[i]);
-				page = (gint) g_object_get_data(object,tmpbuf);
+				page = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
-				offset = (gint) g_object_get_data(object,tmpbuf);
+				offset = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_canID",symbols[i]);
-				canID = (gint) g_object_get_data(object,tmpbuf);
+				canID = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
-				size = (DataSize) g_object_get_data(object,tmpbuf);
+				size = (DataSize) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
 				values[i]=(gdouble)get_ecu_data(canID,page,offset,size);
@@ -281,10 +283,10 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 				break;
 			case RAW_VAR:
 				tmpbuf = g_strdup_printf("%s_offset",symbols[i]);
-				offset = (gint) g_object_get_data(object,tmpbuf);
+				offset = (gint) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = g_strdup_printf("%s_size",symbols[i]);
-				size = (DataSize) g_object_get_data(object,tmpbuf);
+				size = (DataSize) OBJ_GET(object,tmpbuf);
 				g_free(tmpbuf);
 				names[i]=g_strdup(symbols[i]);
 				values[i]=(gdouble)_get_sized_data(raw_data,0,offset,size);
@@ -301,21 +303,21 @@ gfloat handle_complex_expr(GObject *object, void * incoming,ConvType type)
 	}
 	if (type == UPLOAD)
 	{
-		evaluator = (void *)g_object_get_data(object,"ul_evaluator");
+		evaluator = (void *)OBJ_GET(object,"ul_evaluator");
 		if (!evaluator)
 		{
-			evaluator = evaluator_create(g_object_get_data(object,"ul_conv_expr"));
-			g_object_set_data(object,"ul_evaluator",evaluator);
+			evaluator = evaluator_create(OBJ_GET(object,"ul_conv_expr"));
+			OBJ_SET(object,"ul_evaluator",evaluator);
 
 		}
 	}
 	else if (type == DOWNLOAD)
 	{
-		evaluator = (void *)g_object_get_data(object,"dl_evaluator");
+		evaluator = (void *)OBJ_GET(object,"dl_evaluator");
 		if (!evaluator)
 		{
-			evaluator = evaluator_create(g_object_get_data(object,"dl_conv_expr"));
-			g_object_set_data(object,"dl_evaluator",evaluator);
+			evaluator = evaluator_create(OBJ_GET(object,"dl_conv_expr"));
+			OBJ_SET(object,"dl_evaluator",evaluator);
 		}
 	}
 	else
@@ -362,7 +364,7 @@ gfloat handle_multi_expression(GObject *object,guchar* raw_realtime,GHashTable *
 	gchar *hash_key = NULL;
 	extern GHashTable *sources_hash;
 
-	key = (gchar *)g_object_get_data(object,"source_key");
+	key = (gchar *)OBJ_GET(object,"source_key");
 	hash_key  = (gchar *)g_hash_table_lookup(sources_hash,key);
 	multi = (MultiExpr *)g_hash_table_lookup(hash,hash_key);
 	if (!multi)
@@ -372,7 +374,7 @@ gfloat handle_multi_expression(GObject *object,guchar* raw_realtime,GHashTable *
 		return 0.0;
 	}
 
-	offset = (gint)g_object_get_data(object,"offset");
+	offset = (gint)OBJ_GET(object,"offset");
 	if (multi->lookuptable)
 		x = direct_lookup_data(multi->lookuptable,raw_realtime[offset]);
 	else
@@ -452,9 +454,9 @@ gboolean lookup_current_value(gchar *internal_name, gfloat *value)
 	object = g_hash_table_lookup(rtv_map->rtv_hash,internal_name);
 	if (!object)
 		return FALSE;
-	history = (GArray *)g_object_get_data(object,"history");
+	history = (GArray *)OBJ_GET(object,"history");
 	g_static_mutex_lock(&rtv_mutex);
-	index = (gint)g_object_get_data(object,"current_index");
+	index = (gint)OBJ_GET(object,"current_index");
 	*value = g_array_index(history,gfloat,index);
 	g_static_mutex_unlock(&rtv_mutex);
 	return TRUE;
@@ -484,8 +486,8 @@ gboolean lookup_previous_value(gchar *internal_name, gfloat *value)
 	if (!object)
 		return FALSE;
 	g_static_mutex_lock(&rtv_mutex);
-	history = (GArray *)g_object_get_data(object,"history");
-	index = (gint)g_object_get_data(object,"current_index");
+	history = (GArray *)OBJ_GET(object,"history");
+	index = (gint)OBJ_GET(object,"current_index");
 	if (index > 0)
 		index -= 1;  /* get PREVIOUS one */
 	*value = g_array_index(history,gfloat,index);
@@ -524,15 +526,15 @@ void flush_rt_arrays()
 		{
 			object=(GObject *)g_list_nth_data(list,j);
 			g_static_mutex_lock(&rtv_mutex);
-			history = (GArray *)g_object_get_data(object,"history");
-			current_index = (gint)g_object_get_data(object,"current_index");
+			history = (GArray *)OBJ_GET(object,"history");
+			current_index = (gint)OBJ_GET(object,"current_index");
 			/* TRuncate array,  but don't free/recreate as it
 			 * makes the logviewer explode!
 			 */
 			g_array_free(history,TRUE);
 			history = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
-			g_object_set_data(object,"history",(gpointer)history);
-			g_object_set_data(object,"current_index",GINT_TO_POINTER(-1));
+			OBJ_SET(object,"history",(gpointer)history);
+			OBJ_SET(object,"current_index",GINT_TO_POINTER(-1));
 			g_static_mutex_unlock(&rtv_mutex);
 	                /* bind history array to object for future retrieval */
 		}

@@ -33,7 +33,6 @@
 #include <timeout_handlers.h>
 
 
-extern gint temp_units;
 GThread * thread_dispatcher_id = NULL;
 gboolean ready = FALSE;
 gint dispatcher_id = -1;

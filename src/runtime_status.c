@@ -36,6 +36,7 @@
 
 extern gint dbg_lvl;
 GtkWidget *status_window = NULL;
+extern GObject *global_data;
 
 void load_status(void)
 {
@@ -64,8 +65,7 @@ void load_status(void)
 	GtkWidget * label;
 	GtkWidget * frame;
 	GtkWidget * table;
-	extern GObject *global_data;
-	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	CmdLineArgs *args = OBJ_GET(global_data,"args");
 	GdkColor color;
 	extern gboolean connected;
 	extern gboolean interrogated;
@@ -106,11 +106,11 @@ void load_status(void)
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_focus_on_map((GtkWindow *)window,FALSE);
 		gtk_window_set_title(GTK_WINDOW(window),"ECU Status");
-		x = (gint)g_object_get_data(global_data,"status_x_origin");
-		y = (gint)g_object_get_data(global_data,"status_y_origin");
+		x = (gint)OBJ_GET(global_data,"status_x_origin");
+		y = (gint)OBJ_GET(global_data,"status_y_origin");
 		gtk_window_move(GTK_WINDOW(window),x,y);
-		w = (gint)g_object_get_data(global_data,"status_width");
-		h = (gint)g_object_get_data(global_data,"status_height");
+		w = (gint)OBJ_GET(global_data,"status_width");
+		h = (gint)OBJ_GET(global_data,"status_height");
 		gtk_window_set_default_size(GTK_WINDOW(window),w,h);
 		gtk_window_resize(GTK_WINDOW(window),w,h);
 		g_signal_connect(G_OBJECT(window),"delete_event",

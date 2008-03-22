@@ -23,15 +23,14 @@
 
 
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 void load_comm_xml(gchar *filename, gpointer data)
 {
-	/*extern GObject * global_data; */
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
 	GHashTable *arguments = NULL;
-	extern GObject *global_data;
 	extern gboolean interrogated;
 
 	if (!interrogated)
@@ -52,7 +51,7 @@ void load_comm_xml(gchar *filename, gpointer data)
 
 	/*Get the root element node */
 	root_element = xmlDocGetRootElement(doc);
-	arguments = (GHashTable *)g_object_get_data(G_OBJECT(global_data),"potential_arguments");
+	arguments = (GHashTable *)OBJ_GET(global_data,"potential_arguments");
 	load_xmlcomm_elements(arguments, root_element);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
@@ -64,7 +63,6 @@ void load_xmlcomm_elements(GHashTable *arguments, xmlNode *a_node)
 {
 	GHashTable *commands_hash = NULL;
 	xmlNode *cur_node = NULL;
-	extern GObject *global_data;
 
 	/* Iterate though all nodes... */
 	for (cur_node = a_node;cur_node;cur_node = cur_node->next)
@@ -75,7 +73,7 @@ void load_xmlcomm_elements(GHashTable *arguments, xmlNode *a_node)
 				get_potential_arg_name(arguments,cur_node);
 			if (g_strcasecmp((gchar *)cur_node->name,"commands") == 0)
 			{
-				commands_hash = (GHashTable *)g_object_get_data(G_OBJECT(global_data),"commands_hash");
+				commands_hash = (GHashTable *)OBJ_GET(global_data,"commands_hash");
 				process_commands_section(commands_hash,cur_node);
 			}
 		}
@@ -87,7 +85,6 @@ void get_potential_arg_name(GHashTable *arguments, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	PotentialArg *arg = NULL;
-	extern GObject *global_data;
 
 	if (!node->children)
 	{

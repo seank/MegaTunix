@@ -27,6 +27,7 @@ extern GdkColor black;
 static gboolean warning_present = FALSE;
 static GtkWidget *warning_dialog;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!
@@ -166,7 +167,7 @@ void  update_logbar(
 	if (!textbuffer)
 		return;
 	gtk_text_buffer_get_end_iter (textbuffer, &iter);
-	result = g_object_get_data(G_OBJECT(widget),"counter");	
+	result = OBJ_GET(widget,"counter");	
 	if (result == NULL)
 		counter = 0;
 	else
@@ -176,7 +177,7 @@ void  update_logbar(
 	{
 		counter++;
 		tmpbuf = g_strdup_printf(" %i. ",counter);
-		g_object_set_data(G_OBJECT(widget),"counter",GINT_TO_POINTER(counter));	
+		OBJ_SET(widget,"counter",GINT_TO_POINTER(counter));	
 	}
 
 	if (tagname == NULL)
@@ -218,8 +219,7 @@ void  update_logbar(
  */
 EXPORT void conn_warning(void)
 {
-	extern GObject *global_data;
-	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	CmdLineArgs *args = OBJ_GET(global_data,"args");
 	gchar *buff = NULL;
 	if ((args->be_quiet) || (warning_present))
 		return;
@@ -248,9 +248,8 @@ EXPORT void kill_conn_warning()
  */
 void warn_user(gchar *message)
 {
-	extern GObject *global_data;
 	extern gboolean interrogated;
-	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	CmdLineArgs *args = OBJ_GET(global_data,"args");
 	if (args->be_quiet)
 		return;
 

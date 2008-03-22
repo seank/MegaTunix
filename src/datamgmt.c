@@ -19,6 +19,7 @@
 #include <string.h>
 
 
+extern GObject *global_data;
 /*!
  \brief get_ecu_data() is a func to return the data requested.
  \param canID, canIdentifier (currently unused)

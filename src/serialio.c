@@ -41,6 +41,7 @@ gboolean port_open = FALSE;
 GStaticMutex serio_mutex = G_STATIC_MUTEX_INIT;
 GAsyncQueue *serial_repair_queue = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief open_serial() called to open the serial port, updates textviews on the
@@ -272,7 +273,6 @@ void *serial_repair_thread(gpointer data)
 	extern volatile gboolean offline;
 	gchar ** vector = NULL;
 	gint i = 0;
-	extern GObject *global_data;
 
 	if (offline)
 	{
@@ -305,15 +305,15 @@ void *serial_repair_thread(gpointer data)
 	/* App just started, no connection yet*/
 	while ((!serial_is_open) && (!abort)) 	
 	{
-		autodetect = (gboolean) g_object_get_data(G_OBJECT(global_data),"autodetect_port");
+		autodetect = (gboolean) OBJ_GET(global_data,"autodetect_port");
 		if (!autodetect) /* User thinks he/she is S M A R T */
 		{
-			potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data), "override_port");
+			potential_ports = (gchar *)OBJ_GET(global_data, "override_port");
 			if (potential_ports == NULL)
-				potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports");
+				potential_ports = (gchar *)OBJ_GET(global_data,"potential_ports");
 		}
 		else	/* Auto mode */
-			potential_ports = (gchar *)g_object_get_data(G_OBJECT(global_data),"potential_ports");
+			potential_ports = (gchar *)OBJ_GET(global_data,"potential_ports");
 		vector = g_strsplit(potential_ports,",",-1);
 		for (i=0;i<g_strv_length(vector);i++)
 		{

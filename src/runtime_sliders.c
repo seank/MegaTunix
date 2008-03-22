@@ -35,6 +35,7 @@ GHashTable **ve3d_sliders = NULL;
 static GtkSizeGroup *size_group_left = NULL;
 static GtkSizeGroup *size_group_right = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!
@@ -338,11 +339,11 @@ Rt_Slider *  add_slider(gchar *ctrl_name, gint tbl, gint table_num, gint row, gc
 	slider->table_num = table_num;
 	slider->row = row;
 	slider->class = MTX_PROGRESS;
-	slider->friendly_name = (gchar *) g_object_get_data(object,"dlog_gui_name");
-	slider->lower = (gint)g_object_get_data(object,"lower_limit");
+	slider->friendly_name = (gchar *) OBJ_GET(object,"dlog_gui_name");
+	slider->lower = (gint)OBJ_GET(object,"lower_limit");
 
-	slider->upper = (gint)g_object_get_data(object,"upper_limit");
-	slider->history = (GArray *) g_object_get_data(object,"history");
+	slider->upper = (gint)OBJ_GET(object,"upper_limit");
+	slider->history = (GArray *) OBJ_GET(object,"history");
 	slider->object = object;
 
 	if (ident == RUNTIME_TAB)
@@ -426,8 +427,8 @@ EXPORT void register_rt_range(GtkWidget * widget)
 	GObject * object = NULL;
 	extern Rtv_Map *rtv_map;
 	Rt_Slider *slider = g_malloc0(sizeof(Rt_Slider));
-	gchar * source = (gchar *)g_object_get_data(G_OBJECT(widget),"source");
-	TabIdent ident = (TabIdent)g_object_get_data(G_OBJECT(widget),"tab_ident");
+	gchar * source = (gchar *)OBJ_GET(widget,"source");
+	TabIdent ident = (TabIdent)OBJ_GET(widget,"tab_ident");
 		
 	if (!rtv_map)
 		return;
@@ -451,7 +452,7 @@ EXPORT void register_rt_range(GtkWidget * widget)
 	slider->table_num = -1;
 	slider->row = -1;
 	slider->class = MTX_RANGE;
-	slider->history = (GArray *) g_object_get_data(object,"history");
+	slider->history = (GArray *) OBJ_GET(object,"history");
 	slider->object = object;
 	slider->textval = NULL;
 	slider->pbar = widget;

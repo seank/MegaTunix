@@ -42,6 +42,7 @@ extern GdkColor white;
 extern GdkColor black;
 extern GdkColor red;
 extern gint dbg_lvl;
+extern GObject *global_data;
 GHashTable *dash_gauges = NULL;
 
 gboolean forced_update = TRUE;
@@ -104,8 +105,7 @@ gboolean update_runtime_vars()
 		g_free(string);
 		if (GTK_IS_WIDGET(tmpwidget))
 		{
-			ve_view = (Ve_View_3D *)g_object_get_data(
-					G_OBJECT(tmpwidget),"ve_view");
+			ve_view = (Ve_View_3D *)OBJ_GET(tmpwidget,"ve_view");
 			if ((ve_view != NULL) && (ve_view->drawing_area->window != NULL))
 			{
 				/* Get X values */
@@ -313,14 +313,14 @@ void rt_update_status(gpointer key, gpointer data)
 
 	g_return_if_fail(GTK_IS_WIDGET(widget));
 
-	source = (gchar *)g_object_get_data(G_OBJECT(widget),"source");
+	source = (gchar *)OBJ_GET(widget,"source");
 	if ((g_strcasecmp(source,last_source) != 0))
 	{
 		object = NULL;
 		object = (GObject *)g_hash_table_lookup(rtv_map->rtv_hash,source);
 		if (!object)
 			return;
-		history = (GArray *)g_object_get_data(object,"history");
+		history = (GArray *)OBJ_GET(object,"history");
 	}
 	if (!connected)
 	{
@@ -343,9 +343,9 @@ void rt_update_status(gpointer key, gpointer data)
 			dbg_func(g_strdup_printf(__FILE__": rt_update_status()\n\t COULD NOT get previous value for %s\n",source));
 	}
 
-	bitval = (gint)g_object_get_data(G_OBJECT(widget),"bitval");
-	bitmask = (gint)g_object_get_data(G_OBJECT(widget),"bitmask");
-	bitshift = (gint)g_object_get_data(G_OBJECT(widget),"bitshift");
+	bitval = (gint)OBJ_GET(widget,"bitval");
+	bitmask = (gint)OBJ_GET(widget,"bitmask");
+	bitshift = (gint)OBJ_GET(widget,"bitshift");
 
 
 	/* if the value hasn't changed, don't bother continuing */
@@ -386,9 +386,9 @@ void rt_update_values(gpointer key, gpointer value, gpointer data)
 	gchar * tmpbuf = NULL;
 	gboolean is_float = FALSE;
 
-	history = (GArray *)g_object_get_data(slider->object,"history");
-	current_index = (gint)g_object_get_data(slider->object,"current_index");
-	is_float = (gboolean)g_object_get_data(slider->object,"is_float");
+	history = (GArray *)OBJ_GET(slider->object,"history");
+	current_index = (gint)OBJ_GET(slider->object,"current_index");
+	is_float = (gboolean)OBJ_GET(slider->object,"is_float");
 	g_static_mutex_lock(&rtv_mutex);
 	/*printf("runtime_gui history length is %i, current index %i\n",history->len,current_index);*/
 	current = g_array_index(history, gfloat, current_index);
@@ -485,9 +485,9 @@ void rtt_update_values(gpointer key, gpointer value, gpointer data)
 	gboolean is_float = FALSE;
 
 
-	history = (GArray *)g_object_get_data(rtt->object,"history");
-	current_index = (gint)g_object_get_data(rtt->object,"current_index");
-	is_float = (gboolean)g_object_get_data(rtt->object,"is_float");
+	history = (GArray *)OBJ_GET(rtt->object,"history");
+	current_index = (gint)OBJ_GET(rtt->object,"current_index");
+	is_float = (gboolean)OBJ_GET(rtt->object,"is_float");
 	g_static_mutex_lock(&rtv_mutex);
 	current = g_array_index(history, gfloat, current_index);
 	if (current_index > 0)

@@ -27,6 +27,7 @@ static gboolean ltc_visible = FALSE;
 
 GHashTable *lookuptables = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 enum
 {
@@ -170,9 +171,9 @@ gint reverse_lookup(GObject *object, gint value)
 	gchar *alt_table = NULL;
 	gboolean state = FALSE;
 
-	table = (gchar *)g_object_get_data(object,"lookuptable");
-	alt_table = (gchar *)g_object_get_data(object,"alt_lookuptable");
-	dep_obj = (GObject *)g_object_get_data(object,"dep_object");
+	table = (gchar *)OBJ_GET(object,"lookuptable");
+	alt_table = (gchar *)OBJ_GET(object,"alt_lookuptable");
+	dep_obj = (GObject *)OBJ_GET(object,"dep_object");
 	if (dep_obj)
 		state = check_dependancies(dep_obj);
 	if (state)
@@ -292,9 +293,9 @@ gfloat lookup_data(GObject *object, gint offset)
 	gchar *alt_table = NULL;
 	gboolean state = FALSE;
 
-	table = (gchar *)g_object_get_data(object,"lookuptable");
-	alt_table = (gchar *)g_object_get_data(object,"alt_lookuptable");
-	dep_obj = (GObject *)g_object_get_data(object,"dep_object");
+	table = (gchar *)OBJ_GET(object,"lookuptable");
+	alt_table = (gchar *)OBJ_GET(object,"alt_lookuptable");
+	dep_obj = (GObject *)OBJ_GET(object,"dep_object");
 	/*
 	   if (GTK_IS_OBJECT(dep_obj))
 	   printf("checking dependancy\n");
@@ -319,7 +320,7 @@ gfloat lookup_data(GObject *object, gint offset)
 	if (!lookuptable)
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup_printf(__FILE__": lookup_data()\n\t Lookuptable is NULL for control %s\n",(gchar *) g_object_get_data(object,"internal_name")));
+			dbg_func(g_strdup_printf(__FILE__": lookup_data()\n\t Lookuptable is NULL for control %s\n",(gchar *) OBJ_GET(object,"internal_name")));
 		return 0.0;
 	}
 	return lookuptable->array[offset];

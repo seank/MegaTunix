@@ -36,6 +36,7 @@
 Rtv_Map *rtv_map = NULL;
 gboolean rtvars_loaded = FALSE;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!
@@ -226,11 +227,11 @@ gboolean load_realtime_map(void )
 		gtk_object_sink(GTK_OBJECT(object));
 		/* History Array */
 		history = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
-		g_object_set_data(object,"current_index",GINT_TO_POINTER(-1));
+		OBJ_SET(object,"current_index",GINT_TO_POINTER(-1));
 		/* Assume default size of 8 bit unsigned */
-		g_object_set_data(object,"size",GINT_TO_POINTER(MTX_U08));
+		OBJ_SET(object,"size",GINT_TO_POINTER(MTX_U08));
 		/* bind hostory array to object for future retrieval */
-		g_object_set_data(object,"history",(gpointer)history);
+		OBJ_SET(object,"history",(gpointer)history);
 
 		if (cfg_read_string(cfgfile,section,"depend_on",&tmpbuf))
 		{
@@ -251,7 +252,7 @@ gboolean load_realtime_map(void )
 					{
 						if (dbg_lvl & RTMLOADER)
 							dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tbinding INT \"%s\",\"%i\" to widget \"%s\"\n",keys[j],tmpi,section));
-						g_object_set_data(object,
+						OBJ_SET(object,
 								keys[j],
 								GINT_TO_POINTER(tmpi));
 					}
@@ -267,7 +268,7 @@ gboolean load_realtime_map(void )
 						tmpi = translate_string(tmpbuf);
 						if (dbg_lvl & RTMLOADER)
 							dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tbinding ENUM \"%s\",\"%i\" to widget \"%s\"\n",keys[j],tmpi,section));
-						g_object_set_data(object,
+						OBJ_SET(object,
 								keys[j],
 								GINT_TO_POINTER(tmpi));
 						g_free(tmpbuf);
@@ -283,7 +284,7 @@ gboolean load_realtime_map(void )
 					{
 						if (dbg_lvl & RTMLOADER)
 							dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tbinding BOOL \"%s\",\"%i\" to widget \"%s\"\n",keys[j],tmpi,section));
-						g_object_set_data(object,
+						OBJ_SET(object,
 								keys[j],
 								GINT_TO_POINTER(tmpi));
 						if (strstr(keys[j],"complex_expr") != NULL)
@@ -300,7 +301,7 @@ gboolean load_realtime_map(void )
 					{
 						if (dbg_lvl & RTMLOADER)
 							dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tbinding STRING key:\"%s\" value:\"%s\" to widget \"%s\"\n",keys[j],tmpbuf,section));
-						g_object_set_data(object,
+						OBJ_SET(object,
 								keys[j],
 								g_strdup(tmpbuf));
 						if (strstr(keys[j],"internal_name") != NULL)
@@ -390,9 +391,9 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 		return;
 	}
 	/* Store the lists as well so DO NOT DEALLOCATE THEM!!! */
-	g_object_set_data(object,"expr_types",(gpointer)expr_types);
-	g_object_set_data(object,"expr_symbols",(gpointer)expr_symbols);
-	g_object_set_data(object,"total_symbols",GINT_TO_POINTER(total_symbols));
+	OBJ_SET(object,"expr_types",(gpointer)expr_types);
+	OBJ_SET(object,"expr_symbols",(gpointer)expr_symbols);
+	OBJ_SET(object,"total_symbols",GINT_TO_POINTER(total_symbols));
 	for (i=0;i<total_symbols;i++)
 	{
 		switch ((ComplexExprType)expr_types[i])
@@ -406,7 +407,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_EMB_BIT, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_offset",expr_symbols[i]);
@@ -415,13 +416,13 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 					dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_EMB_BIT, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_canID",expr_symbols[i]);
 				if (!cfg_read_int(cfgfile,section,name,&tmpi))
 					tmpi = firmware->canID;
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_bitmask",expr_symbols[i]);
@@ -430,7 +431,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_EMB_BIT, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_bitshift",expr_symbols[i]);
@@ -439,7 +440,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_EMB_BIT, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				break;
@@ -452,7 +453,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_VAR, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_offset",expr_symbols[i]);
@@ -461,14 +462,14 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tVE_VAR, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_canID",expr_symbols[i]);
 				if (!cfg_read_int(cfgfile,section,name,&tmpi))
 					tmpi = firmware->canID;
 
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_size",expr_symbols[i]);
@@ -479,7 +480,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					tmpi = translate_string(tmpbuf);
 					g_free(tmpbuf);
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				break;
@@ -492,7 +493,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					if (dbg_lvl & (RTMLOADER|COMPLEX_EXPR|CRITICAL))
 						dbg_func(g_strdup_printf(__FILE__": load_compex_params()\n\tRAW_VAR, failure looking for:%s\n",name));
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				name=NULL;
 				name=g_strdup_printf("%s_size",expr_symbols[i]);
@@ -507,7 +508,7 @@ void load_complex_params(GObject *object, ConfigFile *cfgfile, gchar * section)
 					tmpi = translate_string(tmpbuf);
 					g_free(tmpbuf);
 				}
-				g_object_set_data(object,name,GINT_TO_POINTER(tmpi));
+				OBJ_SET(object,name,GINT_TO_POINTER(tmpi));
 				g_free(name);
 				break;
 			default:

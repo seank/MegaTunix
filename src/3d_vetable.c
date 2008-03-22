@@ -49,6 +49,7 @@
 
 static GLuint font_list_base;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 #define DEFAULT_WIDTH  640
@@ -88,7 +89,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			dbg_func(g_strdup(__FILE__": create_ve3d_view()\n\t GtkGLEXT Library initialization failed, no GL for you :(\n"));
 		return FALSE;
 	}
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"table_num");
+	tmpbuf = (gchar *)OBJ_GET(widget,"table_num");
 	table_num = (gint)g_ascii_strtod(tmpbuf,NULL);
 
 	if (winstat == NULL)
@@ -184,13 +185,13 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	gtk_widget_set_size_request(window,DEFAULT_WIDTH,DEFAULT_HEIGHT);
 	gtk_container_set_border_width(GTK_CONTAINER(window),0);
 	ve_view->window = window;
-	g_object_set_data(G_OBJECT(window),"ve_view",(gpointer)ve_view);
+	OBJ_SET(window,"ve_view",(gpointer)ve_view);
 
 	/* Bind pointer to veview to an object for retrieval elsewhere */
 	object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
 	g_object_ref(object);
 	gtk_object_sink(GTK_OBJECT(object));
-	g_object_set_data(G_OBJECT(object),"ve_view",(gpointer)ve_view);
+	OBJ_SET(object,"ve_view",(gpointer)ve_view);
 
 	tmpbuf = g_strdup_printf("ve_view_%i",table_num);
 	register_widget(tmpbuf,(gpointer)object);
@@ -218,7 +219,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	drawing_area = gtk_drawing_area_new();
 
-	g_object_set_data(G_OBJECT(drawing_area),"ve_view",(gpointer)ve_view);
+	OBJ_SET(drawing_area,"ve_view",(gpointer)ve_view);
 	ve_view->drawing_area = drawing_area;
 	gtk_container_add(GTK_CONTAINER(frame),drawing_area);
 
@@ -260,13 +261,13 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_button_new_with_label("Reset Display");
 	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,FALSE,0);
-	g_object_set_data(G_OBJECT(button),"ve_view",(gpointer)ve_view);
+	OBJ_SET(button,"ve_view",(gpointer)ve_view);
 	g_signal_connect_swapped(G_OBJECT (button), "clicked",
 			G_CALLBACK (reset_3d_view), (gpointer)button);
 
 	button = gtk_button_new_with_label("Get Data from ECU");
 
-	g_object_set_data(G_OBJECT(button),"handler",
+	OBJ_SET(button,"handler",
 			GINT_TO_POINTER(READ_VE_CONST));
 	g_signal_connect(G_OBJECT(button), "clicked",
 			G_CALLBACK(std_button_handler),
@@ -278,7 +279,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_button_new_with_label("Burn to ECU");
 
-	g_object_set_data(G_OBJECT(button),"handler",
+	OBJ_SET(button,"handler",
 			GINT_TO_POINTER(BURN_MS_FLASH));
 	g_signal_connect(G_OBJECT(button), "clicked",
 			G_CALLBACK(std_button_handler),
@@ -292,8 +293,8 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_button_new_with_label("Start Reading RT Vars");
 
-	g_object_set_data(G_OBJECT(button),"handler",
-			GINT_TO_POINTER(START_REALTIME));
+	OBJ_SET(button,"handler",GINT_TO_POINTER(START_REALTIME));
+			
 	g_signal_connect(G_OBJECT (button), "clicked",
 			G_CALLBACK (std_button_handler), 
 			NULL);
@@ -301,8 +302,8 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_button_new_with_label("Stop Reading RT vars");
 
-	g_object_set_data(G_OBJECT(button),"handler",
-			GINT_TO_POINTER(STOP_REALTIME));
+	OBJ_SET(button,"handler",GINT_TO_POINTER(STOP_REALTIME));
+			
 	g_signal_connect(G_OBJECT (button), "clicked",
 			G_CALLBACK (std_button_handler), 
 			NULL);
@@ -380,7 +381,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_check_button_new_with_label("Fixed Scale or Proportional");
 	ve_view->tracking_button = button;
-	g_object_set_data(G_OBJECT(button),"ve_view",ve_view);
+	OBJ_SET(button,"ve_view",ve_view);
 	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,TRUE,0);
 	g_signal_connect(G_OBJECT(button), "toggled",
 			G_CALLBACK(set_scaling_mode),
@@ -388,7 +389,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 
 	button = gtk_check_button_new_with_label("Focus Follows Vertex\n with most Weight");
 	ve_view->tracking_button = button;
-	g_object_set_data(G_OBJECT(button),"ve_view",ve_view);
+	OBJ_SET(button,"ve_view",ve_view);
 	gtk_box_pack_end(GTK_BOX(vbox2),button,FALSE,TRUE,0);
 	g_signal_connect(G_OBJECT(button), "toggled",
 			G_CALLBACK(set_tracking_focus),
@@ -434,13 +435,13 @@ gint free_ve3d_view(GtkWidget *widget)
 	gchar * tmpbuf = NULL;
 
 	ve_view = (Ve_View_3D 
-			*)g_object_get_data(G_OBJECT(widget),"ve_view");
+			*)OBJ_GET(widget,"ve_view");
 	store_list("burners",g_list_remove(
 				get_list("burners"),(gpointer)ve_view->burn_but));
 	g_hash_table_remove(winstat,GINT_TO_POINTER(ve_view->table_num));
 	tmpbuf = g_strdup_printf("ve_view_%i",ve_view->table_num);
 
-	g_object_set_data(g_hash_table_lookup(dynamic_widgets,tmpbuf),"ve_view",NULL);
+	OBJ_SET(g_hash_table_lookup(dynamic_widgets,tmpbuf),"ve_view",NULL);
 	g_free(tmpbuf);
 	deregister_widget(g_strdup_printf("ve_view_%i",ve_view->table_num));
 
@@ -473,7 +474,7 @@ gint free_ve3d_view(GtkWidget *widget)
 void reset_3d_view(GtkWidget * widget)
 {
 	Ve_View_3D *ve_view;
-	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 	ve_view->active_y = 0;
 	ve_view->active_x = 0;
 	ve_view->dt = 0.008;
@@ -532,7 +533,7 @@ gboolean ve3d_configure_event(GtkWidget *widget, GdkEventConfigure *event, gpoin
 	GLfloat w = widget->allocation.width;
 	GLfloat h = widget->allocation.height;
 
-	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_configure_event() 3D View Configure Event\n"));
@@ -566,7 +567,7 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 	GdkGLDrawable *gldrawable = gtk_widget_get_gl_drawable(widget);
 	Ve_View_3D *ve_view = NULL;
 	Cur_Vals *cur_vals = NULL;
-	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_expose_event() 3D View Expose Event\n"));
@@ -625,7 +626,7 @@ rotated/scaled/strafed
 gboolean ve3d_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpointer data)
 {
 	Ve_View_3D *ve_view;
-	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_motion_notify() 3D View Motion Notify\n"));
@@ -669,7 +670,7 @@ order to
 gboolean ve3d_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 	Ve_View_3D *ve_view;
-	ve_view = (Ve_View_3D *)g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_button_press_event()\n"));
 
@@ -1322,8 +1323,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	Ve_View_3D *ve_view = NULL;
 	extern Firmware_Details *firmware;
 	extern gboolean forced_update;
-	ve_view = (Ve_View_3D *)g_object_get_data(
-			G_OBJECT(widget),"ve_view");
+	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n"));
@@ -1573,7 +1573,7 @@ update_now:
 	if (GTK_IS_WIDGET(tmpwidget))
 	{
 		ve_view = (Ve_View_3D 
-				*)g_object_get_data(G_OBJECT(tmpwidget),"ve_view");
+				*)OBJ_GET(tmpwidget,"ve_view");
 		if ((ve_view != NULL) && (ve_view->drawing_area->window != NULL))
 		{
 			gdk_window_invalidate_rect (ve_view->drawing_area->window, &ve_view->drawing_area->allocation, FALSE);
@@ -1954,7 +1954,7 @@ gboolean set_tracking_focus(GtkWidget *widget, gpointer data)
 	extern gboolean forced_update;
 	Ve_View_3D *ve_view = NULL;
 
-	ve_view = g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = OBJ_GET(widget,"ve_view");
 	if (!ve_view)
 		return FALSE;
 	ve_view->tracking_focus = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -1973,7 +1973,7 @@ gboolean set_scaling_mode(GtkWidget *widget, gpointer data)
 	extern gboolean forced_update;
 	Ve_View_3D *ve_view = NULL;
 
-	ve_view = g_object_get_data(G_OBJECT(widget),"ve_view");
+	ve_view = OBJ_GET(widget,"ve_view");
 	if (!ve_view)
 		return FALSE;
 	ve_view->fixed_scale = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));

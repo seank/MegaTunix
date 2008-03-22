@@ -20,6 +20,7 @@
 
 static GHashTable *str_2_enum = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!

@@ -30,6 +30,7 @@
 
 Log_Info *log_info = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 
@@ -190,14 +191,14 @@ read_again:
 			g_object_ref(object);
 			gtk_object_sink(GTK_OBJECT(object));
 			array = g_array_sized_new(FALSE,TRUE,sizeof(gfloat),4096);
-			g_object_set_data(G_OBJECT(object),"data_array",(gpointer)array);
-			g_free(g_object_get_data(G_OBJECT(object),"lview_name"));
-			g_object_set_data(G_OBJECT(object),"lview_name",g_strdup(g_strstrip(fields[i])));
+			OBJ_SET(object,"data_array",(gpointer)array);
+			g_free(OBJ_GET(object,"lview_name"));
+			OBJ_SET(object,"lview_name",g_strdup(g_strstrip(fields[i])));
 			g_array_append_val(log_info->log_list,object);
 		}
 		/* Enable parameter selection button */
 		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"logviewer_select_params_button"), TRUE);
-		g_object_set_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"logviewer_trace_darea")),"log_info",(gpointer)log_info);
+		OBJ_SET(g_hash_table_lookup(dynamic_widgets,"logviewer_trace_darea"),"log_info",(gpointer)log_info);
 
 	}
 	g_free(delimiter);
@@ -231,7 +232,7 @@ void populate_limits(Log_Info *log_info)
 		tmpi = 0;
 		len = 0;
 		object = g_array_index(log_info->log_list,GObject *, i);
-		array = (GArray *)g_object_get_data(object,"data_array");
+		array = (GArray *)OBJ_GET(object,"data_array");
 		len = array->len;
 		for (j=0;j<len;j++)
 		{
@@ -243,9 +244,9 @@ void populate_limits(Log_Info *log_info)
 
 		}
 		tmpi = floor(lower) -1.0;
-		g_object_set_data(object,"lower_limit", GINT_TO_POINTER(tmpi));
+		OBJ_SET(object,"lower_limit", GINT_TO_POINTER(tmpi));
 		tmpi = ceil(upper) + 1.0;
-		g_object_set_data(object,"upper_limit", GINT_TO_POINTER(tmpi));
+		OBJ_SET(object,"upper_limit", GINT_TO_POINTER(tmpi));
 
 	}
 }
@@ -294,7 +295,7 @@ void read_log_data(GIOChannel *iochannel, Log_Info *log_info)
 		for (i=0;i<(log_info->field_count);i++)
 		{
 			object = g_array_index(log_info->log_list,GObject *, i);
-			tmp_array = (GArray *)g_object_get_data(object,"data_array");
+			tmp_array = (GArray *)OBJ_GET(object,"data_array");
 			val = (gfloat)g_ascii_strtod(data[i],NULL);
 			g_array_append_val(tmp_array,val);
 
@@ -302,9 +303,9 @@ void read_log_data(GIOChannel *iochannel, Log_Info *log_info)
 			if (x == 0) /* only check fir first line */
 			{
 				if (g_strrstr(data[i], ".") == NULL)
-					g_object_set_data(object,"is_float", GINT_TO_POINTER(FALSE));
+					OBJ_SET(object,"is_float", GINT_TO_POINTER(FALSE));
 				else
-					g_object_set_data(object,"is_float", GINT_TO_POINTER(TRUE));
+					OBJ_SET(object,"is_float", GINT_TO_POINTER(TRUE));
 			}
 		}
 		g_strfreev(data);
@@ -332,7 +333,7 @@ void free_log_info()
 		object = g_array_index(log_info->log_list,GObject *,i);
 		if (!object)
 			continue;
-		array = (GArray *)g_object_get_data(object,"data_array");
+		array = (GArray *)OBJ_GET(object,"data_array");
 		if (array)
 			g_array_free(array,TRUE);
 	}
@@ -351,11 +352,10 @@ void free_log_info()
 EXPORT gboolean logviewer_scroll_speed_change(GtkWidget *widget, gpointer data)
 {
 	gfloat tmpf = 0.0;
-	extern GObject *global_data;
 	extern gint playback_id;
 
 	tmpf = gtk_range_get_value(GTK_RANGE(widget));
-	g_object_set_data(global_data,"lv_scroll_delay", GINT_TO_POINTER((gint)tmpf));
+	OBJ_SET(global_data,"lv_scroll_delay", GINT_TO_POINTER((gint)tmpf));
 	if (playback_id > 0)
 	{
 		stop_tickler(LV_PLAYBACK_TICKLER);

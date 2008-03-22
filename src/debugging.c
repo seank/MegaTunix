@@ -24,6 +24,7 @@
 
 
 gint dbg_lvl = 0;
+extern GObject *global_data;
 
 GIOChannel * dbg_channel = NULL;
 GStaticMutex dbg_mutex = G_STATIC_MUTEX_INIT;
@@ -149,10 +150,10 @@ void populate_debugging(GtkWidget *parent)
 		shift = dbglevels[i].dshift;
 
 		button = gtk_check_button_new_with_label(dbglevels[i].name);
-		g_object_set_data(G_OBJECT(button),"handler",GINT_TO_POINTER(dbglevels[i].handler));
-		g_object_set_data(G_OBJECT(button),"bitshift",GINT_TO_POINTER(shift));
-		g_object_set_data(G_OBJECT(button),"bitmask",GINT_TO_POINTER(mask));
-		g_object_set_data(G_OBJECT(button),"bitval",GINT_TO_POINTER(1));
+		OBJ_SET(button,"handler",GINT_TO_POINTER(dbglevels[i].handler));
+		OBJ_SET(button,"bitshift",GINT_TO_POINTER(shift));
+		OBJ_SET(button,"bitmask",GINT_TO_POINTER(mask));
+		OBJ_SET(button,"bitval",GINT_TO_POINTER(1));
 		g_signal_connect(G_OBJECT(button),"toggled",
 				G_CALLBACK(bitmask_button_handler),
 				NULL);

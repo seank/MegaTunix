@@ -21,6 +21,7 @@
 
 static GArray * raw_memory_data;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 
 /*!

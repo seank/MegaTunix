@@ -260,10 +260,10 @@ EXPORT gboolean create_polygon_event(GtkWidget * widget, gpointer wdata)
 	glade_xml_signal_autoconnect(xml);
 	dialog = glade_xml_get_widget(xml,"polygon_dialog");
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(glade_xml_get_widget(xml,"polygon_colorbutton")),&white);
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"poly_combobox")),"container",glade_xml_get_widget(xml,"polygon_details_ebox"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"points_table",glade_xml_get_widget(xml,"generic_points_table"));
+	OBJ_SET((glade_xml_get_widget(xml,"poly_combobox")),"container",glade_xml_get_widget(xml,"polygon_details_ebox"));
+	OBJ_SET((glade_xml_get_widget(xml,"generic_num_points_spin")),"points_table",glade_xml_get_widget(xml,"generic_points_table"));
 	hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,NULL);
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash",hash);
+	OBJ_SET((glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash",hash);
 	g_free(filename);
 	if (!GTK_IS_WIDGET(dialog))
 	{
@@ -340,7 +340,7 @@ EXPORT gboolean create_polygon_event(GtkWidget * widget, gpointer wdata)
 				data = g_new0(MtxGenPoly, 1);
 				poly->data = data;
 				((MtxGenPoly *)data)->num_points = (gint)gtk_spin_button_get_value(GTK_SPIN_BUTTON(glade_xml_get_widget(xml,"generic_num_points_spin")));
-				hash = (GHashTable *)g_object_get_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash");
+				hash = (GHashTable *)OBJ_GET((glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash");
 				if (((MtxGenPoly *)data)->num_points > 0)
 				{
 					points = g_new0(MtxPoint, ((MtxGenPoly *)data)->num_points);
@@ -477,18 +477,18 @@ EXPORT gboolean create_tick_group_event(GtkWidget * widget, gpointer data)
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(glade_xml_get_widget(xml,"tg_text_colorbutton")),&white);
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(glade_xml_get_widget(xml,"tg_maj_tick_colorbutton")),&white);
 	gtk_color_button_set_color(GTK_COLOR_BUTTON(glade_xml_get_widget(xml,"tg_min_tick_colorbutton")),&white);
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_lowpoint_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"high_angle",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"handler", GINT_TO_POINTER(ADJ_LOW_UNIT_PARTNER));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"low_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"handler", GINT_TO_POINTER(ADJ_HIGH_UNIT_PARTNER));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_lowpoint_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_lowpoint_spin")),"handler", GINT_TO_POINTER(ADJ_START_ANGLE_PARTNER));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"highpartner",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"start_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-	g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"handler", GINT_TO_POINTER(ADJ_SWEEP_ANGLE_PARTNER));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_lowpoint_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"high_angle",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"handler", GINT_TO_POINTER(ADJ_LOW_UNIT_PARTNER));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"low_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"handler", GINT_TO_POINTER(ADJ_HIGH_UNIT_PARTNER));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_lowpoint_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_lowpoint_spin")),"handler", GINT_TO_POINTER(ADJ_START_ANGLE_PARTNER));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"highpartner",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"start_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+	OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"handler", GINT_TO_POINTER(ADJ_SWEEP_ANGLE_PARTNER));
 	if (MTX_IS_GAUGE_FACE(g))
 	{
 		mtx_gauge_face_get_attribute(g,START_ANGLE,&tmp1);
@@ -552,12 +552,12 @@ EXPORT gboolean generic_spin_button_handler(GtkWidget *widget, gpointer data)
 	gint handler = 0;
 
 	tmpf = (gfloat)gtk_spin_button_get_value((GtkSpinButton *)widget);
-	if (!g_object_get_data(G_OBJECT(widget),"handler"))
+	if (!OBJ_GET((widget),"handler"))
 	{
 		printf("control %s has no handler\n",(gchar *)glade_get_widget_name(widget));
 		return FALSE;
 	}
-	handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
+	handler = (gint)OBJ_GET((widget),"handler");
 
 	if (GTK_IS_WIDGET(gauge))
 		g = MTX_GAUGE_FACE(gauge);
@@ -585,7 +585,7 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 	GtkWidget *lowpartner = NULL;
 	GtkWidget *highpartner = NULL;
 	MtxGaugeFace *g = NULL;
-	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
+	gint handler = (gint)OBJ_GET((widget),"handler");
 	tmpf = (gfloat)gtk_spin_button_get_value((GtkSpinButton *)widget);
 	tmpi = (gint)(tmpf+0.00001);
 
@@ -600,8 +600,8 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 	switch (handler)
 	{
 		case ADJ_LOW_UNIT_PARTNER:
-			lowpartner = g_object_get_data(G_OBJECT(widget),"lowpartner");
-			highpartner = g_object_get_data(G_OBJECT(widget),"highpartner");
+			lowpartner = OBJ_GET((widget),"lowpartner");
+			highpartner = OBJ_GET((widget),"highpartner");
 			if ((!GTK_IS_WIDGET(lowpartner)) || 
 					(!GTK_IS_WIDGET(highpartner)))
 				break;
@@ -612,14 +612,14 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 			mtx_gauge_face_get_attribute(g,UBOUND,&ubound);
 			newval = ((ubound-lbound)*percent)+lbound;
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(lowpartner),newval);
-			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(widget),"high_angle")));
+			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(OBJ_GET((widget),"high_angle")));
 			percent = tmp3/sweep+((tmpf-angle)/sweep);
 			newval = ((ubound-lbound)*percent)+lbound;
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(highpartner),newval);
 			break;
 		case ADJ_HIGH_UNIT_PARTNER:
-			highpartner = g_object_get_data(G_OBJECT(widget),"highpartner");
-			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(widget),"low_angle")));
+			highpartner = OBJ_GET((widget),"highpartner");
+			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(OBJ_GET((widget),"low_angle")));
 			if (!GTK_IS_WIDGET(highpartner))
 				break;
 			mtx_gauge_face_get_attribute(g,START_ANGLE,&angle);
@@ -631,7 +631,7 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(highpartner),newval);
 			break;
 		case ADJ_START_ANGLE_PARTNER:
-			lowpartner = g_object_get_data(G_OBJECT(widget),"lowpartner");
+			lowpartner = OBJ_GET((widget),"lowpartner");
 			if (!GTK_IS_WIDGET(lowpartner))
 				break;
 			mtx_gauge_face_get_attribute(g,LBOUND,&lbound);
@@ -643,10 +643,10 @@ EXPORT gboolean tg_spin_button_handler(GtkWidget *widget, gpointer data)
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(lowpartner),newval);
 			break;
 		case ADJ_SWEEP_ANGLE_PARTNER:
-			highpartner = g_object_get_data(G_OBJECT(widget),"highpartner");
+			highpartner = OBJ_GET((widget),"highpartner");
 			if (!GTK_IS_WIDGET(highpartner))
 				break;
-			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(g_object_get_data(G_OBJECT(widget),"start_angle")));
+			tmp3 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(OBJ_GET((widget),"start_angle")));
 			mtx_gauge_face_get_attribute(g,LBOUND,&lbound);
 			mtx_gauge_face_get_attribute(g,UBOUND,&ubound);
 			percent = (tmpf-lbound)/(ubound-lbound);
@@ -717,7 +717,7 @@ EXPORT gboolean change_font(GtkWidget *widget, gpointer data)
 EXPORT gboolean checkbutton_handler(GtkWidget *widget, gpointer data)
 {
 	gboolean state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
+	gint handler = (gint)OBJ_GET((widget),"handler");
 	MtxGaugeFace *g = NULL;
 
 	if (GTK_IS_WIDGET(gauge))
@@ -736,7 +736,7 @@ EXPORT gboolean checkbutton_handler(GtkWidget *widget, gpointer data)
 EXPORT gboolean color_button_color_set(GtkWidget *widget, gpointer data)
 {
 	GdkColor color;
-	gint handler = (gint)g_object_get_data(G_OBJECT(widget),"handler");
+	gint handler = (gint)OBJ_GET((widget),"handler");
 
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
@@ -800,37 +800,37 @@ void update_onscreen_c_ranges()
 	{
 		range = g_array_index(array,MtxColorRange *, i);
 		button = gtk_check_button_new();
-		g_object_set_data(G_OBJECT(button),"range_index",GINT_TO_POINTER(i));
+		OBJ_SET((button),"range_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_c_range),NULL);
 		gtk_table_attach(GTK_TABLE(table),button,0,1,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 		mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), LBOUND, &low);
 		mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), UBOUND, &high);
 		dummy = gtk_spin_button_new_with_range(low,high,(high-low)/100);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->lowpoint);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_c_range_data),GINT_TO_POINTER(CR_LOWPOINT));
 
 		gtk_table_attach(GTK_TABLE(table),dummy,1,2,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_spin_button_new_with_range(low,high,(high-low)/100);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->highpoint);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_c_range_data),GINT_TO_POINTER(CR_HIGHPOINT));
 		gtk_table_attach(GTK_TABLE(table),dummy,2,3,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 		dummy = gtk_spin_button_new_with_range(0,1,0.001);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->inset);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_c_range_data),GINT_TO_POINTER(CR_INSET));
 		gtk_table_attach(GTK_TABLE(table),dummy,3,4,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_spin_button_new_with_range(0,1,0.001);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->lwidth);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_c_range_data),GINT_TO_POINTER(CR_LWIDTH));
 		gtk_table_attach(GTK_TABLE(table),dummy,4,5,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_color_button_new_with_color(&range->color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_c_range_data),GINT_TO_POINTER(CR_COLOR));
 
 		gtk_table_attach(GTK_TABLE(table),dummy,5,6,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
@@ -889,37 +889,37 @@ void update_onscreen_a_ranges()
 	{
 		range = g_array_index(array,MtxAlertRange *, i);
 		button = gtk_check_button_new();
-		g_object_set_data(G_OBJECT(button),"range_index",GINT_TO_POINTER(i));
+		OBJ_SET((button),"range_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_a_range),NULL);
 		gtk_table_attach(GTK_TABLE(table),button,0,1,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 		mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), LBOUND, &low);
 		mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), UBOUND, &high);
 		dummy = gtk_spin_button_new_with_range(low,high,(high-low)/100);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->lowpoint);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_a_range_data),GINT_TO_POINTER(CR_LOWPOINT));
 
 		gtk_table_attach(GTK_TABLE(table),dummy,1,2,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_spin_button_new_with_range(low,high,(high-low)/100);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->highpoint);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_a_range_data),GINT_TO_POINTER(CR_HIGHPOINT));
 		gtk_table_attach(GTK_TABLE(table),dummy,2,3,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 		dummy = gtk_spin_button_new_with_range(0,1,0.001);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->inset);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_a_range_data),GINT_TO_POINTER(CR_INSET));
 		gtk_table_attach(GTK_TABLE(table),dummy,3,4,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_spin_button_new_with_range(0,1,0.001);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),range->lwidth);
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_a_range_data),GINT_TO_POINTER(CR_LWIDTH));
 		gtk_table_attach(GTK_TABLE(table),dummy,4,5,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
 
 		dummy = gtk_color_button_new_with_color(&range->color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_a_range_data),GINT_TO_POINTER(CR_COLOR));
 
 		gtk_table_attach(GTK_TABLE(table),dummy,5,6,y,y+1,GTK_SHRINK,GTK_SHRINK,0,0);
@@ -979,7 +979,7 @@ gboolean remove_c_range(GtkWidget * widget, gpointer data)
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	index = (gint)g_object_get_data(G_OBJECT(widget),"range_index");
+	index = (gint)OBJ_GET((widget),"range_index");
 	mtx_gauge_face_remove_color_range(MTX_GAUGE_FACE(gauge),index);
 	update_onscreen_c_ranges();
 
@@ -993,7 +993,7 @@ gboolean remove_a_range(GtkWidget * widget, gpointer data)
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	index = (gint)g_object_get_data(G_OBJECT(widget),"range_index");
+	index = (gint)OBJ_GET((widget),"range_index");
 	mtx_gauge_face_remove_alert_range(MTX_GAUGE_FACE(gauge),index);
 	update_onscreen_a_ranges();
 
@@ -1115,7 +1115,7 @@ void update_onscreen_tblocks()
 
 	table = gtk_table_new(2,1,FALSE);
 	gtk_table_attach_defaults(GTK_TABLE(toptable),table,0,1,1,2);
-	g_object_set_data(G_OBJECT(toptable),"layout_table",table);
+	OBJ_SET((toptable),"layout_table",table);
 	/* Repopulate the table with the current tblocks... */
 	y=1;
 	for (i=0;i<array->len; i++)
@@ -1127,7 +1127,7 @@ void update_onscreen_tblocks()
 		gtk_table_attach(GTK_TABLE(table),subtable,0,1,y,y+1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
 
 		button = gtk_check_button_new();
-		g_object_set_data(G_OBJECT(button),"tblock_index",GINT_TO_POINTER(i));
+		OBJ_SET((button),"tblock_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_tblock),NULL);
 		gtk_table_attach(GTK_TABLE(subtable),button,0,1,0,3,GTK_SHRINK,GTK_FILL,0,0);
 		label = gtk_label_new("Text");
@@ -1135,24 +1135,24 @@ void update_onscreen_tblocks()
 
 		dummy = gtk_entry_new();
 		gtk_entry_set_text(GTK_ENTRY(dummy),tblock->text);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"changed", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_TEXT));
 		gtk_table_attach(GTK_TABLE(subtable),dummy,2,3,0,1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
 
 		dummy = gtk_color_button_new_with_color(&tblock->color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_COLOR));
 		gtk_table_attach(GTK_TABLE(subtable),dummy,3,4,0,1,GTK_FILL,GTK_SHRINK,0,0);
 		tmpbuf = g_strdup_printf("%s 12",tblock->font);
 		dummy = gtk_font_button_new_with_font(tmpbuf);
 		g_free(tmpbuf);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"font_set", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_FONT));
 		gtk_font_button_set_show_size(GTK_FONT_BUTTON(dummy),FALSE);
 
 		gtk_table_attach(GTK_TABLE(subtable),dummy,1,3,1,2,GTK_FILL,GTK_SHRINK,0,0);
 		spin = gtk_spin_button_new_with_range(0,1,0.001);
-		g_object_set_data(G_OBJECT(spin),"index",GINT_TO_POINTER(i));
+		OBJ_SET((spin),"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin),tblock->font_scale);
 		g_signal_connect(G_OBJECT(spin),"value_changed", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_FONT_SCALE));
 		gtk_table_attach(GTK_TABLE(subtable),spin,3,4,1,2,GTK_FILL,GTK_SHRINK,0,0);
@@ -1165,13 +1165,13 @@ void update_onscreen_tblocks()
 		label = gtk_label_new("Y Position");
 		gtk_table_attach_defaults(GTK_TABLE(subtable2),label,2,3,0,1);
 		spin = gtk_spin_button_new_with_range(-1,1,0.001);
-		g_object_set_data(G_OBJECT(spin),"index",GINT_TO_POINTER(i));
+		OBJ_SET((spin),"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin),tblock->x_pos);
 		g_signal_connect(G_OBJECT(spin),"value_changed", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_X_POS));
 		gtk_table_attach(GTK_TABLE(subtable2),spin,1,2,0,1,GTK_FILL,GTK_FILL,0,0);
 
 		spin = gtk_spin_button_new_with_range(-1,1,0.001);
-		g_object_set_data(G_OBJECT(spin),"index",GINT_TO_POINTER(i));
+		OBJ_SET((spin),"index",GINT_TO_POINTER(i));
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(spin),tblock->y_pos);
 		g_signal_connect(G_OBJECT(spin),"value_changed", G_CALLBACK(alter_tblock_data),GINT_TO_POINTER(TB_Y_POS));
 		gtk_table_attach(GTK_TABLE(subtable2),spin,3,4,0,1,GTK_FILL,GTK_FILL,0,0);
@@ -1227,7 +1227,7 @@ void update_onscreen_tgroups()
 	table = gtk_table_new(2,1,FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(table),5);
 	gtk_table_attach_defaults(GTK_TABLE(toptable),table,0,1,1,2);
-	g_object_set_data(G_OBJECT(toptable),"layout_table",table);
+	OBJ_SET((toptable),"layout_table",table);
 	/* Repopulate the table with the current tgroups... */
 	for (i=0;i<array->len; i++)
 	{
@@ -1238,25 +1238,25 @@ void update_onscreen_tgroups()
 		gtk_container_add(GTK_CONTAINER(frame),subtable);
 
 		button = gtk_check_button_new();
-		g_object_set_data(G_OBJECT(button),"tgroup_index",GINT_TO_POINTER(i));
+		OBJ_SET((button),"tgroup_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_tgroup),NULL);
 		gtk_table_attach(GTK_TABLE(subtable),button,0,1,0,1,GTK_SHRINK,GTK_FILL,0,0);
 		/* Load glade template */
 		xml = glade_xml_new(filename, "tgroup_main_table", NULL);
 		tg_main_table = glade_xml_get_widget(xml,"tgroup_main_table");
 		gtk_table_attach(GTK_TABLE(subtable),tg_main_table,1,2,0,1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_lowpoint_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"high_angle",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_start_angle_spin")),"handler", GINT_TO_POINTER(ADJ_LOW_UNIT_PARTNER));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"low_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"handler", GINT_TO_POINTER(ADJ_HIGH_UNIT_PARTNER));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_lowpoint_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_lowpoint_spin")),"handler", GINT_TO_POINTER(ADJ_START_ANGLE_PARTNER));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"highpartner",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"start_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"tg_highpoint_spin")),"handler", GINT_TO_POINTER(ADJ_SWEEP_ANGLE_PARTNER));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_lowpoint_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"high_angle",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_start_angle_spin")),"handler", GINT_TO_POINTER(ADJ_LOW_UNIT_PARTNER));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"highpartner",glade_xml_get_widget(xml,"tg_highpoint_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"low_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_sweep_angle_spin")),"handler", GINT_TO_POINTER(ADJ_HIGH_UNIT_PARTNER));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_lowpoint_spin")),"lowpartner",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_lowpoint_spin")),"handler", GINT_TO_POINTER(ADJ_START_ANGLE_PARTNER));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"highpartner",glade_xml_get_widget(xml,"tg_sweep_angle_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"start_angle",glade_xml_get_widget(xml,"tg_start_angle_spin"));
+		OBJ_SET((glade_xml_get_widget(xml,"tg_highpoint_spin")),"handler", GINT_TO_POINTER(ADJ_SWEEP_ANGLE_PARTNER));
 		glade_xml_signal_autoconnect(xml);
 
 		/* fontbutton */
@@ -1264,103 +1264,103 @@ void update_onscreen_tgroups()
 		tmpbuf = g_strdup_printf("%s 12",tgroup->font);
 		gtk_font_button_set_font_name(GTK_FONT_BUTTON(dummy),tmpbuf);
 		g_free(tmpbuf);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"font_set", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_FONT));
 
 		/* Font Scale*/
 		dummy = glade_xml_get_widget(xml,"tg_font_scale_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->font_scale);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_FONT_SCALE));
 
 		/* Text entry */
 		dummy = glade_xml_get_widget(xml,"tg_tick_textentry");
 		gtk_entry_set_text(GTK_ENTRY(dummy),tgroup->text);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_TEXT));
 
 		/* Text Color*/
 		dummy = glade_xml_get_widget(xml,"tg_text_colorbutton");
 		gtk_color_button_set_color(GTK_COLOR_BUTTON(dummy),&tgroup->text_color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_TEXT_COLOR));
 
 		/* Text Inset*/
 		dummy = glade_xml_get_widget(xml,"tg_text_inset_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->text_inset);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_TEXT_INSET));
 
 		/* Major Tick Color*/
 		dummy = glade_xml_get_widget(xml,"tg_maj_tick_colorbutton");
 		gtk_color_button_set_color(GTK_COLOR_BUTTON(dummy),&tgroup->maj_tick_color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MAJ_TICK_COLOR));
 
 		/* Minor Tick Color*/
 		dummy = glade_xml_get_widget(xml,"tg_min_tick_colorbutton");
 		gtk_color_button_set_color(GTK_COLOR_BUTTON(dummy),&tgroup->min_tick_color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MIN_TICK_COLOR));
 
 		/* Major Tick Inset*/
 		dummy = glade_xml_get_widget(xml,"tg_maj_tick_inset_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->maj_tick_inset);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MAJ_TICK_INSET));
 
 		/* Minor Tick Inset*/
 		dummy = glade_xml_get_widget(xml,"tg_min_tick_inset_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->min_tick_inset);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MIN_TICK_INSET));
 
 		/* Major Tick Width*/
 		dummy = glade_xml_get_widget(xml,"tg_maj_tick_width_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->maj_tick_width);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MAJ_TICK_WIDTH));
 
 		/* Minor Tick Width*/
 		dummy = glade_xml_get_widget(xml,"tg_min_tick_width_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->min_tick_width);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MIN_TICK_WIDTH));
 
 		/* Major Tick Length*/
 		dummy = glade_xml_get_widget(xml,"tg_maj_tick_length_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->maj_tick_length);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MAJ_TICK_LENGTH));
 
 		/* Minor Tick Length*/
 		dummy = glade_xml_get_widget(xml,"tg_min_tick_length_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->min_tick_length);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_MIN_TICK_LENGTH));
 
 		/* Start Angle*/
 		dummy = glade_xml_get_widget(xml,"tg_start_angle_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->start_angle);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_START_ANGLE));
 
 		/* Stop Angle*/
 		dummy = glade_xml_get_widget(xml,"tg_sweep_angle_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->sweep_angle);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_SWEEP_ANGLE));
 
 		/* Num Major Ticks*/
 		dummy = glade_xml_get_widget(xml,"tg_num_maj_ticks_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->num_maj_ticks);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_NUM_MAJ_TICKS));
 
 		/* Num Minor Ticks*/
 		dummy = glade_xml_get_widget(xml,"tg_num_min_ticks_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),tgroup->num_min_ticks);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_tgroup_data),GINT_TO_POINTER(TG_NUM_MIN_TICKS));
 
 	}
@@ -1415,7 +1415,7 @@ void update_onscreen_polygons()
 	table = gtk_table_new(2,1,FALSE);
 	gtk_table_set_row_spacings(GTK_TABLE(table),5);
 	gtk_table_attach_defaults(GTK_TABLE(toptable),table,0,1,1,2);
-	g_object_set_data(G_OBJECT(toptable),"layout_table",table);
+	OBJ_SET((toptable),"layout_table",table);
 	gtk_widget_show_all(toptable);
 	gdk_flush();
 	/* Repopulate the table with the current polygons... */
@@ -1430,7 +1430,7 @@ void update_onscreen_polygons()
 		gtk_widget_show(subtable);
 
 		button = gtk_check_button_new();
-		g_object_set_data(G_OBJECT(button),"polygon_index",GINT_TO_POINTER(i));
+		OBJ_SET((button),"polygon_index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(button),"toggled", G_CALLBACK(remove_polygon),NULL);
 		gtk_table_attach(GTK_TABLE(subtable),button,0,1,0,1,GTK_SHRINK,GTK_FILL,0,0);
 		gtk_widget_show(button);
@@ -1440,11 +1440,11 @@ void update_onscreen_polygons()
 		gtk_table_attach(GTK_TABLE(subtable),notebook,1,2,0,1,GTK_EXPAND|GTK_FILL,GTK_SHRINK,0,0);
 		gtk_widget_show(notebook);
 		gdk_flush();
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"poly_combobox")),"container",glade_xml_get_widget(xml,"polygon_details_ebox"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"points_table",glade_xml_get_widget(xml,"generic_points_table"));
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"live",GINT_TO_POINTER(TRUE));
+		OBJ_SET((glade_xml_get_widget(xml,"poly_combobox")),"container",glade_xml_get_widget(xml,"polygon_details_ebox"));
+		OBJ_SET((glade_xml_get_widget(xml,"generic_num_points_spin")),"points_table",glade_xml_get_widget(xml,"generic_points_table"));
+		OBJ_SET((glade_xml_get_widget(xml,"generic_num_points_spin")),"live",GINT_TO_POINTER(TRUE));
 		hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,NULL);
-		g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash",hash);
+		OBJ_SET((glade_xml_get_widget(xml,"generic_num_points_spin")),"points_hash",hash);
 		dummy = glade_xml_get_widget(xml,"arc_polygon_table");
 		gtk_widget_hide_all(dummy);
 		dummy = glade_xml_get_widget(xml,"circle_polygon_table");
@@ -1458,29 +1458,29 @@ void update_onscreen_polygons()
 		/* Colorbutton*/
 		dummy = glade_xml_get_widget(xml,"polygon_colorbutton");
 		gtk_color_button_set_color(GTK_COLOR_BUTTON(dummy),&poly->color);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"color_set", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_COLOR));
 
 		/* Filled Checkbutton*/
 		dummy = glade_xml_get_widget(xml,"poly_filled_cbutton");
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(dummy),poly->filled);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"toggled", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_FILLED));
 
 		/* Line Style Combobox */
 		dummy = glade_xml_get_widget(xml,"line_style_combobox");
 		gtk_combo_box_set_active(GTK_COMBO_BOX(dummy),poly->line_style);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_LINESTYLE));
 		/* Joint Style Combobox */
 		dummy = glade_xml_get_widget(xml,"join_style_combobox");
 		gtk_combo_box_set_active(GTK_COMBO_BOX(dummy),poly->join_style);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_JOINSTYLE));
 		/* Line Width */
 		dummy = glade_xml_get_widget(xml,"line_width_spin");
 		gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),poly->line_width);
-		g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+		OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 		g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_LINEWIDTH));
 
 		if (poly->type == MTX_CIRCLE)
@@ -1497,19 +1497,19 @@ void update_onscreen_polygons()
 			/* X Center */
 			dummy = glade_xml_get_widget(xml,"circle_x_center_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxCircle *)poly->data)->x);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_X));
 
 			/* Y Center */
 			dummy = glade_xml_get_widget(xml,"circle_y_center_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxCircle *)poly->data)->y);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_Y));
 
 			/* Radius */
 			dummy = glade_xml_get_widget(xml,"circle_radius_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxCircle *)poly->data)->radius);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_RADIUS));
 		}
 		if (poly->type == MTX_RECTANGLE)
@@ -1527,25 +1527,25 @@ void update_onscreen_polygons()
 			/* Upper left X */
 			dummy = glade_xml_get_widget(xml,"rect_x_left_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxRectangle *)poly->data)->x);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_X));
 
 			/* Upper Left Y */
 			dummy = glade_xml_get_widget(xml,"rect_y_left_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxRectangle *)poly->data)->y);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_Y));
 
 			/* Width */
 			dummy = glade_xml_get_widget(xml,"rect_width_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxRectangle *)poly->data)->width);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_WIDTH));
 
 			/* Height */
 			dummy = glade_xml_get_widget(xml,"rect_height_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxRectangle *)poly->data)->height);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_HEIGHT));
 		}
 
@@ -1564,37 +1564,37 @@ void update_onscreen_polygons()
 			/* Upper left X */
 			dummy = glade_xml_get_widget(xml,"arc_x_left_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->x);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_X));
 
 			/* Upper Left Y */
 			dummy = glade_xml_get_widget(xml,"arc_y_left_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->y);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_Y));
 
 			/* Width */
 			dummy = glade_xml_get_widget(xml,"arc_width_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->width);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_WIDTH));
 
 			/* Height */
 			dummy = glade_xml_get_widget(xml,"arc_height_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->height);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_HEIGHT));
 
 			/* Start Angle */
 			dummy = glade_xml_get_widget(xml,"arc_start_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->start_angle);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_START_ANGLE));
 
 			/* Sweep Angle */
 			dummy = glade_xml_get_widget(xml,"arc_sweep_spin");
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxArc *)poly->data)->sweep_angle);
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_SWEEP_ANGLE));
 		}
 		if (poly->type == MTX_GENPOLY)
@@ -1613,7 +1613,7 @@ void update_onscreen_polygons()
 
 			/* Number of Generic Polygon vertexes */
 			dummy = glade_xml_get_widget(xml,"generic_num_points_spin");
-			g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
+			OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
 			gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxGenPoly *)poly->data)->num_points);
 			g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_NUM_POINTS));
 			gdk_flush();
@@ -1626,8 +1626,8 @@ void update_onscreen_polygons()
 				if (GTK_IS_SPIN_BUTTON(dummy))
 				{
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxGenPoly *)poly->data)->points[j].x);
-					g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
-					g_object_set_data(G_OBJECT(dummy),"num_points_spin",glade_xml_get_widget(xml,"generic_num_points_spin"));
+					OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
+					OBJ_SET(dummy,"num_points_spin",glade_xml_get_widget(xml,"generic_num_points_spin"));
 					g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_POINTS));
 				}
 				else
@@ -1638,8 +1638,8 @@ void update_onscreen_polygons()
 				if (GTK_IS_SPIN_BUTTON(dummy))
 				{
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(dummy),((MtxGenPoly *)poly->data)->points[j].y);
-					g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(i));
-					g_object_set_data(G_OBJECT(dummy),"num_points_spin",glade_xml_get_widget(xml,"generic_num_points_spin"));
+					OBJ_SET(dummy,"index",GINT_TO_POINTER(i));
+					OBJ_SET(dummy,"num_points_spin",glade_xml_get_widget(xml,"generic_num_points_spin"));
 					g_signal_connect(G_OBJECT(dummy),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_POINTS));
 				}
 				else
@@ -1669,7 +1669,7 @@ void reset_onscreen_tblocks()
 		return;
 	}
 
-	widget = g_object_get_data(G_OBJECT(toptable),"layout_table");
+	widget = OBJ_GET((toptable),"layout_table");
 	if (GTK_IS_WIDGET(widget))
 		gtk_widget_destroy(widget);
 
@@ -1692,7 +1692,7 @@ void reset_onscreen_tgroups()
 		return;
 	}
 
-	widget = g_object_get_data(G_OBJECT(toptable),"layout_table");
+	widget = OBJ_GET((toptable),"layout_table");
 	if (GTK_IS_WIDGET(widget))
 		gtk_widget_destroy(widget);
 
@@ -1715,7 +1715,7 @@ void reset_onscreen_polygons()
 		return;
 	}
 
-	widget = g_object_get_data(G_OBJECT(toptable),"layout_table");
+	widget = OBJ_GET((toptable),"layout_table");
 	if (GTK_IS_WIDGET(widget))
 		gtk_widget_destroy(widget);
 
@@ -1725,7 +1725,7 @@ void reset_onscreen_polygons()
 
 gboolean alter_tblock_data(GtkWidget *widget, gpointer data)
 {
-	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	gint index = (gint)OBJ_GET((widget),"index");
 	gfloat value = 0.0;
 	gchar * tmpbuf = NULL;
 	GdkColor color;
@@ -1765,7 +1765,7 @@ gboolean alter_tblock_data(GtkWidget *widget, gpointer data)
 
 gboolean alter_tgroup_data(GtkWidget *widget, gpointer data)
 {
-	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	gint index = (gint)OBJ_GET((widget),"index");
 	gfloat value = 0.0;
 	gchar * tmpbuf = NULL;
 	GdkColor color;
@@ -1817,7 +1817,7 @@ gboolean alter_tgroup_data(GtkWidget *widget, gpointer data)
 
 gboolean alter_polygon_data(GtkWidget *widget, gpointer data)
 {
-	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	gint index = (gint)OBJ_GET((widget),"index");
 	gfloat value = 0.0;
 	GHashTable *hash = NULL;
 	GtkWidget *tmpwidget = NULL;
@@ -1860,9 +1860,9 @@ gboolean alter_polygon_data(GtkWidget *widget, gpointer data)
 			mtx_gauge_face_alter_polygon(MTX_GAUGE_FACE(gauge),index,field,(void *)&color);
 			break;
 		case POLY_POINTS:
-			tmpwidget = g_object_get_data(G_OBJECT(widget),"num_points_spin");
+			tmpwidget = OBJ_GET((widget),"num_points_spin");
 			num_points = (gint)gtk_spin_button_get_value(GTK_SPIN_BUTTON(tmpwidget));
-			hash = (GHashTable *)g_object_get_data(G_OBJECT(tmpwidget),"points_hash");
+			hash = (GHashTable *)OBJ_GET((tmpwidget),"points_hash");
 			points = g_new0(MtxPoint, num_points);
 			for (i=0;i<num_points;i++)
 			{
@@ -1894,7 +1894,7 @@ gboolean alter_polygon_data(GtkWidget *widget, gpointer data)
 
 gboolean alter_c_range_data(GtkWidget *widget, gpointer data)
 {
-	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	gint index = (gint)OBJ_GET((widget),"index");
 	gfloat value = 0.0;
 	GdkColor color;
 	CrField field = (CrField)data;
@@ -1924,7 +1924,7 @@ gboolean alter_c_range_data(GtkWidget *widget, gpointer data)
 
 gboolean alter_a_range_data(GtkWidget *widget, gpointer data)
 {
-	gint index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	gint index = (gint)OBJ_GET((widget),"index");
 	gfloat value = 0.0;
 	GdkColor color;
 	AlertField field = (AlertField)data;
@@ -1958,7 +1958,7 @@ gboolean remove_tblock(GtkWidget * widget, gpointer data)
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	index = (gint)g_object_get_data(G_OBJECT(widget),"tblock_index");
+	index = (gint)OBJ_GET((widget),"tblock_index");
 	mtx_gauge_face_remove_text_block(MTX_GAUGE_FACE(gauge),index);
 	update_onscreen_tblocks();
 
@@ -1971,7 +1971,7 @@ gboolean remove_tgroup(GtkWidget * widget, gpointer data)
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	index = (gint)g_object_get_data(G_OBJECT(widget),"tgroup_index");
+	index = (gint)OBJ_GET((widget),"tgroup_index");
 	mtx_gauge_face_remove_tick_group(MTX_GAUGE_FACE(gauge),index);
 	update_onscreen_tgroups();
 
@@ -1984,7 +1984,7 @@ gboolean remove_polygon(GtkWidget * widget, gpointer data)
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	index = (gint)g_object_get_data(G_OBJECT(widget),"polygon_index");
+	index = (gint)OBJ_GET((widget),"polygon_index");
 	mtx_gauge_face_remove_polygon(MTX_GAUGE_FACE(gauge),index);
 	update_onscreen_polygons();
 
@@ -2006,8 +2006,8 @@ gboolean polygon_type_changed_event(GtkWidget *widget, gpointer data)
 	MtxPolyType type = -1;
 
 	tmpbuf = gtk_combo_box_get_active_text(GTK_COMBO_BOX(widget));
-	container = (GtkWidget *)g_object_get_data(G_OBJECT(widget),"container");
-	filename = (gchar *)g_object_get_data(G_OBJECT(widget),"glade_file");
+	container = (GtkWidget *)OBJ_GET((widget),"container");
+	filename = (gchar *)OBJ_GET((widget),"glade_file");
 	up = g_ascii_strup(tmpbuf,-1);
 	xml = glade_get_widget_tree(widget);
 	arc_ctrls = glade_xml_get_widget(xml,"arc_polygon_table");
@@ -2059,10 +2059,10 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 	gint rows = 0;
 	gboolean live = FALSE;
 
-	table = (GtkWidget *)g_object_get_data(G_OBJECT(widget),"points_table");
-	hash = (GHashTable *)g_object_get_data(G_OBJECT(widget),"points_hash");
-	live = (gboolean)g_object_get_data(G_OBJECT(widget),"live");
-	index = (gint)g_object_get_data(G_OBJECT(widget),"index");
+	table = (GtkWidget *)OBJ_GET((widget),"points_table");
+	hash = (GHashTable *)OBJ_GET((widget),"points_hash");
+	live = (gboolean)OBJ_GET((widget),"live");
+	index = (gint)OBJ_GET((widget),"index");
 	num_points = (gint)gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 
 	rows = ((GtkTable *)table)->nrows;
@@ -2092,8 +2092,8 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 				gtk_spin_button_set_digits(GTK_SPIN_BUTTON(dummy1),3);
 				if (live)
 				{
-					g_object_set_data(G_OBJECT(dummy1),"num_points_spin",widget);
-					g_object_set_data(G_OBJECT(dummy1),"index",GINT_TO_POINTER(index));
+					OBJ_SET((dummy1),"num_points_spin",widget);
+					OBJ_SET((dummy1),"index",GINT_TO_POINTER(index));
 					g_signal_connect(G_OBJECT(dummy1),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_POINTS));
 				}
 				gtk_table_attach(GTK_TABLE(table),dummy1,1,2,i,i+1,0,0,0,0);
@@ -2106,8 +2106,8 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 				gtk_spin_button_set_digits(GTK_SPIN_BUTTON(dummy2),3);
 				if (live)
 				{
-					g_object_set_data(G_OBJECT(dummy2),"num_points_spin",widget);
-					g_object_set_data(G_OBJECT(dummy2),"index",GINT_TO_POINTER(index));
+					OBJ_SET((dummy2),"num_points_spin",widget);
+					OBJ_SET((dummy2),"index",GINT_TO_POINTER(index));
 					g_signal_connect(G_OBJECT(dummy2),"value_changed", G_CALLBACK(alter_polygon_data),GINT_TO_POINTER(POLY_POINTS));
 				}
 				gtk_table_attach(GTK_TABLE(table),dummy2,2,3,i,i+1,0,0,0,0);
@@ -2168,8 +2168,8 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 				gtk_spin_button_set_digits(GTK_SPIN_BUTTON(dummy),3);
 				if (live)
 				{
-					g_object_set_data(G_OBJECT(dummy),"num_points_spin",widget);
-					g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(index));
+					OBJ_SET(dummy,"num_points_spin",widget);
+					OBJ_SET(dummy,"index",GINT_TO_POINTER(index));
 				}
 				gtk_table_attach(GTK_TABLE(table),dummy,1,2,i,i+1,0,0,0,0);
 				g_hash_table_insert(hash,g_strdup(xn),dummy);
@@ -2183,8 +2183,8 @@ gboolean adj_generic_num_points(GtkWidget *widget, gpointer data)
 				gtk_spin_button_set_digits(GTK_SPIN_BUTTON(dummy),3);
 				if (live)
 				{
-					g_object_set_data(G_OBJECT(dummy),"num_points_spin",widget);
-					g_object_set_data(G_OBJECT(dummy),"index",GINT_TO_POINTER(index));
+					OBJ_SET(dummy,"num_points_spin",widget);
+					OBJ_SET(dummy,"index",GINT_TO_POINTER(index));
 				}
 				gtk_table_attach(GTK_TABLE(table),dummy,2,3,i,i+1,0,0,0,0);
 				g_hash_table_insert(hash,g_strdup(yn),dummy);

@@ -21,6 +21,7 @@
 #include <enums.h>
 
 
+extern GObject *global_data;
 /*!
  \brief check_dependancies() extracts the dependancy information from the 
  object and checks each one in turn until one evauates to false, in that
@@ -44,50 +45,50 @@ gboolean check_dependancies(GObject *object )
 	gint type = 0;
 	gint num_deps = 0;
 
-	num_deps = (gint)g_object_get_data(object,"num_deps");
-	deps = g_object_get_data(object,"deps");
+	num_deps = (gint)OBJ_GET(object,"num_deps");
+	deps = OBJ_GET(object,"deps");
 	/*printf("number of deps %i, %i\n",num_deps,g_strv_length(deps));*/
 	for (i=0;i<num_deps;i++)
 	{
 		/*printf("dep name %s\n",deps[i]);*/
 		tmpbuf = g_strdup_printf("%s_type",deps[i]);
-		type = (gint)g_object_get_data(object,tmpbuf);
+		type = (gint)OBJ_GET(object,tmpbuf);
 		g_free(tmpbuf);
 		if (type == VE_EMB_BIT)
 		{
 			/*printf("VE_EMB_BIT\n");*/
 			tmpbuf = g_strdup_printf("%s_page",deps[i]);
-			page = (gint)g_object_get_data(object,tmpbuf);
+			page = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("page %i\n",page);*/
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_offset",deps[i]);
-			offset = (gint)g_object_get_data(object,tmpbuf);
+			offset = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("offset %i\n",offset);*/
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_canID",deps[i]);
-			canID = (gint)g_object_get_data(object,tmpbuf);
+			canID = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("canID %i\n",canID);*/
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_size",deps[i]);
-			size = (DataSize)g_object_get_data(object,tmpbuf);
+			size = (DataSize)OBJ_GET(object,tmpbuf);
 			/*printf("size %i\n",size); */
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_bitshift",deps[i]);
-			bitshift = (gint)g_object_get_data(object,tmpbuf);
+			bitshift = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("bitshift %i\n",bitshift); */
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_bitmask",deps[i]);
-			bitmask = (gint)g_object_get_data(object,tmpbuf);
+			bitmask = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("bitmask %i\n",bitmask); */
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_bitval",deps[i]);
-			bitval = (gint)g_object_get_data(object,tmpbuf);
+			bitval = (gint)OBJ_GET(object,tmpbuf);
 			/*printf("bitval %i\n",bitval); */
 			g_free(tmpbuf);
 
@@ -100,11 +101,11 @@ gboolean check_dependancies(GObject *object )
 /*		else if (type == VE_VAR)
 		{
 			tmpbuf = g_strdup_printf("%s_page",deps[i]);
-			page = (gint)g_object_get_data(object,g_strdup_printf("%s_page",deps[i]));
+			page = (gint)OBJ_GET(object,g_strdup_printf("%s_page",deps[i]));
 			g_free(tmpbuf);
 
 			tmpbuf = g_strdup_printf("%s_offset",deps[i]);
-			offset = (gint)g_object_get_data(object,g_strdup_printf("%s_offset",deps[i]));
+			offset = (gint)OBJ_GET(object,g_strdup_printf("%s_offset",deps[i]));
 			g_free(tmpbuf);
 		}
 */

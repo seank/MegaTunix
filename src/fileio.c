@@ -40,6 +40,7 @@
 
 
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 EXPORT gboolean select_file_for_ecu_backup(GtkWidget *widget, gpointer data)
 {

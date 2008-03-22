@@ -22,6 +22,7 @@
 
 
 extern Logview_Data *lv_data;
+extern GObject *global_data;
 
 
 /*! 
@@ -203,7 +204,7 @@ EXPORT gboolean logviewer_button_event(GtkWidget *widget, gpointer data)
 	Lv_Handler handler;
 	extern GHashTable *dynamic_widgets;
 	GtkWidget *tmpwidget = NULL;
-	handler = (Lv_Handler)g_object_get_data(G_OBJECT(widget),"handler");
+	handler = (Lv_Handler)OBJ_GET(widget,"handler");
 	switch(handler)
 	{
 		case LV_GOTO_START:

@@ -39,6 +39,7 @@ gboolean begin = TRUE;
 extern gint ready;
 extern gint dbg_lvl;
 extern Rtv_Map *rtv_map;
+extern GObject *global_data;
 
 /* Static vars to all functions in this file... */
 static gboolean logging_active = FALSE;
@@ -115,12 +116,12 @@ void populate_dlog_choices()
 		tooltip = NULL;
 		dlog_name = NULL;
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		dlog_name = g_object_get_data(object,"dlog_gui_name");
+		dlog_name = OBJ_GET(object,"dlog_gui_name");
 		button = gtk_check_button_new();
 		label = gtk_label_new(NULL);
 		gtk_label_set_markup(GTK_LABEL(label),dlog_name);
 		gtk_container_add(GTK_CONTAINER(button),label);
-		tooltip = g_strdup(g_object_get_data(object,"tooltip"));
+		tooltip = g_strdup(OBJ_GET(object,"tooltip"));
 		if (tooltip)
 			gtk_tooltips_set_tip(tip,button,tooltip,NULL);
 		g_free(tooltip);
@@ -128,15 +129,15 @@ void populate_dlog_choices()
 		/* Bind button to the object, Done so that we can set the state
 		 * of the buttons from elsewhere... 
 		 */
-		g_object_set_data(G_OBJECT(object),"dlog_button",
-				(gpointer)button);
+		OBJ_SET(object,"dlog_button",(gpointer)button);
+				
 		/* Bind object to the button */
-		g_object_set_data(G_OBJECT(button),"object",
-				(gpointer)object);
+		OBJ_SET(button,"object",(gpointer)object);
+				
 		g_signal_connect(G_OBJECT(button),"toggled",
 				G_CALLBACK(log_value_set),
 				NULL);
-		if ((gboolean)g_object_get_data(object,"log_by_default")==TRUE)
+		if ((gboolean)OBJ_GET(object,"log_by_default")==TRUE)
 			gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 		gtk_table_attach (GTK_TABLE (table), button, j, j+1, k, k+1,
 				(GtkAttachOptions) (GTK_FILL|GTK_SHRINK),
@@ -212,14 +213,14 @@ void stop_datalogging()
 
 
 	update_logbar("dlog_view",NULL,g_strdup("DataLogging Stopped...\n"),FALSE,FALSE);
-	iochannel = (GIOChannel *) g_object_get_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data");
+	iochannel = (GIOChannel *) OBJ_GET(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"),"data");
 	if (iochannel)
 	{
 		g_io_channel_shutdown(iochannel,TRUE,NULL);
 		g_io_channel_unref(iochannel);
 	}
 
-	g_object_set_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data",NULL);
+	OBJ_SET(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"),"data",NULL);
 
 	return;
 }
@@ -238,8 +239,8 @@ gboolean log_value_set(GtkWidget * widget, gpointer data)
 	state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (widget));
                 
 	/* get object from widget */
-	object = (GObject *)g_object_get_data(G_OBJECT(widget),"object");
-	g_object_set_data(object,"being_logged",GINT_TO_POINTER(state));
+	object = (GObject *)OBJ_GET(widget,"object");
+	OBJ_SET(object,"being_logged",GINT_TO_POINTER(state));
 
 	return TRUE;
 }
@@ -272,7 +273,7 @@ void write_log_header(GIOChannel *iochannel, gboolean override)
 	for (i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		if((override) || ((gboolean)g_object_get_data(object,"being_logged")))
+		if((override) || ((gboolean)OBJ_GET(object,"being_logged")))
 			total_logables++;
 	}
 	output = g_string_sized_new(64); /* pre-allccate for 64 chars */
@@ -282,10 +283,10 @@ void write_log_header(GIOChannel *iochannel, gboolean override)
 	for (i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		if((override) || ((gboolean)g_object_get_data(object,"being_logged")))
+		if((override) || ((gboolean)OBJ_GET(object,"being_logged")))
 		{
 			/* If space delimited, QUOTE the header names */
-			string = (gchar *)g_object_get_data(object,"dlog_field_name");
+			string = (gchar *)OBJ_GET(object,"dlog_field_name");
 			output = g_string_append(output,string); 
 
 			j++;
@@ -328,7 +329,7 @@ void run_datalog(void)
 	if (!logging_active) /* Logging isn't enabled.... */
 		return;
 
-	iochannel = (GIOChannel *) g_object_get_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data");
+	iochannel = (GIOChannel *) OBJ_GET(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"),"data");
 	if (!iochannel)
 	{
 		if (dbg_lvl & CRITICAL)
@@ -339,7 +340,7 @@ void run_datalog(void)
 	for (i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		if((gboolean)g_object_get_data(object,"being_logged"))
+		if((gboolean)OBJ_GET(object,"being_logged"))
 			total_logables++;
 	}
 
@@ -355,13 +356,13 @@ void run_datalog(void)
 	for(i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		if (!((gboolean)g_object_get_data(object,"being_logged")))
+		if (!((gboolean)OBJ_GET(object,"being_logged")))
 			continue;
 
-		history = (GArray *)g_object_get_data(object,"history");
-		current_index = (gint)g_object_get_data(object,"current_index");
+		history = (GArray *)OBJ_GET(object,"history");
+		current_index = (gint)OBJ_GET(object,"current_index");
 		value = g_array_index(history, gfloat, current_index);
-		if ((gboolean)g_object_get_data(object,"is_float"))
+		if ((gboolean)OBJ_GET(object,"is_float"))
 		{
 			/*printf("value %.3f\n",value); */
 			tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%.3f",value);
@@ -399,7 +400,7 @@ void dlog_select_all()
 		object = NULL;
 		button = NULL;
 		object = g_array_index(rtv_map->rtv_list,GObject *, i);
-		button = (GtkWidget *)g_object_get_data(object,"dlog_button");
+		button = (GtkWidget *)OBJ_GET(object,"dlog_button");
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 	}
 }
@@ -420,7 +421,7 @@ void dlog_deselect_all(void)
 		object = NULL;
 		button = NULL;
 		object = g_array_index(rtv_map->rtv_list,GObject *, i);
-		button = (GtkWidget *)g_object_get_data(object,"dlog_button");
+		button = (GtkWidget *)OBJ_GET(object,"dlog_button");
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),FALSE);
 	}
 }
@@ -443,8 +444,8 @@ void dlog_select_defaults(void)
 		button = NULL;
 		state = FALSE;
 		object = g_array_index(rtv_map->rtv_list,GObject *, i);
-		button = (GtkWidget *)g_object_get_data(object,"dlog_button");
-		state = (gboolean)g_object_get_data(object,"log_by_default");
+		button = (GtkWidget *)OBJ_GET(object,"dlog_button");
+		state = (gboolean)OBJ_GET(object,"log_by_default");
 		gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),state);
 	}
 }
@@ -483,7 +484,7 @@ EXPORT gboolean select_datalog_for_export(GtkWidget *widget, gpointer data)
 
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"dlog_stop_logging_button"),TRUE);
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"dlog_start_logging_button"),TRUE);
-	g_object_set_data(G_OBJECT(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button")),"data",(gpointer)iochannel);
+	OBJ_SET(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"),"data",(gpointer)iochannel);
 	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,"dlog_file_label")),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
 	update_logbar("dlog_view",NULL,g_strdup("DataLog File Opened\n"),FALSE,FALSE);
 
@@ -494,13 +495,12 @@ EXPORT gboolean select_datalog_for_export(GtkWidget *widget, gpointer data)
 
 gboolean autolog_dump(gpointer data)
 {
-	extern GObject *global_data;
 	CmdLineArgs *args = NULL;
 	gchar *filename = NULL;
 	GIOChannel *iochannel = NULL;
 	static gint dlog_index = 0;
 
-	args = (CmdLineArgs *)g_object_get_data(G_OBJECT(global_data),"args");
+	args = (CmdLineArgs *)OBJ_GET(global_data,"args");
 
 	filename = g_strdup_printf("%s%s%s_%.3i.log",args->autolog_dump_dir,PSEP,args->autolog_basename,dlog_index);
 
@@ -587,8 +587,8 @@ void dump_log_to_disk(GIOChannel *iochannel)
 	for(i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
-		histories[i] = (GArray *)g_object_get_data(object,"history");
-		is_floats[i] = (gboolean)g_object_get_data(object,"is_float");
+		histories[i] = (GArray *)OBJ_GET(object,"history");
+		is_floats[i] = (gboolean)OBJ_GET(object,"is_float");
 	}
 
 	for (x=0;x<rtv_map->ts_array->len;x++)

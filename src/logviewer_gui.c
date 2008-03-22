@@ -35,13 +35,13 @@ static gboolean blocked = FALSE;
 static gfloat hue = -60.0;
 static gfloat col_sat = 1.0;
 static gfloat col_val = 1.0;
-gint lv_zoom;
 extern gint dbg_lvl;
 
 Logview_Data *lv_data = NULL;
 gboolean playback_mode = FALSE;
 static GStaticMutex update_mutex = G_STATIC_MUTEX_INIT;
 extern Log_Info *log_info;
+extern GObject *global_data;
 
 
 /*!
@@ -144,13 +144,13 @@ void present_viewer_choices(void)
 		if (playback_mode)
 		{
 			object =  g_array_index(log_info->log_list,GObject *,i);
-			name = g_strdup(g_object_get_data(object,"lview_name"));
+			name = g_strdup(OBJ_GET(object,"lview_name"));
 		}
 		else
 		{
 			object =  g_array_index(rtv_map->rtv_list,GObject *,i);
-			name = g_strdup(g_object_get_data(object,"dlog_gui_name"));
-			tooltip = g_strdup(g_object_get_data(object,"tooltip"));
+			name = g_strdup(OBJ_GET(object,"dlog_gui_name"));
+			tooltip = g_strdup(OBJ_GET(object,"tooltip"));
 		}
 
 		button = gtk_check_button_new();
@@ -165,12 +165,10 @@ void present_viewer_choices(void)
 
 		if (object)
 		{
-			g_object_set_data(G_OBJECT(button),"object",
-					(gpointer)object);
+			OBJ_SET(button,"object",(gpointer)object);
 			/* so we can set the state from elsewhere...*/
-			g_object_set_data(G_OBJECT(object),"lview_button",
-					(gpointer)button);
-			if ((gboolean)g_object_get_data(object,"being_viewed"))
+			OBJ_SET(object,"lview_button",(gpointer)button);
+			if ((gboolean)OBJ_GET(object,"being_viewed"))
 				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button),TRUE);
 		}
 		g_signal_connect(G_OBJECT(button),"toggled",
@@ -196,13 +194,13 @@ void present_viewer_choices(void)
 	gtk_box_pack_start(GTK_BOX(vbox),hbox,FALSE,TRUE,0);
 	button = gtk_button_new_with_label("Select All");
 	gtk_box_pack_start(GTK_BOX(hbox),button,TRUE,TRUE,15);
-	g_object_set_data(G_OBJECT(button),"state",GINT_TO_POINTER(TRUE));
+	OBJ_SET(button,"state",GINT_TO_POINTER(TRUE));
 	g_signal_connect(G_OBJECT(button),"clicked",
 			G_CALLBACK(set_lview_choices_state),
 			GINT_TO_POINTER(TRUE));
 	button = gtk_button_new_with_label("De-select All");
 	gtk_box_pack_start(GTK_BOX(hbox),button,TRUE,TRUE,15);
-	g_object_set_data(G_OBJECT(button),"state",GINT_TO_POINTER(FALSE));
+	OBJ_SET(button,"state",GINT_TO_POINTER(FALSE));
 	g_signal_connect(G_OBJECT(button),"clicked",
 			G_CALLBACK(set_lview_choices_state),
 			GINT_TO_POINTER(FALSE));
@@ -245,13 +243,13 @@ gboolean view_value_set(GtkWidget *widget, gpointer data)
 	state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (widget));
 
 	/* get object from widget */
-	object = (GObject *)g_object_get_data(G_OBJECT(widget),"object");
+	object = (GObject *)OBJ_GET(widget,"object");
 	if (!object)
 	{
 		if (dbg_lvl & CRITICAL)
 			dbg_func(g_strdup(__FILE__": view_value_set()\n\t NO object was bound to the button\n"));
 	}
-	g_object_set_data(object,"being_viewed",GINT_TO_POINTER(state));
+	OBJ_SET(object,"being_viewed",GINT_TO_POINTER(state));
 	populate_viewer();
 	return FALSE;
 }
@@ -302,12 +300,12 @@ void populate_viewer()
 		if (playback_mode)
 		{
 			object = g_array_index(log_info->log_list,GObject *, i);        
-			name = g_strdup(g_object_get_data(object,"lview_name"));
+			name = g_strdup(OBJ_GET(object,"lview_name"));
 		}
 		else
 		{
 			object = g_array_index(rtv_map->rtv_list,GObject *, i); 
-			name = g_strdup(g_object_get_data(object,"dlog_gui_name"));
+			name = g_strdup(OBJ_GET(object,"dlog_gui_name"));
 		}
 		if (!name)
 		{
@@ -320,7 +318,7 @@ void populate_viewer()
 				dbg_func(g_strdup("ERROR, object is NULL\n"));
 		}
 
-		being_viewed = (gboolean)g_object_get_data(object,"being_viewed");
+		being_viewed = (gboolean)OBJ_GET(object,"being_viewed");
 		/* if not found in table check to see if we need to insert*/
 		if (g_hash_table_lookup(lv_data->traces,name)==NULL)
 		{
@@ -416,7 +414,7 @@ void reset_logviewer_state()
 			object = NULL;
 			object = g_array_index(log_info->log_list,GObject *,i);
 			if (object)
-				g_object_set_data(object,"being_viewed",GINT_TO_POINTER(FALSE));
+				OBJ_SET(object,"being_viewed",GINT_TO_POINTER(FALSE));
 		}
 	}
 	else
@@ -428,7 +426,7 @@ void reset_logviewer_state()
 			object = NULL;
 			object = g_array_index(rtv_map->rtv_list,GObject *,i);
 			if (object)
-				g_object_set_data(object,"being_viewed",GINT_TO_POINTER(FALSE));
+				OBJ_SET(object,"being_viewed",GINT_TO_POINTER(FALSE));
 		}
 	}
 	populate_viewer();
@@ -456,7 +454,7 @@ Viewable_Value * build_v_value(GObject *object)
 	if (playback_mode)
 	{
 		/* textual name of the variable we're viewing.. */
-		v_value->vname = g_strdup(g_object_get_data(object,"lview_name"));
+		v_value->vname = g_strdup(OBJ_GET(object,"lview_name"));
 		/* data was already read from file and stored, copy pointer
 		 * over to v_value so it can be drawn...
 		 */
@@ -465,7 +463,7 @@ Viewable_Value * build_v_value(GObject *object)
 	else
 	{
 		/* textual name of the variable we're viewing.. */
-		v_value->vname = g_strdup(g_object_get_data(object,"dlog_gui_name"));
+		v_value->vname = g_strdup(OBJ_GET(object,"dlog_gui_name"));
 		/* Array to keep history for resize/redraw and export 
 		 * to datalog we use the _sized_ version to give a big 
 		 * enough size to prevent reallocating memory too often. 
@@ -477,9 +475,9 @@ Viewable_Value * build_v_value(GObject *object)
 	 * as its the SAME one used for all Viewable_Values */
 	v_value->object = object;
 	/* IS it a floating point value? */
-	v_value->is_float = (gboolean)g_object_get_data(object,"is_float");
-	v_value->lower = (gint)g_object_get_data(object,"lower_limit");
-	v_value->upper = (gint)g_object_get_data(object,"upper_limit");
+	v_value->is_float = (gboolean)OBJ_GET(object,"is_float");
+	v_value->lower = (gint)OBJ_GET(object,"lower_limit");
+	v_value->upper = (gint)OBJ_GET(object,"upper_limit");
 	/* Sets last "y" value to -1, needed for initial draw to be correct */
 	v_value->last_y = -1;
 
@@ -790,7 +788,7 @@ void draw_valtext(gboolean force_draw)
 		val_y = info_ctr + 1;
 
 		last_index = v_value->last_index;
-		array = g_object_get_data(G_OBJECT(v_value->object),v_value->data_source);
+		array = OBJ_GET(v_value->object,v_value->data_source);
 		val = g_array_index(array,gfloat,last_index);
 		if (array->len > 1)
 			last_val = g_array_index(array,gfloat,last_index-1);
@@ -904,12 +902,14 @@ void trace_update(gboolean redraw_all)
 	GArray *array = NULL;
 	GdkPoint pts[2048]; /* Bad idea as static...*/
 	Viewable_Value *v_value = NULL;
+	gint lv_zoom;
 	/*static gulong sig_id = 0;*/
 	static GtkWidget *scale = NULL;
 	extern GHashTable *dynamic_widgets;
 
 	pixmap = lv_data->pixmap;
 
+	lv_zoom = (gint)OBJ_GET(global_data,"lv_zoom");
 	/*
 	if (sig_id == 0)
 		sig_id = g_signal_handler_find(g_hash_table_lookup(dynamic_widgets,"logviewer_log_position_hscale"),G_SIGNAL_MATCH_FUNC,0,0,NULL,(gpointer)logviewer_log_position_change,NULL);
@@ -920,7 +920,7 @@ void trace_update(gboolean redraw_all)
 	w = lv_data->darea->allocation.width;
 	h = lv_data->darea->allocation.height;
 
-	log_pos = (gfloat)((gint)g_object_get_data(G_OBJECT(lv_data->darea),"log_pos_x100"))/100.0;
+	log_pos = (gfloat)((gint)OBJ_GET(lv_data->darea,"log_pos_x100"))/100.0;
 	/*printf("log_pos is %f\n",log_pos);*/
 	/* Full screen redraw, only with configure events (usually) */
 	if ((gboolean)redraw_all)
@@ -929,7 +929,7 @@ void trace_update(gboolean redraw_all)
 		for (i=0;i<g_list_length(lv_data->tlist);i++)
 		{
 			v_value = (Viewable_Value *)g_list_nth_data(lv_data->tlist,i);
-			array = g_object_get_data(G_OBJECT(v_value->object),v_value->data_source);
+			array = OBJ_GET(v_value->object,v_value->data_source);
 			len = array->len;
 			if (len == 0)	/* If empty */
 			{
@@ -990,7 +990,7 @@ void trace_update(gboolean redraw_all)
 		for (i=0;i<g_list_length(lv_data->tlist);i++)
 		{
 			v_value = (Viewable_Value *)g_list_nth_data(lv_data->tlist,i);
-			array = g_object_get_data(G_OBJECT(v_value->object),v_value->data_source);
+			array = OBJ_GET(v_value->object,v_value->data_source);
 			last_index = v_value->last_index;
 			if(last_index >= array->len)
 				return;
@@ -1018,7 +1018,7 @@ void trace_update(gboolean redraw_all)
 				blocked=TRUE;
 				gtk_range_set_value(GTK_RANGE(scale),newpos);
 				blocked=FALSE;
-				g_object_set_data(G_OBJECT(lv_data->darea),"log_pos_x100",GINT_TO_POINTER((gint)(newpos*100.0)));
+				OBJ_SET(lv_data->darea,"log_pos_x100",GINT_TO_POINTER((gint)(newpos*100.0)));
 				adj_scale = FALSE;
 				if (newpos >= 100)
 					stop_tickler(LV_PLAYBACK_TICKLER);
@@ -1044,8 +1044,8 @@ void trace_update(gboolean redraw_all)
 	for (i=0;i<g_list_length(lv_data->tlist);i++)
 	{
 		v_value = (Viewable_Value *)g_list_nth_data(lv_data->tlist,i);
-		array = g_object_get_data(G_OBJECT(v_value->object),v_value->data_source);
-		current_index = (gint)g_object_get_data(v_value->object,"current_index");
+		array = OBJ_GET(v_value->object,v_value->data_source);
+		current_index = (gint)OBJ_GET(v_value->object,"current_index");
 		val = g_array_index(array,gfloat, current_index);
 
 		if (val > (v_value->max))
@@ -1086,7 +1086,7 @@ void trace_update(gboolean redraw_all)
 				blocked = TRUE;
 				gtk_range_set_value(GTK_RANGE(scale),newpos);
 				blocked = FALSE;
-				g_object_set_data(G_OBJECT(lv_data->darea),"log_pos_x100",GINT_TO_POINTER((gint)(newpos*100.0)));
+				OBJ_SET(lv_data->darea,"log_pos_x100",GINT_TO_POINTER((gint)(newpos*100.0)));
 				adj_scale = FALSE;
 			}
 		}
@@ -1118,6 +1118,7 @@ void scroll_logviewer_traces()
 	gint end = lv_data->info_width;
 	gint w = 0;
 	gint h = 0;
+	gint lv_zoom = 0;
 	GdkPixmap *pixmap = NULL;
 	GdkPixmap *pmap = NULL;
 	static GtkWidget * widget = NULL;
@@ -1133,6 +1134,7 @@ void scroll_logviewer_traces()
 	if (!pixmap)
 		return;
 
+	lv_zoom = (gint)OBJ_GET(global_data,"lv_zoom");
 	w = widget->allocation.width;
 	h = widget->allocation.height;
 	start = end + lv_zoom;
@@ -1221,7 +1223,7 @@ EXPORT gboolean logviewer_log_position_change(GtkWidget * widget, gpointer data)
 	val = gtk_range_get_value(GTK_RANGE(widget));
 	darea = g_hash_table_lookup(dynamic_widgets,"logviewer_trace_darea");
 	if (GTK_IS_WIDGET(darea))
-		g_object_set_data(G_OBJECT(darea),"log_pos_x100",GINT_TO_POINTER((gint)(val*100)));
+		OBJ_SET(darea,"log_pos_x100",GINT_TO_POINTER((gint)(val*100)));
 	lv_configure_event(darea,NULL,NULL);
 	scroll_logviewer_traces();
 	if ((val >= 100.0) && (playback_mode))
@@ -1265,12 +1267,12 @@ void set_logviewer_mode(Lv_Mode mode)
 				g_free(fname);
 				glade_xml_signal_autoconnect(xml);
 				playback_controls_window = glade_xml_get_widget(xml,"logviewer_controls_window");
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"goto_start_button")),"handler",GINT_TO_POINTER(LV_GOTO_START));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"goto_end_button")),"handler",GINT_TO_POINTER(LV_GOTO_END));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"rewind_button")),"handler",GINT_TO_POINTER(LV_REWIND));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"fast_forward_button")),"handler",GINT_TO_POINTER(LV_FAST_FORWARD));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"play_button")),"handler",GINT_TO_POINTER(LV_PLAY));
-				g_object_set_data(G_OBJECT(glade_xml_get_widget(xml,"stop_button")),"handler",GINT_TO_POINTER(LV_STOP));
+				OBJ_SET(glade_xml_get_widget(xml,"goto_start_button"),"handler",GINT_TO_POINTER(LV_GOTO_START));
+				OBJ_SET(glade_xml_get_widget(xml,"goto_end_button"),"handler",GINT_TO_POINTER(LV_GOTO_END));
+				OBJ_SET(glade_xml_get_widget(xml,"rewind_button"),"handler",GINT_TO_POINTER(LV_REWIND));
+				OBJ_SET(glade_xml_get_widget(xml,"fast_forward_button"),"handler",GINT_TO_POINTER(LV_FAST_FORWARD));
+				OBJ_SET(glade_xml_get_widget(xml,"play_button"),"handler",GINT_TO_POINTER(LV_PLAY));
+				OBJ_SET(glade_xml_get_widget(xml,"stop_button"),"handler",GINT_TO_POINTER(LV_STOP));
 				register_widget("logviewer_controls_hbox",glade_xml_get_widget(xml,"controls_hbox"));
 				widget = g_hash_table_lookup(dynamic_widgets,"logviewer_scroll_hscale");
 				if (GTK_IS_WIDGET(widget))
@@ -1332,7 +1334,10 @@ void set_logviewer_mode(Lv_Mode mode)
 EXPORT void finish_logviewer(void)
 {
 	GtkWidget * widget = NULL;
+	gint lv_zoom = 0;
 	extern GHashTable *dynamic_widgets;
+
+	lv_zoom = (gint)OBJ_GET(global_data,"lv_zoom");
 
 	lv_data = g_new0(Logview_Data,1);
 	lv_data->traces = g_hash_table_new(g_str_hash,g_str_equal);

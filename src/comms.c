@@ -34,6 +34,7 @@
 
 extern GStaticMutex serio_mutex;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief update_comms_status updates the Gui with the results of the comms
@@ -155,7 +156,7 @@ void update_write_status(Output_Data *data)
 	/*printf ("page %i, offset %i\n",data->page,data->offset); */
 	for (i=0;i<g_list_length(ve_widgets[data->page][data->offset]);i++)
 	{
-		if ((gint)g_object_get_data(G_OBJECT(g_list_nth_data(ve_widgets[data->page][data->offset],i)),"dl_type") != DEFERRED)
+		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[data->page][data->offset],i),"dl_type") != DEFERRED)
 		{
 			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i))); */
 			update_widget(g_list_nth_data(ve_widgets[data->page][data->offset],i),NULL);

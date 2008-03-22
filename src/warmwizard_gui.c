@@ -18,6 +18,7 @@
 #include <warmwizard_gui.h>
 
 extern GdkColor red;
+extern GObject *global_data;
 
 
 /*!
@@ -28,7 +29,6 @@ extern GdkColor red;
  */
 void warmwizard_update_status(gfloat temp)
 {
-	extern gint temp_units;
 	extern GdkColor red;
 	extern GdkColor black;
 	gboolean skipnext = FALSE;
@@ -41,7 +41,7 @@ void warmwizard_update_status(gfloat temp)
 	gfloat *range;
 	extern GHashTable *dynamic_widgets;
 
-	if (temp_units == FAHRENHEIT)	
+	if ((gint)OBJ_GET(global_data,"temp_units") == FAHRENHEIT)	
 		range = F_temps;
 	else
 		range = C_temps;

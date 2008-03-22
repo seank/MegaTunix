@@ -40,6 +40,7 @@ extern gboolean connected;			/* valid connection with MS */
 extern volatile gboolean offline;		/* ofline mode with MS */
 extern gboolean interrogated;			/* valid connection with MS */
 extern gint dbg_lvl;
+extern GObject *global_data;
 gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test","Get ECU Error", "NULL Handler"};
 
 
@@ -213,15 +214,15 @@ void io_cmd(Io_Command cmd, gpointer data)
 				g_array_append_val(message->funcs,tmp);
 				tmp = UPD_LOAD_RT_STATUS;
 				g_array_append_val(message->funcs,tmp);
+				tmp = UPD_LOAD_RT_TEXT;
+				g_array_append_val(message->funcs,tmp);
 				tmp = UPD_LOAD_GUI_TABS;
+				g_array_append_val(message->funcs,tmp);
+				tmp = UPD_LOAD_RT_SLIDERS;
 				g_array_append_val(message->funcs,tmp);
 				tmp = UPD_POPULATE_DLOGGER;
 				g_array_append_val(message->funcs,tmp);
 				tmp = UPD_REENABLE_INTERROGATE_BUTTON;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_RT_SLIDERS;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_RT_TEXT;
 				g_array_append_val(message->funcs,tmp);
 				tmp = UPD_START_STATUSCOUNTS;
 				g_array_append_val(message->funcs,tmp);
@@ -551,12 +552,12 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
 	g_object_ref(output->object);
 	gtk_object_sink(GTK_OBJECT(output->object));
-	g_object_set_data(G_OBJECT(output->object),"canID", GINT_TO_POINTER(canID));
-	g_object_set_data(G_OBJECT(output->object),"page", GINT_TO_POINTER(page));
-	g_object_set_data(G_OBJECT(output->object),"offset", GINT_TO_POINTER(offset));
-	g_object_set_data(G_OBJECT(output->object),"value", GINT_TO_POINTER(value));
-	g_object_set_data(G_OBJECT(output->object),"size", GINT_TO_POINTER(size));
-	g_object_set_data(G_OBJECT(output->object),"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
+	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
+	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
+	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
+	OBJ_SET(output->object,"value", GINT_TO_POINTER(value));
+	OBJ_SET(output->object,"size", GINT_TO_POINTER(size));
+	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
 	output->canID = canID;
 	output->page = page;
 	output->offset = offset;
@@ -589,12 +590,12 @@ void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
 	g_object_ref(output->object);
 	gtk_object_sink(GTK_OBJECT(output->object));
-	g_object_set_data(G_OBJECT(output->object),"canID", GINT_TO_POINTER(canID));
-	g_object_set_data(G_OBJECT(output->object),"page", GINT_TO_POINTER(page));
-	g_object_set_data(G_OBJECT(output->object),"offset", GINT_TO_POINTER(offset));
-	g_object_set_data(G_OBJECT(output->object),"len", GINT_TO_POINTER(len));
-	g_object_set_data(G_OBJECT(output->object),"data", (gpointer)data);
-	g_object_set_data(G_OBJECT(output->object),"mode", GINT_TO_POINTER(MTX_CHUNK_WRITE));
+	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
+	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
+	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
+	OBJ_SET(output->object,"len", GINT_TO_POINTER(len));
+	OBJ_SET(output->object,"data", (gpointer)data);
+	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CHUNK_WRITE));
 	output->canID = canID;
 	output->page = page;
 	output->offset = offset;

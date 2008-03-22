@@ -53,7 +53,7 @@ void import_dash_xml(gchar * filename)
 	root_element = xmlDocGetRootElement(doc);
 	load_elements(dash,root_element);
 
-	g_object_set_data(G_OBJECT(dash),"dash_xml_filename",g_strdup(filename));
+	OBJ_SET((dash),"dash_xml_filename",g_strdup(filename));
 	/*free the document */
 	xmlFreeDoc(doc);
 
@@ -157,7 +157,7 @@ void load_gauge(GtkWidget *dash, xmlNode *node)
 		mtx_gauge_face_import_xml(MTX_GAUGE_FACE(gauge),filename);
 		gtk_widget_set_usize(gauge,width,height);
 		g_free(filename);
-		g_object_set_data(G_OBJECT(gauge),"datasource",g_strdup(datasource));
+		OBJ_SET((gauge),"datasource",g_strdup(datasource));
 		/* Cheat to get property window created... */
 		create_preview_list(NULL,NULL);
 		update_properties(gauge,GAUGE_ADD);
@@ -236,8 +236,8 @@ void export_dash_xml(gchar * filename)
 		
 		generic_xml_gchar_export(node,"gauge_xml_name",&vector[1]);
 		g_strfreev(vector);
-		state = gtk_combo_box_get_active_iter(GTK_COMBO_BOX(g_object_get_data(G_OBJECT(child->widget),"combo")),&iter);
-		model = gtk_combo_box_get_model(GTK_COMBO_BOX(g_object_get_data(G_OBJECT(child->widget),"combo")));
+		state = gtk_combo_box_get_active_iter(GTK_COMBO_BOX(OBJ_GET((child->widget),"combo")),&iter);
+		model = gtk_combo_box_get_model(GTK_COMBO_BOX(OBJ_GET((child->widget),"combo")));
 		gtk_tree_model_get(model,&iter,2,&iname,-1);
 		generic_xml_gchar_export(node,"datasource",&iname);
 	}

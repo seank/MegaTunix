@@ -13,6 +13,7 @@
 
 #include <config.h>
 #include <configfile.h>
+#include <defines.h>
 #include <widgetmgmt.h>
 #include <debugging.h>
 #include <dep_loader.h>
@@ -30,6 +31,7 @@
 
 GHashTable *dynamic_widgets = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief populate_master() stores a pointer to all of the glade loaded 
@@ -159,10 +161,10 @@ void alter_widget_state(gpointer key, gpointer data)
 	gboolean state;
 	extern GHashTable *widget_group_states;
 
-	tmpbuf = (gchar *)g_object_get_data(G_OBJECT(widget),"bind_to_list");
+	tmpbuf = (gchar *)OBJ_GET(widget,"bind_to_list");
 	groups = parse_keys(tmpbuf,&num_groups,",");
 	state = TRUE;
-	/*printf("setting state for %s in groups \"%s\" to:",(gchar *) g_object_get_data(G_OBJECT(widget),"name"),tmpbuf);*/
+	/*printf("setting state for %s in groups \"%s\" to:",(gchar *) OBJ_GET(widget,"name"),tmpbuf);*/
 	for (i=0;i<num_groups;i++)
 	{
 		value = g_hash_table_lookup(widget_group_states,groups[i]);

@@ -28,6 +28,7 @@
 
 
 TTMon_Data *ttm_data;
+extern GObject *global_data;
 
 #define CTR 187
 #define UNITS 188
@@ -79,7 +80,7 @@ EXPORT void setup_logger_display(GtkWidget * src_widget)
 	ttm_data->sample_time = 0;
 	ttm_data->captures = g_new0(gushort, 93);
 
-	g_object_set_data(G_OBJECT(src_widget),"ttmon_data",(gpointer)ttm_data);
+	OBJ_SET(src_widget,"ttmon_data",(gpointer)ttm_data);
 	return;
 }
 

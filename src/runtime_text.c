@@ -33,6 +33,7 @@
 GHashTable *rtt_hash = NULL;
 GtkWidget *rtt_window = NULL;
 extern gint dbg_lvl;
+extern GObject *global_data;
 
 /*!
  \brief load_rt_text() is called to load up the runtime text configurations
@@ -45,6 +46,7 @@ void load_rt_text()
 	Rt_Text *rt_text = NULL;
 	GtkWidget *window = NULL;
 	GtkWidget *vbox = NULL;
+	GtkWidget *sep = NULL;
 	gint count = 0;
 	gchar *filename = NULL;
 	gchar *ctrl_name = NULL;
@@ -57,20 +59,18 @@ void load_rt_text()
 	gint h = 0;
 	gint major = 0;
 	gint minor = 0;
-	extern GObject *global_data;
 	extern volatile gboolean leaving;
-	extern gboolean tabs_loaded;
 	extern gboolean rtvars_loaded;
 	extern Firmware_Details *firmware;
-	CmdLineArgs *args = g_object_get_data(G_OBJECT(global_data),"args");
+	CmdLineArgs *args = OBJ_GET(global_data,"args");
 	extern gboolean connected;
 	extern gboolean interrogated;
 
+	if (leaving)
+		return;
 	if (!((connected) && (interrogated)))
 		return;
-	if ((!tabs_loaded) || (leaving))
-		return;
-	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
+	if (rtvars_loaded == FALSE) 
 	{
 		if (rtt_hash)
 			rtt_hash = NULL;
@@ -106,11 +106,11 @@ void load_rt_text()
 		window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_focus_on_map((GtkWindow *)window,FALSE);
 		gtk_window_set_title(GTK_WINDOW(window),"Runtime Vars");
-		x = (gint)g_object_get_data(global_data,"rtt_x_origin");
-		y = (gint)g_object_get_data(global_data,"rtt_y_origin");
+		x = (gint)OBJ_GET(global_data,"rtt_x_origin");
+		y = (gint)OBJ_GET(global_data,"rtt_y_origin");
 		gtk_window_move(GTK_WINDOW(window),x,y);
-		w = (gint)g_object_get_data(global_data,"rtt_width");
-		h = (gint)g_object_get_data(global_data,"rtt_height");
+		w = (gint)OBJ_GET(global_data,"rtt_width");
+		h = (gint)OBJ_GET(global_data,"rtt_height");
 		gtk_window_set_default_size(GTK_WINDOW(window),w,h);
 		gtk_window_resize(GTK_WINDOW(window),w,h);
 
@@ -119,7 +119,7 @@ void load_rt_text()
 				G_CALLBACK(prevent_close),NULL);
 		g_signal_connect(G_OBJECT(window),"delete_event",
 				G_CALLBACK(prevent_close),NULL);
-		vbox = gtk_vbox_new(TRUE,3);
+		vbox = gtk_vbox_new(FALSE,1);
 		gtk_container_set_border_width(GTK_CONTAINER(vbox),5);
 		gtk_container_add(GTK_CONTAINER(window),vbox);
 
@@ -145,6 +145,11 @@ void load_rt_text()
 					g_hash_table_insert(rtt_hash,
 							g_strdup(ctrl_name),
 							(gpointer)rt_text);
+			}
+			if (i < (count-1))
+			{
+				sep = gtk_hseparator_new();
+				gtk_box_pack_start(GTK_BOX(vbox),sep,FALSE,FALSE,1);
 			}
 			g_free(section);
 			g_free(ctrl_name);
@@ -194,8 +199,8 @@ Rt_Text * add_rtt(GtkWidget *parent, gchar *ctrl_name, gchar *source)
 	}
 
 	rtt->ctrl_name = g_strdup(ctrl_name);
-	rtt->friendly_name = (gchar *) g_object_get_data(object,"dlog_gui_name");
-	rtt->history = (GArray *) g_object_get_data(object,"history");
+	rtt->friendly_name = (gchar *) OBJ_GET(object,"dlog_gui_name");
+	rtt->history = (GArray *) OBJ_GET(object,"history");
 	rtt->object = object;
 
 	hbox = gtk_hbox_new(FALSE,5);

@@ -32,6 +32,10 @@
 #define HOME g_get_home_dir
 #endif
 
+/* g_object_get/set macros */
+
+#define OBJ_GET(object, name) g_object_get_data(G_OBJECT(object),name)
+#define OBJ_SET(object, name, data) g_object_set_data(G_OBJECT(object),name,data)
 
 /* Download modes */
 #define IMMEDIATE		0x10
