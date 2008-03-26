@@ -30,7 +30,6 @@ void load_comm_xml(gchar *filename, gpointer data)
 {
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
-	GHashTable *arguments = NULL;
 	extern gboolean interrogated;
 
 	if (!interrogated)
@@ -51,37 +50,38 @@ void load_comm_xml(gchar *filename, gpointer data)
 
 	/*Get the root element node */
 	root_element = xmlDocGetRootElement(doc);
-	arguments = (GHashTable *)OBJ_GET(global_data,"potential_arguments");
-	load_xmlcomm_elements(arguments, root_element);
+	load_xmlcomm_elements(root_element);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 
-
 }
 
-void load_xmlcomm_elements(GHashTable *arguments, xmlNode *a_node)
+void load_xmlcomm_elements(xmlNode *a_node)
 {
-	GHashTable *commands_hash = NULL;
+	static GHashTable *arguments = NULL;
+	static GHashTable *commands = NULL;
 	xmlNode *cur_node = NULL;
+
+	if (!arguments)
+		arguments = (GHashTable *)OBJ_GET(global_data,"potential_arguments");
+	if (!commands)
+		commands = (GHashTable *)OBJ_GET(global_data,"commands_hash");
 
 	/* Iterate though all nodes... */
 	for (cur_node = a_node;cur_node;cur_node = cur_node->next)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
-			if (g_strcasecmp((gchar *)cur_node->name,"potential_arguments") == 0)
-				get_potential_arg_name(arguments,cur_node);
+			if (g_strcasecmp((gchar *)cur_node->name,"potential_args") == 0)
+				load_potential_args(arguments,cur_node);
 			if (g_strcasecmp((gchar *)cur_node->name,"commands") == 0)
-			{
-				commands_hash = (GHashTable *)OBJ_GET(global_data,"commands_hash");
-				process_commands_section(commands_hash,cur_node);
-			}
+				load_commands(commands,cur_node);
 		}
-		load_xmlcomm_elements(arguments,cur_node->children);
+		load_xmlcomm_elements(cur_node->children);
 	}
 }
 
-void get_potential_arg_name(GHashTable *arguments, xmlNode *node)
+void load_potential_args(GHashTable *arguments, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	PotentialArg *arg = NULL;
@@ -99,7 +99,7 @@ void get_potential_arg_name(GHashTable *arguments, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
 			{
 				arg = g_new0(PotentialArg, 1);
-				load_potential_args(arg, cur_node);
+				load_arg_details(arg, cur_node);
 				g_hash_table_insert(arguments,g_strdup(arg->name),arg);
 			}
 		}
@@ -109,7 +109,7 @@ void get_potential_arg_name(GHashTable *arguments, xmlNode *node)
 }
 
 
-void process_commands_section(GHashTable *commands_hash, xmlNode *node)
+void load_commands(GHashTable *commands_hash, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	Command *cmd = NULL;
@@ -127,7 +127,7 @@ void process_commands_section(GHashTable *commands_hash, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"cmd") == 0)
 			{
 				cmd = g_new0(Command, 1);
-				load_command_section(cmd, cur_node);
+				load_cmd_details(cmd, cur_node);
 				g_hash_table_insert(commands_hash,g_strdup(cmd->name),cmd);
 			}
 		}
@@ -137,7 +137,7 @@ void process_commands_section(GHashTable *commands_hash, xmlNode *node)
 }
 
 
-void load_potential_args(PotentialArg *arg, xmlNode *node)
+void load_arg_details(PotentialArg *arg, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar *tmpbuf = NULL;
@@ -162,6 +162,7 @@ void load_potential_args(PotentialArg *arg, xmlNode *node)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				arg->size = translate_string(tmpbuf);
+				g_free(tmpbuf);
 			}
 		}
 		cur_node = cur_node->next;
@@ -169,7 +170,7 @@ void load_potential_args(PotentialArg *arg, xmlNode *node)
 }
 
 
-void load_command_section(Command *cmd, xmlNode *node)
+void load_cmd_details(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar *tmpbuf = NULL;
@@ -188,28 +189,40 @@ void load_command_section(Command *cmd, xmlNode *node)
 				generic_xml_gchar_import(cur_node,&cmd->name);
 			if (g_strcasecmp((gchar *)cur_node->name,"desc") == 0)
 				generic_xml_gchar_import(cur_node,&cmd->desc);
-			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
-				generic_xml_gchar_import(cur_node,&cmd->base);
-			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"type") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				cmd->type = translate_string(tmpbuf);
+				g_free(tmpbuf);
+				if (cmd->type == FUNC_CALL)
+					load_cmd_func_call_details(cmd,cur_node);
 			}
-			if (g_strcasecmp((gchar *)cur_node->name,"arguments") == 0)
-				load_cmd_arguments(cmd,cur_node);
+			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
+				generic_xml_gchar_import(cur_node,&cmd->base);
+
+			if (g_strcasecmp((gchar *)cur_node->name,"return_data_func)") == 0)
+				generic_xml_gchar_import(cur_node,&cmd->return_data_func);
+			if (g_strcasecmp((gchar *)cur_node->name,"return_data_arg)") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&tmpbuf);
+				cmd->return_data_arg = translate_string(tmpbuf);
+				g_free(tmpbuf);
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"post_function)") == 0)
+				load_cmd_post_functions(cmd,cur_node);
+			if (g_strcasecmp((gchar *)cur_node->name,"args") == 0)
+				load_cmd_args(cmd,cur_node);
 		}
 		cur_node = cur_node->next;
 	}
 }
 
 
-void load_cmd_arguments(Command *cmd, xmlNode *node)
+void load_cmd_args(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
-	PotentialArg *arg = NULL;
-	cmd->arg_sequence = g_array_new(FALSE,TRUE,sizeof(PotentialArg *));
-
-	arg = g_new0(PotentialArg, 1);
+	gchar * tmpbuf = NULL;
+	cmd->args = g_array_new(FALSE,TRUE,sizeof(gchar *));
 
 	if (!node->children)
 	{
@@ -223,25 +236,78 @@ void load_cmd_arguments(Command *cmd, xmlNode *node)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
 			{
-				generic_xml_gchar_import(cur_node,&arg->name);
-				if (cur_node->children)
-					load_arg_attrs(arg,cur_node);
+				generic_xml_gchar_import(cur_node,&tmpbuf);
+				g_array_append_val(cmd->args,tmpbuf);
+				tmpbuf = NULL;
 			}
 		}
 		cur_node = cur_node->next;
 	}
-	g_array_append_val(cmd->arg_sequence,arg);
 }
 
-
-void load_arg_attrs(PotentialArg *arg, xmlNode *node)
+void load_cmd_post_functions(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
-	gchar *tmpbuf = NULL;
+	gchar * tmpbuf = NULL;
+	GModule *module = NULL;
+	PostFunction *pf = NULL;
 
 	if (!node->children)
 	{
-		printf("ERROR, load_arg_attrs, xml node is empty!!\n");
+		printf("ERROR, load_cmd_post_functions, xml node is empty!!\n");
+		return;
+	}
+
+	pf = g_new0(PostFunction, 1);
+	cmd->post_functions = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	if (!module)
+		if (dbg_lvl & (CRITICAL))
+			dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\tUnable to call g_module_open, error: %s\n",g_module_error()));
+
+	cur_node = node->children;
+	while (cur_node->next)
+	{
+		if (cur_node->type == XML_ELEMENT_NODE)
+		{
+			if (g_strcasecmp((gchar *)cur_node->name,"function") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&pf->name);
+				if (!g_module_symbol(module,pf->name,(void *)&pf->function))
+				{
+					if (dbg_lvl & (CRITICAL))
+						dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\tError finding symbol \"%s\", error:\n\t%s\n",pf->name,g_module_error()));
+					if (!g_module_close(module))
+					{
+						if (dbg_lvl & (CRITICAL))
+							dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\t Failure calling \"g_module_close()\", error %s\n",g_module_error()));
+					}
+				}
+
+
+				g_array_append_val(cmd->post_functions,pf);
+				tmpbuf = NULL;
+			}
+		}
+		cur_node = cur_node->next;
+	}
+	if (!g_module_close(module))
+	{
+		if (dbg_lvl & (CRITICAL))
+			dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\t Failure calling \"g_module_close()\", error %s\n",g_module_error()));
+	}
+
+}
+
+
+void load_cmd_func_call_details(Command *cmd,xmlNode *node)
+{
+	xmlNode *cur_node = NULL;
+	gchar * tmpbuf = NULL;
+
+	if (!node->children)
+	{
+		printf("ERROR, load_cmd_func_call_details, xml node is empty!!\n");
 		return;
 	}
 	cur_node = node->children;
@@ -249,17 +315,17 @@ void load_arg_attrs(PotentialArg *arg, xmlNode *node)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE)
 		{
-			if (g_strcasecmp((gchar *)cur_node->name,"count") == 0)
-				generic_xml_gint_import(cur_node,&arg->count);
-			if (g_strcasecmp((gchar *)cur_node->name,"size") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"func_call_name") == 0)
+				generic_xml_gchar_import(cur_node,&cmd->func_call_name);
+			if (g_strcasecmp((gchar *)cur_node->name,"func_call_arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
-				arg->size = translate_string(tmpbuf);
+				cmd->func_call_arg = translate_string(tmpbuf);
+				g_free(tmpbuf);
 			}
+			if (g_strcasecmp((gchar *)cur_node->name,"worker_function") == 0)
+				generic_xml_gchar_import(cur_node,&cmd->worker_func);
 		}
 		cur_node = cur_node->next;
 	}
 }
-
-
-

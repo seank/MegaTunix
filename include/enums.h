@@ -427,5 +427,15 @@ typedef enum
 	LV_PLAY
 }Lv_Handler;
 
+typedef enum
+{
+	FUNC_CALL=0x290,
+	WRITE_VERIFY,
+	MISMATCH_COUNT,
+	CLOCK,
+	REVISION,
+	SIGNATURE,
+	GENERIC_READ
+}XmlCmdType;
 
 #endif

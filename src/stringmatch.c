@@ -263,6 +263,10 @@ void build_string_2_enum_table()
 	g_hash_table_insert(str_2_enum,"_SD_MAF_HYBRID_",
 			GINT_TO_POINTER(SD_MAF_HYBRID));
 
+	/* Function Call */
+	g_hash_table_insert(str_2_enum,"_FUNC_CALL_",
+			GINT_TO_POINTER(FUNC_CALL));
+
 
 	/*g_hash_table_foreach(str_2_enum,dump_hash,NULL);*/
 

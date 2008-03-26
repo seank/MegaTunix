@@ -23,6 +23,7 @@
 
 typedef struct _PotentialArg PotentialArg;
 typedef struct _Command Command;
+typedef struct _PostFunction PostFunction;
 
 /*!
  * \brief _PotentialArgs struct holds information read from the 
@@ -49,22 +50,32 @@ struct _Command
 	gchar *desc;		/* Command Description */
 	gchar *base;		/* Base command charactor(s) */
 	CmdType type;		/* Command type enumeration */
-	GArray *arg_sequence;	/* Argument list array of PotentialArgs */
+	GArray *args;		/* Argument list array of PotentialArgs */
+	GArray *post_functions;	/* Argument list array of PostFunctions */
+	gchar *return_data_func;/* Return data function name */
+	XmlCmdType return_data_arg;/* Return data arg (ENUM) */
+	gchar *func_call_name;	/* FUNC_CALL function name */
+	void (*function) (XmlCmdType); /* Function call pointer */
+	XmlCmdType func_call_arg;/* Enum arg to function call */
+	gchar *worker_func;	/* Actual processing function */
+};
+
+
+struct _PostFunction
+{
+	gchar *name;		/* Function name */
+	void (*function) (XmlCmdType); /* Pointer to function */
 };
 /* Prototypes */
 void load_comm_xml(gchar *, gpointer );
-void load_xmlcomm_elements(GHashTable *, xmlNode *);
-void get_potential_arg_name(GHashTable *, xmlNode *);
-void load_potential_args(PotentialArg *, xmlNode *);
-void process_commands_section(GHashTable *, xmlNode *);
-void load_command_args(Command *, xmlNode *);
-
-void load_command_section(Command *, xmlNode *);
-void load_cmd_arguments(Command *, xmlNode *);
-void load_arg_attrs(PotentialArg *, xmlNode *);
-
-
-
+void load_xmlcomm_elements(xmlNode *);
+void load_potential_args(GHashTable *, xmlNode *);
+void load_commands(GHashTable *, xmlNode *);
+void load_arg_details(PotentialArg *, xmlNode *);
+void load_cmd_details(Command *, xmlNode *);
+void load_cmd_args(Command *, xmlNode *);
+void load_cmd_post_functions(Command *, xmlNode *);
+void load_cmd_func_call_details(Command *,xmlNode *);
 /* Prototypes */
 
 #endif
