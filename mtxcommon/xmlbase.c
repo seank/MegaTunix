@@ -84,7 +84,7 @@ void generic_xml_gchar_import(xmlNode *node, gpointer dest)
 	if (*val)
 		g_free(*val);
 	if (node->children->content)
-		*val = g_strdup((gchar*)node->children->content);
+		*val = g_strdup((gchar *)node->children->content);
 	else
 		*val = g_strdup("");
 }

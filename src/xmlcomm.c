@@ -25,22 +25,21 @@
 extern gint dbg_lvl;
 extern GObject *global_data;
 
-
-void load_comm_xml(gchar *filename, gpointer data)
+void load_comm_xml(gchar *filename)
 {
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
-	extern gboolean interrogated;
 
-	if (!interrogated)
-		return;
 	if (filename == NULL)
+	{
+		printf("xmlcomm filename is NULL!\n");
 		return;
+	}
 
 	LIBXML_TEST_VERSION
 
-		/*parse the file and get the DOM */
-		doc = xmlReadFile(filename, NULL, 0);
+	/*parse the file and get the DOM */
+	doc = xmlReadFile(filename, NULL, 0);
 
 	if (doc == NULL)
 	{
@@ -53,6 +52,7 @@ void load_comm_xml(gchar *filename, gpointer data)
 	load_xmlcomm_elements(root_element);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
+	g_hash_table_foreach((GHashTable *)OBJ_GET(global_data,"commands_hash"),xmlcomm_dump_commands,NULL);
 
 }
 
@@ -127,6 +127,8 @@ void load_commands(GHashTable *commands_hash, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"cmd") == 0)
 			{
 				cmd = g_new0(Command, 1);
+				cmd->post_functions = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+				cmd->args = g_array_new(FALSE,TRUE,sizeof(gchar *));
 				load_cmd_details(cmd, cur_node);
 				g_hash_table_insert(commands_hash,g_strdup(cmd->name),cmd);
 			}
@@ -163,6 +165,7 @@ void load_arg_details(PotentialArg *arg, xmlNode *node)
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				arg->size = translate_string(tmpbuf);
 				g_free(tmpbuf);
+				tmpbuf = NULL;
 			}
 		}
 		cur_node = cur_node->next;
@@ -194,21 +197,30 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				cmd->type = translate_string(tmpbuf);
 				g_free(tmpbuf);
-				if (cmd->type == FUNC_CALL)
-					load_cmd_func_call_details(cmd,cur_node);
+				tmpbuf = NULL;
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"func_call_name") == 0)
+				generic_xml_gchar_import(cur_node,&cmd->func_call_name);
+			if (g_strcasecmp((gchar *)cur_node->name,"func_call_arg") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&tmpbuf);
+				cmd->func_call_arg = translate_string(tmpbuf);
+				g_free(tmpbuf);
+				tmpbuf = NULL;
 			}
 			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
 				generic_xml_gchar_import(cur_node,&cmd->base);
 
-			if (g_strcasecmp((gchar *)cur_node->name,"return_data_func)") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"return_data_func") == 0)
 				generic_xml_gchar_import(cur_node,&cmd->return_data_func);
-			if (g_strcasecmp((gchar *)cur_node->name,"return_data_arg)") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"return_data_arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
 				cmd->return_data_arg = translate_string(tmpbuf);
 				g_free(tmpbuf);
+				tmpbuf = NULL;
 			}
-			if (g_strcasecmp((gchar *)cur_node->name,"post_function)") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"post_functions") == 0)
 				load_cmd_post_functions(cmd,cur_node);
 			if (g_strcasecmp((gchar *)cur_node->name,"args") == 0)
 				load_cmd_args(cmd,cur_node);
@@ -222,7 +234,6 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar * tmpbuf = NULL;
-	cmd->args = g_array_new(FALSE,TRUE,sizeof(gchar *));
 
 	if (!node->children)
 	{
@@ -237,7 +248,7 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
-				g_array_append_val(cmd->args,tmpbuf);
+				cmd->args = g_array_append_val(cmd->args,tmpbuf);
 				tmpbuf = NULL;
 			}
 		}
@@ -248,7 +259,6 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 void load_cmd_post_functions(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
-	gchar * tmpbuf = NULL;
 	GModule *module = NULL;
 	PostFunction *pf = NULL;
 
@@ -258,8 +268,6 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 		return;
 	}
 
-	pf = g_new0(PostFunction, 1);
-	cmd->post_functions = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
 	if (!module)
 		if (dbg_lvl & (CRITICAL))
@@ -272,6 +280,7 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 		{
 			if (g_strcasecmp((gchar *)cur_node->name,"function") == 0)
 			{
+				pf = g_new0(PostFunction, 1);
 				generic_xml_gchar_import(cur_node,&pf->name);
 				if (!g_module_symbol(module,pf->name,(void *)&pf->function))
 				{
@@ -283,10 +292,7 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 							dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\t Failure calling \"g_module_close()\", error %s\n",g_module_error()));
 					}
 				}
-
-
 				g_array_append_val(cmd->post_functions,pf);
-				tmpbuf = NULL;
 			}
 		}
 		cur_node = cur_node->next;
@@ -300,32 +306,36 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 }
 
 
-void load_cmd_func_call_details(Command *cmd,xmlNode *node)
+void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 {
-	xmlNode *cur_node = NULL;
-	gchar * tmpbuf = NULL;
+	Command *cmd = NULL;
+	PostFunction *pf = NULL;
+	gint i = 0;
 
-	if (!node->children)
+	cmd = (Command *)value;
+	printf("Command key %s\n",(gchar *)key);
+	printf("Command name %s\n",cmd->name);
+	printf("Command desc %s\n",cmd->desc);
+	if (cmd->base)
+		printf("Command base %s\n",cmd->base);
+	if (cmd->return_data_func)
+		printf("Return data function \"%s\()\"\n",cmd->return_data_func);
+	if (cmd->args->len > 0 )
 	{
-		printf("ERROR, load_cmd_func_call_details, xml node is empty!!\n");
-		return;
+		printf("Command args (%i): \n",cmd->args->len);
+		for (i=0;i<cmd->args->len;i++)
+			printf("  %s\n",g_array_index(cmd->args,gchar *,i));
 	}
-	cur_node = node->children;
-	while (cur_node->next)
+	if (cmd->post_functions->len > 0 )
 	{
-		if (cur_node->type == XML_ELEMENT_NODE)
+		printf("Post Functions (%i): \n",cmd->post_functions->len);
+		for (i=0;i<cmd->post_functions->len;i++)
 		{
-			if (g_strcasecmp((gchar *)cur_node->name,"func_call_name") == 0)
-				generic_xml_gchar_import(cur_node,&cmd->func_call_name);
-			if (g_strcasecmp((gchar *)cur_node->name,"func_call_arg") == 0)
-			{
-				generic_xml_gchar_import(cur_node,&tmpbuf);
-				cmd->func_call_arg = translate_string(tmpbuf);
-				g_free(tmpbuf);
-			}
-			if (g_strcasecmp((gchar *)cur_node->name,"worker_function") == 0)
-				generic_xml_gchar_import(cur_node,&cmd->worker_func);
+			pf = g_array_index(cmd->post_functions,PostFunction *,i);
+			printf("  %s: %p\n",pf->name,pf->function);
 		}
-		cur_node = cur_node->next;
 	}
+	if (cmd->type == FUNC_CALL)
+		printf("Function call %s\n",cmd->func_call_name);
+	printf("\n\n");
 }

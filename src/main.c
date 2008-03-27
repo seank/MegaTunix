@@ -23,6 +23,7 @@
 #include <dispatcher.h>
 #include <enums.h>
 #include <gdk/gdkgl.h>
+#include <getfiles.h>
 #include <glade/glade.h>
 #include <gui_handlers.h>
 #include <init.h>
@@ -31,6 +32,7 @@
 #include <stringmatch.h>
 #include <threads.h>
 #include <timeout_handlers.h>
+#include <xmlcomm.h>
 
 
 GThread * thread_dispatcher_id = NULL;
@@ -53,6 +55,8 @@ GObject *global_data = NULL;
  */
 gint main(gint argc, gchar ** argv)
 {
+	gchar * filename = NULL;
+
 	if(!g_thread_supported())
 		g_thread_init(NULL);
 
@@ -81,6 +85,10 @@ gint main(gint argc, gchar ** argv)
 	make_megasquirt_dirs();	/* Create config file dirs if missing */
 	/* Build table of strings to enum values */
 	build_string_2_enum_table();
+
+	filename = get_file(g_build_filename(INTERROGATOR_DATA_DIR,"comm.xml",NULL),NULL);
+	load_comm_xml(filename);
+	g_free(filename);
 
 	/* Create Queue to listen for commands */
 	io_queue = g_async_queue_new();

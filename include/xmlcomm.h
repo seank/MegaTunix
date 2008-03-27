@@ -55,9 +55,8 @@ struct _Command
 	gchar *return_data_func;/* Return data function name */
 	XmlCmdType return_data_arg;/* Return data arg (ENUM) */
 	gchar *func_call_name;	/* FUNC_CALL function name */
-	void (*function) (XmlCmdType); /* Function call pointer */
 	XmlCmdType func_call_arg;/* Enum arg to function call */
-	gchar *worker_func;	/* Actual processing function */
+	void (*function) (XmlCmdType); /* Function call pointer */
 };
 
 
@@ -67,7 +66,7 @@ struct _PostFunction
 	void (*function) (XmlCmdType); /* Pointer to function */
 };
 /* Prototypes */
-void load_comm_xml(gchar *, gpointer );
+void load_comm_xml(gchar *);
 void load_xmlcomm_elements(xmlNode *);
 void load_potential_args(GHashTable *, xmlNode *);
 void load_commands(GHashTable *, xmlNode *);
@@ -75,7 +74,7 @@ void load_arg_details(PotentialArg *, xmlNode *);
 void load_cmd_details(Command *, xmlNode *);
 void load_cmd_args(Command *, xmlNode *);
 void load_cmd_post_functions(Command *, xmlNode *);
-void load_cmd_func_call_details(Command *,xmlNode *);
+void xmlcomm_dump_commands(gpointer, gpointer, gpointer);
 /* Prototypes */
 
 #endif
