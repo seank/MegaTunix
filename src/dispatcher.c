@@ -147,10 +147,8 @@ dealloc:
  */
 gboolean gui_dispatcher(gpointer data)
 {
-	extern Firmware_Details * firmware;
 	gint len=0;
 	gint i=0;
-	gint j=0;
 	UpdateFunction val = 0;
 	gint count = 0;
 	GtkWidget *widget = NULL;
@@ -229,36 +227,7 @@ trypop:
 					dealloc_w_update(w_update);
 					message->payload = NULL;
 					break;
-				case UPD_POPULATE_DLOGGER:
-						set_title(g_strdup("Populating Datalogger..."));
-					populate_dlog_choices();
-					break;
-				case UPD_LOAD_RT_STATUS:
-					load_status();
-					break;
-				case UPD_LOAD_RT_SLIDERS:
-					load_sliders();
 					reset_temps(OBJ_GET(global_data,"temp_units"));
-					break;
-				case UPD_LOAD_RT_TEXT:
-					load_rt_text();
-					reset_temps(OBJ_GET(global_data,"temp_units"));
-					break;
-				case UPD_LOAD_REALTIME_MAP:
-					load_realtime_map();
-					break;
-				case UPD_LOAD_GUI_TABS:
-					load_gui_tabs();
-					reset_temps(OBJ_GET(global_data,"temp_units"));
-					break;
-				case UPD_READ_VE_CONST:
-					if ((connected) || (offline))
-					{
-						set_title(g_strdup("Reading VE/Constants..."));
-						io_cmd(firmware->VE_Command,NULL);
-						set_title(g_strdup("VE/Constants Read..."));
-					}
-					break;
 				case UPD_VE_CONST:
 					update_ve_const();
 					setup_menu_handlers();

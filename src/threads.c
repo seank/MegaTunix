@@ -53,18 +53,16 @@ gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test
  needed information back to the gui via another GAsyncQueue which takes care
  of any post thread GUI updates. (which can NOT be done in a thread context
  due to reentrancy and deadlock conditions)
- \param cmd (Io_Command) and enumerated representation of a command to execute
- \param data (gpointer) data passed to be appended to the message ot send as
- a "payload")
+ \param cmd (gchar *) and enumerated representation of a command to execute
+ \param data (void *) additional data for fringe cases..
  */
-void io_cmd(gchar *io_cmd_name, gpointer data)
+void io_cmd(gchar *io_cmd_name, void *data)
 {
 	Io_Message *message = NULL;
 	GHashTable *commands_hash = NULL;
 	GHashTable *args_hash = NULL;
 	Command *command = NULL;
 	PotentialArg *arg = NULL;
-	extern Io_Cmds *cmds;
 	extern gboolean tabs_loaded;
 	extern Firmware_Details * firmware;
 	extern GHashTable *dynamic_widgets;
@@ -76,13 +74,28 @@ void io_cmd(gchar *io_cmd_name, gpointer data)
 	commands_hash = OBJ_GET(global_data,"commands_hash");
 	args_hash = OBJ_GET(global_data,"arguments_hash");
 
-	command = g_hash_table_lookup(commands_hash,io_cmd_name);
-	message = initialize_io_message();
-	message->command = command;
-	message->cmd_type = command->type;
-	message->payload = data;
-	if (command->type != FUNC_CALL)
-		build_output_string(message,command,data);
+	/* Fringe case for FUNC_CALL helpers that need to trigger 
+	 * post_functions AFTER all their subhandlers have ran.  We
+	 * call io_cmd with no cmd name and pack in the post functions into
+	 * the void pointer part.
+	 */
+	if (!io_cmd_name)
+	{
+		message = initialize_io_message();
+		message->command = g_new0(Command, 1);
+		message->command->post_functions = (GArray *)data;
+		message->command->type = NULL_CMD;
+	}
+	/* Std io_message passed by string name */
+	else
+	{
+		command = g_hash_table_lookup(commands_hash,io_cmd_name);
+		message = initialize_io_message();
+		message->command = command;
+		message->payload = data;
+		if (command->type != FUNC_CALL)
+			build_output_string(message,command,data);
+	}
 
 	g_async_queue_ref(io_queue);
 	g_async_queue_push(io_queue,(gpointer)message);
@@ -96,14 +109,6 @@ void io_cmd(gchar *io_cmd_name, gpointer data)
 	/*
 	   switch (command->type)
 	   {
-	   case WRITE_THEN_READ:
-	   break;
-	   case WRITE_ONLY:
-	   break;
-	   case FUNC_CALL:
-	   break;
-
-
 	   case IO_REALTIME_READ:
 	   message = initialize_io_message();
 	   message->need_page_change = FALSE;
@@ -422,28 +427,46 @@ void *thread_dispatcher(gpointer data)
 			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
 			g_thread_join(repair_thread);
 		}
+/*		if (!port_open)
+		{
+			if (dbg_lvl & (THREADS|CRITICAL))
+				dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tLINK DOWN, Can't process requested command, aborting call\n"));
+			thread_update_logbar("comm_view","warning",g_strdup("Disconnected Serial Link. Check Communications link/cable...\n"),FALSE,FALSE);
+			thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Disconnected link, check Communications tab..."));
+			continue;
+		}
+		*/
 
 		switch ((CmdType)message->command->type)
 		{
 			case FUNC_CALL:
 				if (!message->command->function)
-					printf("CRITICAL ERROR, function \"%s()\" is not found!!\n",message->command->func_call_name);
+					printf("CRITICAL ERROR, function \"%s()\" is not found!!\n",
+							message->command->func_call_name);
 				else
-					message->command->function(message->command->func_call_arg);
-
+				{
+					/*printf("Calling FUNC_CALL, function \"%s()\" \n",
+							message->command->func_call_name);*/
+					message->command->function(
+							message->command,
+							message->command->func_call_arg);
+				}
 				break;
-			case WRITE_ONLY:
-				printf("WRITE_ONLY case not written yet\n");
-				break;
-			case WRITE_THEN_READ:
+			case WRITE_CMD:
 				write_data(message);
 				if (!message->command->helper_function)
-					printf("CRITICAL ERROR, helper function \"%s\" is NOT found!!\n",message->command->helper_func_name);
+					printf("CRITICAL ERROR, helper function \"%s\" is NOT found!!\n",
+							message->command->helper_func_name);
 				else
-					message->command->helper_function(message->command->helper_func_arg,message);
-
-				printf("WRITE_THEN_READ case not written yet\n");
+					message->command->helper_function(
+							message->command->helper_func_arg,
+							message);
 				break;
+			case NULL_CMD:
+				printf("NULL_CMD, just passing thru\n");
+				break;
+
+				/*
 			case INTERROGATION:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case entered\n"));
@@ -459,9 +482,7 @@ void *thread_dispatcher(gpointer data)
 				}
 				if ((connected) && (!offline))
 				{
-					thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogating ECU..."));
 					interrogate_ecu();
-					thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogation Complete..."));
 				}
 				else
 				{
@@ -536,6 +557,7 @@ void *thread_dispatcher(gpointer data)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tnull_command requested\n"));
 				break;
 
+				*/
 			default:
 				break;
 
@@ -543,9 +565,12 @@ void *thread_dispatcher(gpointer data)
 		/* Send rest of message back up to main context for gui
 		 * updates via asyncqueue
 		 */
-		g_async_queue_ref(pf_dispatch_queue);
-		g_async_queue_push(pf_dispatch_queue,(gpointer)message);
-		g_async_queue_unref(pf_dispatch_queue);
+		if (!message->command->defer_post_functions)
+		{
+			g_async_queue_ref(pf_dispatch_queue);
+			g_async_queue_push(pf_dispatch_queue,(gpointer)message);
+			g_async_queue_unref(pf_dispatch_queue);
+		}
 	}
 }
 
@@ -566,6 +591,7 @@ void *thread_dispatcher(gpointer data)
  */
 void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, gboolean queue_update)
 {
+	extern Firmware_Details *firmware;
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
@@ -601,7 +627,7 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 	output->size = size;
 	output->mode = MTX_SIMPLE_WRITE;
 	output->queue_update = queue_update;
-	io_cmd(IO_WRITE_DATA,output);
+	io_cmd(firmware->write_command,output);
 	return;
 }
 
@@ -618,6 +644,7 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
  */
 void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 {
+	extern Firmware_Details *firmware;
 	Output_Data *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
@@ -639,7 +666,7 @@ void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 	output->data = data;
 	output->mode = MTX_CHUNK_WRITE;
 	output->queue_update = TRUE;
-	io_cmd(IO_WRITE_DATA,output);
+	io_cmd(firmware->chunk_write_command,output);
 	return;
 }
 
@@ -833,6 +860,7 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 	block->len = strlen(command->base);
 	g_array_append_val(message->sequence,block);
 
+	/* Arguments */
 	for (i=0;i<command->args->len;i++)
 	{
 		arg = g_array_index(command->args,PotentialArg *, i);

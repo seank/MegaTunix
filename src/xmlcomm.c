@@ -52,7 +52,7 @@ void load_comm_xml(gchar *filename)
 	load_xmlcomm_elements(root_element);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
-	g_hash_table_foreach((GHashTable *)OBJ_GET(global_data,"commands_hash"),xmlcomm_dump_commands,NULL);
+//	g_hash_table_foreach((GHashTable *)OBJ_GET(global_data,"commands_hash"),xmlcomm_dump_commands,NULL);
 
 }
 
@@ -206,6 +206,8 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
 				if (module)
 					g_module_symbol(module,cmd->func_call_name,(void *)&cmd->function);
+				if (!(cmd->function))
+					printf("ERROR Function %s is NULL\n",cmd->func_call_name);
 				g_module_close(module);
 			}
 			if (g_strcasecmp((gchar *)cur_node->name,"func_call_arg") == 0)
@@ -215,6 +217,9 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 				g_free(tmpbuf);
 				tmpbuf = NULL;
 			}
+			if (g_strcasecmp((gchar *)cur_node->name,"defer_post_functions") == 0)
+				generic_xml_gboolean_import(cur_node,&cmd->defer_post_functions);
+
 			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
 				generic_xml_gchar_import(cur_node,&cmd->base);
 
@@ -224,6 +229,8 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
 				if (module)
 					g_module_symbol(module,cmd->helper_func_name,(void *)&cmd->helper_function);
+				if (!(cmd->helper_function))
+					printf("ERROR Helper Function %s is NULL\n",cmd->helper_func_name);
 				g_module_close(module);
 
 			}
@@ -297,6 +304,8 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
 				if (module)
 					g_module_symbol(module,pf->name,(void *)&pf->function);
+				if (!(pf->function))
+					printf("ERROR Post Function %s is NULL\n",pf->name);
 				g_module_close(module);
 				g_array_append_val(cmd->post_functions,pf);
 			}
@@ -332,6 +341,7 @@ void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 	}
 	if (cmd->post_functions->len > 0 )
 	{
+		printf("Defer Post Functions (%i): \n",cmd->defer_post_functions);
 		printf("Post Functions (%i): \n",cmd->post_functions->len);
 		for (i=0;i<cmd->post_functions->len;i++)
 		{
@@ -340,6 +350,9 @@ void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 		}
 	}
 	if (cmd->type == FUNC_CALL)
+	{
+
 		printf("Function call %s \(%p)\n",cmd->func_call_name,cmd->function);
+	}
 	printf("\n\n");
 }

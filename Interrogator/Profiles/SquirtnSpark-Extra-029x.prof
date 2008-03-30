@@ -9,18 +9,13 @@ name=MegaSquirtnSpark-Extra 029x
 SignatureVia=MS_Signature
 TextVerVia=MS_Textrev
 NumVerVia=MS-VerNum
-Rt_Command=ms1_extra_rtvars
+RT_Command=ms1_extra_rtvars
+RT_total_bytes=39
 VE_Command=ms1_veconst
 Burn_Command=ms1_burn
-Write_Commmand=ms1_generic_write
-Chunk_Write_Commmand=ms1_chunk_write
-
+Write_Command=ms1_generic_write
+Chunk_Write_Command=ms1_chunk_write
 Capabilities=_MSNS_E_
-Rt_Cmd_Key=MSnS-E_RTVars
-VE_Cmd_Key=MS-I_VEconst
-Write_Cmd=W
-Burn_Cmd=B
-Chunk_Write_Cmd=X
 Page_Cmd=P
 MultiPage=TRUE
 ChunkWriteSupport=TRUE
@@ -32,14 +27,6 @@ ToothmonPage=9
 TrigmonPage=10
 # Fuel1, Fuel2, Fuel3, Spark1, Spark2, AFR1, AFR2, Boost1, Boost2, Boost3
 TotalPages=11
-
-[iocommands]
-Realtime_Cmd=R,39
-VE_Cmd=V,189
-Write_Cmd=W,0
-Burn_Cmd=B,0
-Chunk_Write_Cmd=X,0
-Page_Cmd=P,0
 
 [table_0]
 table_name=Fuel VE-Table 1, MSnSpark-Extra

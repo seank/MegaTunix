@@ -34,6 +34,23 @@ void generic_xml_gint_import(xmlNode *node, gpointer dest)
 }
 
 
+void generic_xml_gboolean_import(xmlNode *node, gpointer dest)
+{
+	gboolean * val = (gboolean *)dest;
+	if (!node->children)
+	{
+		printf("ERROR, generic_xml_gint_import, xml node is empty!!\n");
+		return;
+	}
+	if (!(node->children->type == XML_TEXT_NODE))
+		return;
+	if (!g_ascii_strcasecmp((gchar *)node->children->content, "TRUE"))
+		*val = TRUE;
+	else
+		*val = FALSE;
+}
+
+
 void generic_xml_gint_export(xmlNode *parent, gchar *element_name, gint *val)
 {
 	gchar * tmpbuf = NULL;
@@ -41,6 +58,17 @@ void generic_xml_gint_export(xmlNode *parent, gchar *element_name, gint *val)
 	xmlNewChild(parent, NULL, BAD_CAST element_name,
 			BAD_CAST tmpbuf);
 	g_free(tmpbuf);
+}
+
+
+void generic_xml_gboolean_export(xmlNode *parent, gchar *element_name, gboolean *val)
+{
+	if (*val)
+		xmlNewChild(parent, NULL, BAD_CAST element_name,
+				BAD_CAST "TRUE");
+	else
+		xmlNewChild(parent, NULL, BAD_CAST element_name,
+				BAD_CAST "FALSE");
 }
 
 

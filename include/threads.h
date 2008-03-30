@@ -81,7 +81,6 @@ struct _Output_Data
  */
 struct _Io_Message
 {
-	CmdType cmd_type;	/*! Command type */
 	gint page;		/*! Virtual Page number */
 	gint out_len;	
 	gint offset;	

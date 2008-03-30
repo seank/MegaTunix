@@ -91,6 +91,7 @@ void interrogate_ecu()
 		g_static_mutex_unlock(&mutex);
 		return;
 	}
+	thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogating ECU..."));
 
 	/* Load tests from config files */
 	tests = validate_and_load_tests(&tests_hash);
@@ -225,6 +226,7 @@ void interrogate_ecu()
 	g_static_mutex_unlock(&mutex);
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup("\n"__FILE__": interrogate_ecu() LEAVING\n\n"));
+	thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogation Complete..."));
 	return;
 }
 
@@ -250,7 +252,6 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 	gchar * filename = NULL;
 	gchar ** filenames = NULL;
 	GArray *classes = NULL;
-	extern Io_Cmds *cmds;
 
 	filenames = get_files(g_strconcat(INTERROGATOR_DATA_DIR,PSEP,"Profiles",PSEP,NULL),g_strdup("prof"),&classes);	
 	if (!filenames)
@@ -301,26 +302,6 @@ gboolean determine_ecu(GArray *tests,GHashTable *tests_hash)
 			return FALSE;
 		update_interrogation_gui(firmware,tests_hash);
 
-		if (firmware->rt_cmd_key)
-		{
-			test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->rt_cmd_key);
-			if (test)
-			{
-				cmds->realtime_cmd = g_strdup(test->test_vector[0]);
-				cmds->rt_cmd_len = g_strv_length(test->test_vector);
-				firmware->rtvars_size = test->num_bytes;
-			}
-		}	
-		test = NULL;
-		if (firmware->ve_cmd_key)
-		{
-			test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->ve_cmd_key);
-			if (test)
-			{
-				cmds->veconst_cmd = g_strdup(test->test_vector[0]);
-				cmds->ve_cmd_len = g_strv_length(test->test_vector);
-			}
-		}	
 		return TRUE;
 	
 	}
@@ -372,37 +353,35 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\tfile:%s opened successfully\n",filename));
-	if(!cfg_read_string(cfgfile,"parameters","Rt_Cmd_Key",
-				&firmware->rt_cmd_key))
+	if(!cfg_read_string(cfgfile,"parameters","RT_Command",
+				&firmware->rt_command))
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Rt_Cmd_Key\" variable not found in interrogation profile, ERROR\n"));
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"RT_Command\" variable not found in interrogation profile, ERROR\n"));
+	}
+	if(!cfg_read_int(cfgfile,"parameters","RT_total_bytes",
+				&firmware->rtvars_size))
+	{
+		if (dbg_lvl & (INTERROGATOR|CRITICAL))
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"RT_total_bytes\" variable not found in interrogation profile, ERROR\n"));
 	}
 	if(!cfg_read_string(cfgfile,"parameters","VE_Command",
-				&firmware->VE_Command))
+				&firmware->ve_command))
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"VE_Command\" variable not found in interrogation profile, ERROR\n"));
 	}
-	if(!cfg_read_string(cfgfile,"parameters","VE_Cmd_Key",
-				&firmware->ve_cmd_key))
+	if(!cfg_read_string(cfgfile,"parameters","Write_Command",
+				&firmware->write_command))
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"VE_Cmd_Key\" variable not found in interrogation profile, ERROR\n"));
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Write_Command\" variable not found in interrogation profile, ERROR\n"));
 	}
-	cfg_read_string(cfgfile,"parameters","Raw_Mem_Cmd_Key",
-			&firmware->raw_mem_cmd_key);
-	if(!cfg_read_string(cfgfile,"parameters","Write_Cmd",
-				&firmware->write_cmd))
+	if(!cfg_read_string(cfgfile,"parameters","Burn_Command",
+				&firmware->burn_command))
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Write_Cmd\" variable not found in interrogation profile, ERROR\n"));
-	}
-	if(!cfg_read_string(cfgfile,"parameters","Burn_Cmd",
-				&firmware->burn_cmd))
-	{
-		if (dbg_lvl & (INTERROGATOR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Burn_Cmd\" variable not found in interrogation profile, ERROR\n"));
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Burn_Command\" variable not found in interrogation profile, ERROR\n"));
 	}
 	if(!cfg_read_boolean(cfgfile,"parameters","MultiPage",
 				&firmware->multi_page))
@@ -427,11 +406,11 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 	}
 	if (firmware->chunk_support)
 	{
-		if(!cfg_read_string(cfgfile,"parameters","Chunk_Write_Cmd",
-					&firmware->chunk_write_cmd))
+		if(!cfg_read_string(cfgfile,"parameters","Chunk_Write_Command",
+					&firmware->chunk_write_command))
 		{
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
-				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Chunk_Write_Cmd\" flag not found in interrogation profile, ERROR\n"));
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Chunk_Write_Command\" flag not found in interrogation profile, ERROR\n"));
 		}
 	}
 	if(!cfg_read_int(cfgfile,"parameters","TotalPages",

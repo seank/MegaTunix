@@ -191,218 +191,10 @@ void update_write_status(Output_Data *data)
 
 
 /*!
- \brief writeto_ecu() physiclaly sends the data to the ECU.
- \param message (Io_Message *) a pointer to a Io_Message
- */
-void writeto_ecu(Io_Message *message)
-{
-	extern gboolean connected;
-	Output_Data *output = message->payload;
-
-	gint page = output->page;
-	gint offset = output->offset;
-	gint value = output->value;
-	gint canID = output->canID;
-	DataSize size = output->size;
-	gint res = 0;
-	gint count = 0;
-	gchar * err_text = NULL;
-	gint i = 0;
-	char *lbuff = NULL;
-	gchar * write_cmd = NULL;
-	extern Serial_Params *serial_params;
-	extern Firmware_Details *firmware;
-	extern volatile gboolean offline;
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-
-	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&mutex);
-
-	if (offline)
-	{
-		/*printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); */
-		switch (output->mode)
-		{
-			case MTX_SIMPLE_WRITE:
-				set_ecu_data(canID,page,offset,size,value);
-				break;
-			case MTX_CHUNK_WRITE:
-				store_new_block(canID,page,offset,output->data,output->len);
-				break;
-		}
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		return;		/* can't write anything if offline */
-	}
-	if (!connected)
-	{
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		return;		/* can't write anything if disconnected */
-	}
-	if ((!firmware->multi_page) && (page > 0))
-	{
-		if (dbg_lvl & (SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tCRITICAL ERROR, Firmware is NOT multi-page, yet page is greater than ZERO, ABORTING WRITE!!!\n"));
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		return;
-	}
-
-	if (output->mode == MTX_SIMPLE_WRITE)
-	{
-		if (dbg_lvl & SERIAL_WR)
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSerial Write, Page, %i, Mem Offset %i, Value %i\n",page,offset,value));
-	}
-	else if (output->mode == MTX_CHUNK_WRITE)
-	{
-		if (dbg_lvl & SERIAL_WR)
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tCHUNK Write, Page, %i, Mem Offset %i, length %i\n",page,offset,output->len));
-	}
-	else
-	{
-		if (dbg_lvl & (SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tNO output mode defined, aborting!!\n"));
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		return;
-	}
-
-	if ((value < 0) && (output->mode == MTX_SIMPLE_WRITE))
-	{
-		if (dbg_lvl & (SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tWARNING!!, value sent is below 0\n"));
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		return;
-	}
-
-	g_static_mutex_unlock(&serio_mutex);
-	if ((firmware->multi_page ) && (output->need_page_change)) 
-		set_ms_page(output->truepgnum);
-	g_static_mutex_lock(&serio_mutex);
-
-	write_cmd = g_strdup(firmware->write_cmd);
-
-	if (output->mode == MTX_SIMPLE_WRITE)
-	{
-		if ((value > 65536))
-		{
-			count = 5;
-			lbuff = g_new0(char,count);
-			lbuff[0]=offset;
-			lbuff[1]=(value & 0xff000000) >> 24; /* Highbyte */
-			lbuff[2]=(value & 0xff0000) >> 16;	/* Secondhigh */
-			lbuff[3]=(value & 0xff00) >> 8; /* secondlow */
-			lbuff[4]=value & 0x00ff;	/* Lowbyte */
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 32 bit value to ECU\n"));
-		}
-		else if ((value > 255) && (value < 65536))
-		{
-			count = 3;
-			lbuff = g_new0(char,count);
-			lbuff[0]=offset;
-			lbuff[1]=(value & 0xff00) >> 8; /* Highbyte */
-			lbuff[2]=value & 0x00ff;	/* Lowbyte */
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 16 bit value to ECU\n"));
-		}
-		else
-		{
-			count = 2;
-			lbuff = g_new0(char,count);
-			lbuff[0]=offset;
-			lbuff[1]=value;
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup(__FILE__": writeto_ecu()\n\tSending 8 bit value to ECU\n"));
-		}
-
-		res = write (serial_params->fd,write_cmd,1);	/* Send write command */
-		if (res != 1 )
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending write command \"%s\" FAILED, ERROR \"%s\"!!!\n",write_cmd,err_text));
-		}
-		else
-		{
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending of write command \"%s\" to ECU succeeded\n",write_cmd));
-		}
-		res = write (serial_params->fd,lbuff,count);	/* Send offset+data */
-		if (res != count )
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending offset+data FAILED, ERROR \"%s\"!!!\n",err_text));
-		}
-		else
-		{
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending of offset+data to ECU succeeded\n"));
-		}
-
-		g_free(lbuff);
-		set_ecu_data(canID,page,offset,size,value);
-
-		g_free(write_cmd);
-		g_usleep(5000);
-
-	}
-	else if (output->mode == MTX_CHUNK_WRITE)
-	{
-		/* Initiate chunk write */
-		res = write (serial_params->fd,firmware->chunk_write_cmd,1);
-		if (res != 1 )
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending chunkwrite command \"%s\" FAILED, ERROR \"%s\"!!!\n",firmware->chunk_write_cmd,err_text));
-		}
-		else
-		{
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tChunk write of \"%s\" to ECU succeeded\n",firmware->chunk_write_cmd));
-		}
-
-		/* count is len+2 cause we need two bytes for offset and len*/
-		store_new_block(canID,page,offset,output->data,output->len);
-		count = output->len+2;
-		lbuff = g_new0(char,count);
-		lbuff[0]=offset;
-		lbuff[1]=output->len;
-		for(i=0;i<output->len;i++)
-			lbuff[2+i] = output->data[i];
-		res = write (serial_params->fd,lbuff,count);	/* Send write command */
-		if (res != count )
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tSending chunkwrite offset+count+data of length \"%i\", (%i) FAILED, ERROR \"%s\"!!!\n",count,res,err_text));
-		}
-		else
-		{
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tChunk write of offset+count+data to ECU succeeded\n"));
-		}
-		g_free(lbuff);
-		g_usleep(100000);
-	}
-
-	/*is this really needed??? */
-
-	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&mutex);
-	return;
-}
-
-
-/*!
  \brief burn_ecu_flash() issues the commands to the ECU to burn the contents
  of RAM to flash.
  */
-void burn_ecu_flash()
+void burn_ms1_ecu_flash()
 {
 	gint res = 0;
 	gint i = 0;
@@ -430,7 +222,7 @@ void burn_ecu_flash()
 	g_static_mutex_unlock(&serio_mutex);
 	flush_serial(serial_params->fd, TCIOFLUSH);
 	g_static_mutex_lock(&serio_mutex);
-	res = write (serial_params->fd,firmware->burn_cmd,1);  /* Send Burn command */
+	res = write (serial_params->fd,firmware->burn_command,1);  /* Send Burn command */
 	if (res != 1)
 	{
 		err_text = (gchar *)g_strerror(errno);
@@ -454,103 +246,6 @@ copyover:
 	return;
 }
 
-
-/*!
- \brief readfrom_ecu() reads arbritrary data from the ECU.  Data is actually
- written in this function to trigger the ECU to send back a block of data, 
- and then a handler is kicked off to handle the incoming data
- \see handle_ecu_data
- \param message (Io_Message *) pointer to a Io_Message
- */
-void readfrom_ecu(Io_Message *message)
-{
-	gint result = 0;
-	Output_Data *output  = NULL;
-	extern Serial_Params *serial_params;
-	extern Firmware_Details *firmware;
-	extern gboolean connected;
-	extern gchar *handler_types[];
-	gchar *err_text = NULL;
-	extern volatile gboolean offline;
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-
-	if(serial_params->open == FALSE)
-		return;
-
-	if (offline)
-		return;
-
-	output = (Output_Data *)message->payload;
-
-	if ((firmware->multi_page ) && (output->need_page_change)) 
-		set_ms_page(output->truepgnum);
-
-	g_static_mutex_lock(&mutex);
-
-	/* Flush serial port... */
-	flush_serial(serial_params->fd, TCIOFLUSH);
-	g_static_mutex_lock(&serio_mutex);
-	result = write(serial_params->fd,
-			message->out_str,
-			message->out_len);
-	if (result != message->out_len)	
-	{
-		err_text = (gchar *)g_strerror(errno);
-		if (dbg_lvl & (SERIAL_RD|SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\twrite command to ECU failed, ERROR \"%s\"\n",err_text));
-	}
-
-	else
-		if (dbg_lvl & (SERIAL_WR|SERIAL_RD))
-			dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\tSent %s to the ECU\n",message->out_str));
-
-	if (message->handler == RAW_MEMORY_DUMP)
-	{
-		result = write(serial_params->fd,&message->offset,1);
-		if (result < 1)
-		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|SERIAL_RD|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\twrite of offset for raw mem cmd to ECU failed, ERROR \"%s\"\n",err_text));
-		}
-		else
-		{
-			if (dbg_lvl & (SERIAL_WR|SERIAL_RD))
-				dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\twrite of offset of \"%i\" for raw mem cmd succeeded\n",message->offset));
-		}
-	}
-
-	if (message->handler != -1)
-	{
-		g_static_mutex_unlock(&serio_mutex);
-		result = handle_ecu_data(message->handler,message);
-		g_static_mutex_lock(&serio_mutex);
-	}
-	else
-	{
-		if (dbg_lvl & (SERIAL_RD|SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": readfrom_ecu()\n\t message->handler is undefined, author brainfart, EXITING!\n"));
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
-		exit (-1);
-	}
-	if (result)
-	{
-		connected = TRUE;
-		if (dbg_lvl & (SERIAL_WR|SERIAL_RD))
-			dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\tDone Reading %s\n",handler_types[message->handler]));
-
-	}
-	else
-	{
-		connected = FALSE;
-		serial_params->errcount++;
-		if (dbg_lvl & (SERIAL_WR|SERIAL_RD))
-			dbg_func(g_strdup_printf(__FILE__": readfrom_ecu()\n\tError reading data: %s\n",g_strerror(errno)));
-	}
-	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&mutex);
-}
 
 
 /*!
@@ -585,7 +280,7 @@ void set_ms_page(guint8 ms_page)
 	if ((ms_page > firmware->ro_above) && (last_page <= firmware->ro_above))
 	{
 		g_static_mutex_unlock(&serio_mutex);
-		burn_ecu_flash();
+		burn_ms1_ecu_flash();
 		g_static_mutex_lock(&serio_mutex);
 		goto force_change;
 	}
@@ -595,7 +290,7 @@ void set_ms_page(guint8 ms_page)
 	if (((ms_page != last_page) && (((memcmp(ecu_data_last[last_page],ecu_data[last_page],firmware->page_params[last_page]->length) != 0)) || ((memcmp(ecu_data_last[ms_page],ecu_data[ms_page],firmware->page_params[ms_page]->length) != 0)))))
 	{
 		g_static_mutex_unlock(&serio_mutex);
-		burn_ecu_flash();
+		burn_ms1_ecu_flash();
 		g_static_mutex_lock(&serio_mutex);
 	}
 skip_change:
@@ -683,11 +378,14 @@ void write_data(Io_Message *message)
 	}
 
 
-	if ((firmware->multi_page ) && (output->need_page_change)) 
+	if (output)
 	{
-		g_static_mutex_unlock(&serio_mutex);
-		set_ms_page(output->truepgnum);
-		g_static_mutex_lock(&serio_mutex);
+		if ((firmware->multi_page ) && (output->need_page_change)) 
+		{
+			g_static_mutex_unlock(&serio_mutex);
+			set_ms_page(output->truepgnum);
+			g_static_mutex_lock(&serio_mutex);
+		}
 	}
 
 	for (i=0;i<message->sequence->len;i++)
@@ -710,10 +408,13 @@ void write_data(Io_Message *message)
 
 	}
 
+	if (output)
+	{
 	if (output->mode == MTX_SIMPLE_WRITE)
 		set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
 	else if (output->mode == MTX_CHUNK_WRITE)
 		store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+	}
 
 	g_static_mutex_unlock(&serio_mutex);
 	g_static_mutex_unlock(&mutex);

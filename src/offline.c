@@ -57,9 +57,11 @@ void set_offline_mode(void)
 	GArray *tests = NULL;
 	GHashTable *tests_hash = NULL;
 	gboolean tmp = TRUE;
+	GModule *module = NULL;
+	GArray *pfuncs = NULL;
+	PostFunction *pf = NULL;
 	extern Firmware_Details *firmware;
 	extern gboolean interrogated;
-	extern Io_Cmds *cmds;
         extern GAsyncQueue *serial_repair_queue;
 
 
@@ -95,32 +97,24 @@ void set_offline_mode(void)
 	load_firmware_details(firmware,filename);
 	update_interrogation_gui(firmware,tests_hash);
 
-	if (firmware->rt_cmd_key)
-	{
-		test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->rt_cmd_key);
-		if (test)
-		{
-			cmds->realtime_cmd = g_strdup(test->test_vector[0]);
-			cmds->rt_cmd_len = g_strv_length(test->test_vector);
-			firmware->rtvars_size = test->num_bytes;
-		}
-	}
-	test = NULL;
-	if (firmware->ve_cmd_key)
-	{
-		test = (Detection_Test *)g_hash_table_lookup(tests_hash,firmware->ve_cmd_key);
-		if (test)
-		{
-			cmds->veconst_cmd = g_strdup(test->test_vector[0]);
-			cmds->ve_cmd_len = g_strv_length(test->test_vector);
-		}
-	}
-
 	interrogated = TRUE;
 
-	io_cmd(IO_LOAD_REALTIME_MAP,NULL);
-	io_cmd(IO_LOAD_GUI_TABS,NULL);
-	io_cmd(IO_UPDATE_VE_CONST,NULL);
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("load_realtime_map");
+	g_module_symbol(module,pf->name,(void *)&pf->function);
+	g_array_append_val(pfuncs,pf);
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("load_gui_tabs");
+	g_module_symbol(module,pf->name,(void *)&pf->function);
+	g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+
+	io_cmd(NULL,pfuncs);
+	io_cmd(firmware->ve_command,NULL);
 
 	widget = g_hash_table_lookup(dynamic_widgets,"interrogate_button");
 	if (GTK_IS_WIDGET(widget))

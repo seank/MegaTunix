@@ -16,6 +16,7 @@
 #include <debugging.h>
 #include <defines.h>
 #include <enums.h>
+#include <firmware.h>
 #include <gui_handlers.h>
 #include <runtime_gui.h>
 #include <logviewer_gui.h>
@@ -224,6 +225,7 @@ void stop_tickler(TicklerType type)
 gboolean signal_read_rtvars()
 {
 	gint length = 0;
+	extern Firmware_Details *firmware;
 	extern GAsyncQueue *io_queue;
 	extern gboolean rtvars_loaded;
 
@@ -241,7 +243,7 @@ gboolean signal_read_rtvars()
 
 	if (!rtvars_loaded)
 		return TRUE;
-	io_cmd(IO_REALTIME_READ,NULL);			
+	io_cmd(firmware->rt_command,NULL);			
 	return TRUE;	/* Keep going.... */
 }
 

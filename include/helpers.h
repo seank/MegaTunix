@@ -18,14 +18,16 @@
 #include <gtk/gtk.h>
 
 /* Prototypes */
-void enable_interrogation_button(void);
-void start_statuscounts(void);
-void spawn_read_ve_const(void);
-void enable_get_data_buttons(void);
-void conditional_start_rtv_tickler(void);
-void set_store_black(void);
-void enable_3d_buttons(void);
-void simple_read_callback(XmlCmdType, void *);
+void enable_interrogation_button_cb(void);
+void start_statuscounts_cb(void);
+void spawn_read_ve_const_cb(void);
+void enable_get_data_buttons_cb(void);
+void conditional_start_rtv_tickler_cb(void);
+void set_store_black_cb(void);
+void enable_3d_buttons_cb(void);
+void reset_temps_cb(void);
+void simple_read_cb(XmlCmdType, void *);
+void read_ve_const(XmlEcuType);
 /* Prototypes */
 
 #endif

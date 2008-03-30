@@ -418,7 +418,7 @@ jumpout:
 }
 
 
-gboolean read_data(gint total_wanted, void *buffer)
+gboolean read_data(gint total_wanted, void **buffer)
 {
 	gint res = 0;
 	gboolean state = TRUE;
@@ -480,7 +480,7 @@ gboolean read_data(gint total_wanted, void *buffer)
 		goto jumpout;
 	}
 	else
-		buffer = g_memdup(buf,total_read);
+		*buffer = g_memdup(buf,total_read);
 	dump_output(total_read,buf);
 jumpout:
 	if (dbg_lvl & IO_PROCESS)

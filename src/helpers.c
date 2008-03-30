@@ -12,6 +12,7 @@
  */
 
 #include <config.h>
+#include <conversions.h>
 #include <dataio.h>
 #include <datamgmt.h>
 #include <defines.h>
@@ -21,6 +22,7 @@
 #include <listmgmt.h>
 #include <mode_select.h>
 #include <notifications.h>
+#include <rtv_processor.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,7 +35,7 @@ extern gint dbg_lvl;
 extern GObject *global_data;
 
 
-void enable_interrogation_button(void)
+void enable_interrogation_button_cb(void)
 {
 	extern GHashTable *dynamic_widgets;
 	extern volatile gboolean offline;
@@ -42,13 +44,13 @@ void enable_interrogation_button(void)
 }
 
 
-void start_statuscounts(void)
+void start_statuscounts_cb(void)
 {
 	start_tickler(SCOUNTS_TICKLER);
 }
 
 
-void spawn_read_ve_const(void)
+void spawn_read_ve_const_cb(void)
 {
 	extern Firmware_Details *firmware;
 	
@@ -58,17 +60,18 @@ void spawn_read_ve_const(void)
 		io_cmd("ms1_read_ve_const",NULL);
 }
 
-void read_ve_const(XmlCmdType data)
+void read_ve_const(void *data, XmlEcuType type)
 {
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
 	Output_Data *output = NULL;
+	Command *command = NULL;
 	gint i = 0;
 
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
-	if (data == MS2)
+	if (type == MS2)
 		printf("MS2 read_ve_const not written yet\n");
-	if (data == MS1)
+	if (type == MS1)
 	{
 		if (!offline)
 		{
@@ -78,30 +81,28 @@ void read_ve_const(XmlCmdType data)
 				output->page=i;
 				output->truepgnum = firmware->page_params[i]->truepgnum;
 				output->need_page_change = TRUE;
-				io_cmd(firmware->VE_Command,output);
+				io_cmd(firmware->ve_command,output);
 			}
 		}
-
-
-		printf("MS1 read_ve_const not written yet\n");
+		command = (Command *)data;
+		io_cmd(NULL,command->post_functions);
 	}
-
 }
 
 
-void enable_get_data_buttons(void)
+void enable_get_data_buttons_cb(void)
 {
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-void conditional_start_rtv_tickler(void)
+void conditional_start_rtv_tickler_cb(void)
 {
 	start_tickler(RTV_TICKLER);
 }
 
 
-void set_store_black(void)
+void set_store_black_cb(void)
 {
 	gint j = 0;
 	extern Firmware_Details *firmware;
@@ -111,18 +112,29 @@ void set_store_black(void)
 		set_reqfuel_color(BLACK,j);
 }
 
-void enable_3d_buttons(void)
+void enable_3d_buttons_cb(void)
 {
 	g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
+void reset_temps_cb(void)
+{
+	reset_temps(OBJ_GET(global_data,"temp_units"));
+}
 
-void simple_read_callback(XmlCmdType type, void * data)
+void simple_read_cb(XmlCmdType type, void * data)
 {
 	Io_Message *message  = NULL;
 	Output_Data *output  = NULL;
 	gboolean res = FALSE;
+	static gint lastcount = 0;
 	extern Firmware_Details *firmware;
+	extern gint ms_ve_goodread_count;
+	extern gint ms_reset_count;
+	extern gint ms_goodread_count;
+	guchar *ptr = NULL;
+	static gboolean just_starting = TRUE;
+
 
 	message = (Io_Message *)data;
 	output = (Output_Data *)message->payload;
@@ -148,10 +160,60 @@ void simple_read_callback(XmlCmdType type, void * data)
 			printf("SIGNATURE not written yet\n");
 			break;
 		case MS1_VECONST:
-			res = read_data(firmware->page_params[output->page]->length,message->recv_buf);
-			if (res)
-				printf("receive successfull!!!!\n");
-			printf("MS1_VECONST not fully written yet\n");
+			res = read_data(firmware->page_params[output->page]->length,&message->recv_buf);
+			if (!res)
+			{
+				printf("ERROR receive failure! (MS1 VECONST)!!!\n");
+				break;
+			}
+			store_new_block(output->canID,output->page,0,
+					message->recv_buf,
+					firmware->page_params[output->page]->length);
+			backup_current_data(0,message->page);
+			ms_ve_goodread_count++;
+			dump_output(firmware->page_params[output->page]->length,message->recv_buf);
+			break;
+		case MS2_VECONST:
+			printf("MS2_VECONST handler not written yet\n");
+			break;
+		case MS1_RT_VARS:
+			res = read_data(firmware->rtvars_size,&message->recv_buf);
+			if (!res)
+			{
+				printf("ERROR receive failure! (RTVARS)!!!\n");
+				break;
+			}
+			ptr = (guchar *)message->recv_buf;
+			/* Test for MS reset */
+			if (just_starting)
+			{
+				lastcount = ptr[0];
+				just_starting = FALSE;
+			}
+			/* Check for clock jump from the MS, a 
+			 * jump in time from the MS clock indicates 
+			 * a reset due to power and/or noise.
+			 */
+			if ((lastcount - ptr[0] > 1) && \
+					(lastcount - ptr[0] != 255))
+			{
+				ms_reset_count++;
+				gdk_beep();
+			}
+			else
+				ms_goodread_count++;
+
+			lastcount = ptr[0];
+
+			/* Feed raw buffer over to post_process()
+			 * as a void * and pass it a pointer to the new
+			 * area for the parsed data...
+			 */
+			dump_output(firmware->rtvars_size,message->recv_buf);
+			process_rt_vars((void *)message->recv_buf);
+			break;
+		case MS2_RT_VARS:
+			printf("MS2_RTVARS_CALLBACK not written yet\n");
 			break;
 		case MS2_BOOTLOADER:
 			printf("MS2_BOOTLOADER not written yet\n");

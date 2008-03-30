@@ -187,7 +187,7 @@ typedef enum
 	STANDARD	= 1<<0,
 	DUALTABLE	= 1<<1,
 	MSNS_E		= 1<<2,
-	MS2_STD		= 1<<3,
+	MS2_STD		= 1<<3
 }Capability;
 
 typedef enum
@@ -232,10 +232,6 @@ typedef enum
 	WRITE_CMD,
 	NULL_CMD,
 	INTERROGATION,
-	SILENT,
-	NOISY,
-	WRITE_THEN_READ,
-	WRITE_ONLY,
 	FUNC_CALL
 }CmdType;
 
@@ -441,7 +437,10 @@ typedef enum
 	REVISION,
 	SIGNATURE,
 	MS1_VECONST,
-	MS2_BOOTLOADER
+	MS2_VECONST,
+	MS2_BOOTLOADER,
+	MS1_RT_VARS,
+	MS2_RT_VARS
 }XmlCmdType;
 
 typedef enum

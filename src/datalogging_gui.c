@@ -82,6 +82,7 @@ void populate_dlog_choices()
 			dbg_func(g_strdup(__FILE__": populate_dlog_choices()\n\tCRITICAL ERROR, Realtime Variable definitions NOT LOADED!!!\n\n"));
 		return;
 	}
+	set_title(g_strdup("Populating Datalogger..."));
 
 	vbox = g_hash_table_lookup(dynamic_widgets,"dlog_logable_vars_vbox1");
 	table_rows = ceil((float)rtv_map->derived_total/(float)TABLE_COLS);

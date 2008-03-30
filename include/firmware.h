@@ -23,7 +23,6 @@ typedef struct _Io_File Io_File;
 typedef struct _Firmware_Details Firmware_Details;
 typedef struct _Table_Params Table_Params;
 typedef struct _Page_Params Page_Params;
-typedef struct _Io_Cmds Io_Cmds;
 
 
 /*!
@@ -58,10 +57,12 @@ struct _Firmware_Details
 	gchar *sliders_map_file;/*! runtime sliders map filename */
 	gchar *rtt_map_file;	/*! runtime text map filename */
 	gchar *status_map_file;	/*! runtime status map filename */
-	gchar *rt_cmd_key;	/*! string key to hashtable for RT command */
-	gchar *ve_cmd_key;	/*! string key to hashtable for VE command */
-	gchar *raw_mem_cmd_key;	/*! string key to hashtable for RAW command */
-	gchar *VE_Command;	/*! New VE Command string */
+	gchar *rt_command;	/*! New RT Command string */
+	gchar *ve_command;	/*! New VE Command string */
+	gchar *write_command;	/*! New Write Command string */
+	gchar *chunk_write_command;	/*! New Chunk Write Command string */
+	gchar *burn_command;	/*! New burn command string */
+	gchar *page_cmd;	/*! Command to send to change pages ... */
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
@@ -77,10 +78,6 @@ struct _Firmware_Details
 	gint ro_above;		/*! Read Only debug pages above this one */
 	gint trigmon_page;	/*! Trigger Monitor RO Page */
 	gint toothmon_page;	/*! Tooth Monitor RO Page */
-	gchar *chunk_write_cmd;	/*! Command to send to chunk write data... */
-	gchar *write_cmd;	/*! Command to send to write data... */
-	gchar *burn_cmd;	/*! Command to send to burn data... */
-	gchar *page_cmd;	/*! Command to send to change pages ... */
 	Page_Params **page_params;/*! special vars per page */
 	Table_Params **table_params;/*! details each table */
 	Req_Fuel_Params **rf_params;/*! req_fuel params */
@@ -188,22 +185,6 @@ struct _Page_Params
 	gint spconfig_offset;	/*! Where spconfig value is located */
 };
 
-
-/*!
- \brief _Io_Cmds stores the basic data for the critical megasquirt command
- codes. (realtime, VE, ign and spark) including the length of each of those
- commands.  
- \warning This really should be done a better way...
- */
-struct _Io_Cmds
-{
-	gchar *realtime_cmd;    /*! Command sent to get RT vars.... */
-	gint rt_cmd_len;        /*! length in bytes of rt_cmd_len */
-	gchar *veconst_cmd;     /*! Command sent to get VE/Const vars.... */
-	gint ve_cmd_len;        /*! length in bytes of veconst_cmd */
-	gchar *raw_mem_cmd;     /*! Command sent to get raw_mem vars.... */
-	gint raw_mem_cmd_len;   /*! length in bytes of raw_mem_cmd */
-};
 
 /* Prototypes */
 void load_firmware_file(Io_File *);

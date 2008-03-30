@@ -270,10 +270,10 @@ void build_string_2_enum_table()
 	/* Function Call */
 	g_hash_table_insert(str_2_enum,"_FUNC_CALL_",
 			GINT_TO_POINTER(FUNC_CALL));
-	g_hash_table_insert(str_2_enum,"_WRITE_THEN_READ_",
-			GINT_TO_POINTER(WRITE_THEN_READ));
-	g_hash_table_insert(str_2_enum,"_WRITE_ONLY_",
-			GINT_TO_POINTER(WRITE_ONLY));
+	g_hash_table_insert(str_2_enum,"_WRITE_CMD_",
+			GINT_TO_POINTER(WRITE_CMD));
+	g_hash_table_insert(str_2_enum,"_NULL_CMD_",
+			GINT_TO_POINTER(NULL_CMD));
 
 	/* Function Call Arg */
 	g_hash_table_insert(str_2_enum,"_MS1_",
@@ -297,8 +297,14 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(SIGNATURE));
 	g_hash_table_insert(str_2_enum,"_MS1_VECONST_",
 			GINT_TO_POINTER(MS1_VECONST));
+	g_hash_table_insert(str_2_enum,"_MS2_VECONST_",
+			GINT_TO_POINTER(MS2_VECONST));
 	g_hash_table_insert(str_2_enum,"_MS2_BOOTLOADER_",
 			GINT_TO_POINTER(MS2_BOOTLOADER));
+	g_hash_table_insert(str_2_enum,"_MS1_RT_VARS_",
+			GINT_TO_POINTER(MS1_RT_VARS));
+	g_hash_table_insert(str_2_enum,"_MS2_RT_VARS_",
+			GINT_TO_POINTER(MS2_RT_VARS));
 
 	/*g_hash_table_foreach(str_2_enum,dump_hash,NULL);*/
 

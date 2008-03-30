@@ -41,7 +41,6 @@ gint pf_dispatcher_id = -1;
 gint gui_dispatcher_id = -1;
 gboolean gl_ability = FALSE;
 Serial_Params *serial_params = NULL;
-Io_Cmds *cmds = NULL;
 GAsyncQueue *io_queue = NULL;
 GAsyncQueue *pf_dispatch_queue = NULL;
 GAsyncQueue *gui_dispatch_queue = NULL;
@@ -80,7 +79,6 @@ gint main(gint argc, gchar ** argv)
 
 	/* Allocate memory  */
 	serial_params = g_malloc0(sizeof(Serial_Params));
-	cmds = g_malloc0(sizeof(Io_Cmds));
 
 	open_debug();	/* Open debug log */
 	init();			/* Initialize global vars */

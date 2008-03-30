@@ -599,10 +599,14 @@ void mem_dealloc()
 			g_free(firmware->sliders_map_file);
 		if (firmware->status_map_file)
 			g_free(firmware->status_map_file);
-		if (firmware->write_cmd)
-			g_free(firmware->write_cmd);
-		if (firmware->burn_cmd)
-			g_free(firmware->burn_cmd);
+		if (firmware->ve_command)
+			g_free(firmware->ve_command);
+		if (firmware->rt_command)
+			g_free(firmware->rt_command);
+		if (firmware->write_command)
+			g_free(firmware->write_command);
+		if (firmware->burn_command)
+			g_free(firmware->burn_command);
 		if (firmware->page_cmd)
 			g_free(firmware->page_cmd);
 		for (i=0;i<firmware->total_pages;i++)

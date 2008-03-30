@@ -53,11 +53,12 @@ struct _Command
 	GArray *args;		/* Argument list array of PotentialArgs */
 	GArray *post_functions;	/* Argument list array of PostFunctions */
 	gchar *helper_func_name;/* Return data function name */
+	gboolean defer_post_functions;	/* deferred post functions */
 	XmlCmdType helper_func_arg;/* Return data arg (ENUM) */
 	void (*helper_function) (XmlCmdType, void *);/* Helper Function Pointer */
 	gchar *func_call_name;	/* FUNC_CALL function name */
 	XmlEcuType func_call_arg;/* Enum arg to function call */
-	void (*function) (XmlEcuType); /* Function call pointer */
+	void (*function) (void *, XmlEcuType); /* Function call pointer */
 };
 
 

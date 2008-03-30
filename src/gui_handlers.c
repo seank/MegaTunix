@@ -948,7 +948,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			break;
 		case READ_VE_CONST:
 			set_title(g_strdup("Reading VE/Constants..."));
-			io_cmd(firmware->VE_Command, NULL);
+			io_cmd(firmware->ve_command, NULL);
 			break;
 		case READ_RAW_MEMORY:
 			if (offline)
