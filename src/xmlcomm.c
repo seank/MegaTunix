@@ -167,6 +167,24 @@ void load_arg_details(PotentialArg *arg, xmlNode *node)
 				g_free(tmpbuf);
 				tmpbuf = NULL;
 			}
+			if (g_strcasecmp((gchar *)cur_node->name,"type") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&tmpbuf);
+				arg->type = translate_string(tmpbuf);
+				g_free(tmpbuf);
+				tmpbuf = NULL;
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"action") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&tmpbuf);
+				arg->action = translate_string(tmpbuf);
+				g_free(tmpbuf);
+				tmpbuf = NULL;
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"action_arg") == 0)
+				generic_xml_gint_import(cur_node,&arg->action_arg);
+			if (g_strcasecmp((gchar *)cur_node->name,"string") == 0)
+				generic_xml_gchar_import(cur_node,&arg->static_string);
 		}
 		cur_node = cur_node->next;
 	}
@@ -306,6 +324,20 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 					g_module_symbol(module,pf->name,(void *)&pf->function);
 				if (!(pf->function))
 					printf("ERROR Post Function %s is NULL\n",pf->name);
+				pf->w_arg = FALSE;
+				g_module_close(module);
+				g_array_append_val(cmd->post_functions,pf);
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"function_w_arg") == 0)
+			{
+				pf = g_new0(PostFunction, 1);
+				generic_xml_gchar_import(cur_node,&pf->name);
+				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+				if (module)
+					g_module_symbol(module,pf->name,(void *)&pf->function_w_arg);
+				if (!(pf->function_w_arg))
+					printf("ERROR Post Function w/arg %s is NULL\n",pf->name);
+				pf->w_arg = TRUE;
 				g_module_close(module);
 				g_array_append_val(cmd->post_functions,pf);
 			}
@@ -346,7 +378,10 @@ void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 		for (i=0;i<cmd->post_functions->len;i++)
 		{
 			pf = g_array_index(cmd->post_functions,PostFunction *,i);
-			printf("  %s: %p\n",pf->name,pf->function);
+			if (pf->w_arg)
+				printf("  %s: %p\n",pf->name,pf->function_w_arg);
+			else
+				printf("  %s: %p\n",pf->name,pf->function);
 		}
 	}
 	if (cmd->type == FUNC_CALL)

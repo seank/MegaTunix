@@ -101,10 +101,20 @@ trypop:
 
 			pf = g_array_index(message->command->post_functions,PostFunction *, i);
 			/*printf ("Should run function %s, %p\n",pf->name,pf->function);*/
-			if (!pf->function)
-				printf("ERROR, couldn't find function \"%s\"\n",pf->name);
+			if (pf->w_arg)
+			{
+				if (!pf->function_w_arg)
+					printf("ERROR, couldn't find function \"%s\"\n",pf->name);
+				else
+					pf->function_w_arg(message);
+			}
 			else
-				pf->function();
+			{
+				if (!pf->function)
+					printf("ERROR, couldn't find function \"%s\"\n",pf->name);
+				else
+					pf->function();
+			}
 
 			gdk_threads_enter();
 			while (gtk_events_pending())
@@ -261,10 +271,6 @@ trypop:
 				case UPD_REBOOT_GET_ERROR:
 					if (connected)
 						io_cmd(IO_BOOT_READ_ERROR,NULL);
-					break;
-				case UPD_BURN_MS_FLASH:
-					if (connected)
-						io_cmd(IO_BURN_MS_FLASH,NULL);
 					break;
 				case UPD_JUST_BOOT:
 					if (connected)

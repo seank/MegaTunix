@@ -418,10 +418,9 @@ jumpout:
 }
 
 
-gboolean read_data(gint total_wanted, void **buffer)
+gint read_data(gint total_wanted, void **buffer)
 {
 	gint res = 0;
-	gboolean state = TRUE;
 	gint total_read = 0;
 	gint zerocount = 0;
 	gboolean bad_read = FALSE;
@@ -476,17 +475,14 @@ gboolean read_data(gint total_wanted, void **buffer)
 			dbg_func(g_strdup(__FILE__": read_data()\n\tError reading from ECU\n"));
 		flush_serial(serial_params->fd, TCIOFLUSH);
 		serial_params->errcount++;
-		state = FALSE;
-		goto jumpout;
 	}
-	else
-		*buffer = g_memdup(buf,total_read);
+
+	*buffer = g_memdup(buf,total_read);
 	dump_output(total_read,buf);
-jumpout:
 	if (dbg_lvl & IO_PROCESS)
 		dbg_func(g_strdup("\n"__FILE__": read_data\tLEAVING...\n\n"));
 	g_static_mutex_unlock(&mutex);
-	return state;
+	return total_read;
 }
 
 

@@ -25,6 +25,7 @@
 #include <getfiles.h>
 #include <gtk/gtk.h>
 #include <gui_handlers.h>
+#include <helpers.h>
 #include <keyparser.h>
 #include <notifications.h>
 #include <stdlib.h>
@@ -258,5 +259,6 @@ void restore_all_ecu_settings(gchar *filename)
 		}
 		start_restore_monitor();
 	}
-	io_cmd(IO_UPDATE_VE_CONST,NULL);
+	update_ve_const();
+	set_store_black_cb();
 }

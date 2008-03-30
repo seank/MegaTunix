@@ -281,7 +281,6 @@ void build_string_2_enum_table()
 	g_hash_table_insert(str_2_enum,"_MS2_",
 			GINT_TO_POINTER(MS2));
 
-
 	/* XmlCmdType's */
 	g_hash_table_insert(str_2_enum,"_WRITE_VERIFY_",
 			GINT_TO_POINTER(WRITE_VERIFY));
@@ -305,7 +304,20 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(MS1_RT_VARS));
 	g_hash_table_insert(str_2_enum,"_MS2_RT_VARS_",
 			GINT_TO_POINTER(MS2_RT_VARS));
+	g_hash_table_insert(str_2_enum,"_MS1_GETERROR_",
+			GINT_TO_POINTER(MS1_GETERROR));
 
+	/* Action's */
+	g_hash_table_insert(str_2_enum,"_SLEEP_",
+			GINT_TO_POINTER(SLEEP));
+
+	/*ArgType's */
+	g_hash_table_insert(str_2_enum,"_DATA_",
+			GINT_TO_POINTER(DATA));
+	g_hash_table_insert(str_2_enum,"_ACTION_",
+			GINT_TO_POINTER(ACTION));
+	g_hash_table_insert(str_2_enum,"_STATIC_STRING_",
+			GINT_TO_POINTER(STATIC_STRING));
 	/*g_hash_table_foreach(str_2_enum,dump_hash,NULL);*/
 
 }

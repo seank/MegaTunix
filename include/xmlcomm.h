@@ -36,6 +36,10 @@ struct _PotentialArg
 	gchar *desc;		/* Description */
 	gchar *internal_name;	/* Internal name used for linking */
 	DataSize size;		/* Size of data */
+	ArgType type;		/* Enumerated type */
+	Action action;		/* Enum action */
+	gint action_arg;	/* Action argument */
+	gchar *static_string;	/* Static string */
 };
 
 
@@ -66,13 +70,18 @@ struct _PostFunction
 {
 	gchar *name;		/* Function name */
 	void (*function) (void); /* Pointer to function */
+	void (*function_w_arg) (void *); /* Pointer to function */
+	gboolean w_arg;		/* Does it take an arg (void *) */
 };
 
 struct _DBlock
 {
-	BlockType type;		/* Enumerated type */
-	gchar *str;		/* String of data */
+	guint8 *data;		/* String of data */
 	gint len;		/* length of data */
+	ArgType type;		/* Enumerated type */
+	Action action;		/* Enum action */
+	gint arg;		/* Action argument */
+
 };
 /* Prototypes */
 void load_comm_xml(gchar *);

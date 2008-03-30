@@ -100,6 +100,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	extern GAsyncQueue *gui_dispatch_queue;
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
+	extern Firmware_Details *firmware;
 	gboolean tmp = TRUE;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -173,7 +174,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() before burn\n"));
 	if ((connected) && (interrogated))
-		io_cmd(IO_BURN_MS_FLASH,NULL);
+		io_cmd(firmware->burn_command,NULL);
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
@@ -942,21 +943,22 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 				stop_tickler(RTV_TICKLER);
 				restart = TRUE;
 			}
-			io_cmd(IO_REBOOT_GET_ERROR,NULL);
+			gtk_widget_set_sensitive(widget,FALSE);
+			io_cmd("ms1_extra_reboot_get_error",NULL);
 			if (restart)
 				start_tickler(RTV_TICKLER);
 			break;
 		case READ_VE_CONST:
 			set_title(g_strdup("Reading VE/Constants..."));
-			io_cmd(firmware->ve_command, NULL);
+			io_cmd(firmware->get_all_command, NULL);
 			break;
 		case READ_RAW_MEMORY:
 			if (offline)
 				break;
-			io_cmd(IO_READ_RAW_MEMORY,(gpointer)obj_data);
+			io_cmd(firmware->raw_mem_command,(gpointer)obj_data);
 			break;
 		case BURN_MS_FLASH:
-			io_cmd(IO_BURN_MS_FLASH,NULL);
+			io_cmd(firmware->burn_command,NULL);
 			break;
 		case DLOG_SELECT_ALL:
 			dlog_select_all();

@@ -4,24 +4,28 @@
 		<arg>
 			<name>MS2_CAN_ID</name>
 			<desc>This is the CAN ID, 0-15 is valid.</desc>
+			<type>_DATA_</type>
 			<internal_name>canID</internal_name>
 			<size>_U08_</size>
 		</arg>
 		<arg>
 			<name>MS2_TABLE_INDEX</name>
 			<desc>This is the table index in the firmware,  0-3 are lookuptables, 4-5 are data, and 6 is rtvars, these are analagous to pages from MS-I extra</desc>
+			<type>_DATA_</type>
 			<internal_name>page</internal_name>
 			<size>_U08_</size>
 		</arg>
 		<arg>
 			<name>MS2_NUM_BYTES</name>
 			<desc>Length of data to transfer (read or write), MSB format</desc>
+			<type>_DATA_</type>
 			<internal_name>num_bytes</internal_name>
 			<size>_U16_</size>
 		</arg>
 		<arg>
 			<name>MS1_NUM_BYTES</name>
 			<desc>Length of data to transfer (read or write)</desc>
+			<type>_DATA_</type>
 			<internal_name>num_bytes</internal_name>
 			<size>_U08_</size>
 		</arg>
@@ -29,44 +33,50 @@
 		<arg>
 			<name>MS1_PAGE</name>
 			<desc>Page inside ECU firmware</desc>
+			<type>_DATA_</type>
 			<internal_name>page</internal_name>
 			<size>_U08_</size>
 		</arg>
 		<arg>
 			<name>MS1_OFFSET</name>
 			<desc>Offset from the beginning of the page.</desc>
+			<type>_DATA_</type>
 			<internal_name>offset</internal_name>
 			<size>_U08_</size>
 		</arg>
 		<arg>
 			<name>MS2_OFFSET</name>
 			<desc>Offset from the beginning of the table. This is in MSB format</desc>
+			<type>_DATA_</type>
 			<internal_name>offset</internal_name>
 			<size>_U16_</size>
 		</arg>
 		<arg>
 			<name>MS1_BYTE</name>
 			<desc>byte to transfer to ECU, length is 1 byte </desc>
+			<type>_DATA_</type>
 			<internal_name>value</internal_name>
 			<size>_U08_</size>
 		</arg>
 		<arg>	
-			<name>MS1_DATACHUNK</name>
+			<name>DATACHUNK</name>
 			<desc>Data to transfer to ECU, length is variable. Only applies to chunk write compatible firmwares </desc>
+			<type>_DATA_</type>
 			<internal_name>data</internal_name>
 			<size>_UNDEF_</size>
 		</arg>
 		<arg>
-			<name>MS2_DATACHUNK</name>
-			<desc>Data to transfer to ECU, length is variable </desc>
-			<internal_name>data</internal_name>
-			<size>_UNDEF_</size>
+			<name>PAUSE_50MS</name>
+			<desc>Pause for 50ms.</desc>
+			<type>_ACTION_</type>
+			<action>_SLEEP_</action>
+			<action_arg>50000</action_arg>
 		</arg>
 		<arg>
-			<name>MS2_PAUSE</name>
-			<desc>Pause during transfer</desc>
-			<useconds>50000</useconds>
-			<size>_UNDEF_</size>
+			<name>SEND_X</name>
+			<desc> Sends a simple "X"</desc>
+			<type>_STATIC_STRING_</type>
+			<string>X</string>
 		</arg>
 	</potential_args>
 	<commands>
@@ -74,11 +84,15 @@
 			<name>ms1_extra_reboot_get_error</name>
 			<desc>Reboots the ECU and grabs the error string</desc>
 			<type>_WRITE_CMD_</type>
-			<base>!!X</base>
+			<base>!!</base>
+			<args>
+				<arg>PAUSE_50MS</arg>
+				<arg>SEND_X</arg>
+			</args>
 			<helper_func>simple_read_cb</helper_func>
-			<helper_func_arg>_MS1_E_GETERROR_</helper_func_arg>
+			<helper_func_arg>_MS1_GETERROR_</helper_func_arg>
 			<post_functions>
-				<function>update_error_tab_cb</function>
+				<function>enable_reboot_button_cb</function>
 			</post_functions>
 		</cmd>
 		<cmd>
@@ -142,10 +156,12 @@
 			<type>_WRITE_CMD_</type>
 			<base>W</base>
 			<args>
-				<arg>MS1_PAGE</arg>
 				<arg>MS1_OFFSET</arg>
 				<arg>MS1_BYTE</arg>
 			</args>
+			<post_functions>
+				<function_w_arg>update_write_status</function_w_arg>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms1_chunk_write</name>
@@ -153,11 +169,13 @@
 			<type>_WRITE_CMD_</type>
 			<base>X</base>
 			<args>
-				<arg>MS1_PAGE</arg>
 				<arg>MS1_OFFSET</arg>
 				<arg>MS1_NUM_BYTES</arg>
-				<arg>MS1_DATACHUNK</arg>
+				<arg>DATACHUNK</arg>
 			</args>
+			<post_functions>
+				<function_w_arg>update_write_status</function_w_arg>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_generic_write</name>
@@ -169,8 +187,11 @@
 				<arg>MS2_TABLE_INDEX</arg>
 				<arg>MS2_OFFSET</arg>
 				<arg>MS2_NUM_BYTES</arg>
-				<arg>MS2_DATACHUNK</arg>
+				<arg>DATACHUNK</arg>
 			</args>
+			<post_functions>
+				<function_w_arg>update_write_status</function_w_arg>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_echo_write</name>
@@ -182,10 +203,13 @@
 				<arg>MS2_TABLE_INDEX</arg>
 				<arg>MS2_OFFSET</arg>
 				<arg>MS2_NUM_BYTES</arg>
-				<arg>MS2_DATACHUNK</arg>
+				<arg>DATACHUNK</arg>
 			</args>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_WRITE_VERIFY_</helper_func_arg>
+			<post_functions>
+				<function_w_arg>update_write_status</function_w_arg>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_verify</name>
@@ -230,8 +254,8 @@
 			<base>t</base>
 			<args>
 				<arg>MS2_TABLE_INDEX</arg>
-				<arg>MS2_PAUSE</arg>
-				<arg>MS2_DATACHUNK</arg>
+				<arg>PAUSE_50MS</arg>
+				<arg>DATACHUNK</arg>
 			</args>
 		</cmd>
 		<cmd>

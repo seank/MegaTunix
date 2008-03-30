@@ -365,6 +365,12 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"RT_total_bytes\" variable not found in interrogation profile, ERROR\n"));
 	}
+	if(!cfg_read_string(cfgfile,"parameters","Get_All_Command",
+				&firmware->get_all_command))
+	{
+		if (dbg_lvl & (INTERROGATOR|CRITICAL))
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Get_All_Command\" variable not found in interrogation profile, ERROR\n"));
+	}
 	if(!cfg_read_string(cfgfile,"parameters","VE_Command",
 				&firmware->ve_command))
 	{

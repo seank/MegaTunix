@@ -21,7 +21,7 @@
 /* Prototypes */
 gboolean handle_ecu_data(InputHandler, Io_Message * );
 void dump_output(gint, guchar *);
-gboolean read_data(gint , void **);
+gint read_data(gint , void **);
 /* Prototypes */
 
 #endif

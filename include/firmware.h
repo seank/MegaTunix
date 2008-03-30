@@ -58,10 +58,12 @@ struct _Firmware_Details
 	gchar *rtt_map_file;	/*! runtime text map filename */
 	gchar *status_map_file;	/*! runtime status map filename */
 	gchar *rt_command;	/*! New RT Command string */
+	gchar *get_all_command;	/*! New Get All Command string */
 	gchar *ve_command;	/*! New VE Command string */
 	gchar *write_command;	/*! New Write Command string */
 	gchar *chunk_write_command;	/*! New Chunk Write Command string */
 	gchar *burn_command;	/*! New burn command string */
+	gchar *raw_mem_command;	/*! New raw_mem command string */
 	gchar *page_cmd;	/*! Command to send to change pages ... */
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */

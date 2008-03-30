@@ -62,14 +62,7 @@ void io_cmd(gchar *io_cmd_name, void *data)
 	GHashTable *commands_hash = NULL;
 	GHashTable *args_hash = NULL;
 	Command *command = NULL;
-	PotentialArg *arg = NULL;
-	extern gboolean tabs_loaded;
-	extern Firmware_Details * firmware;
-	extern GHashTable *dynamic_widgets;
 	extern GAsyncQueue *io_queue;
-	static gboolean just_starting = TRUE;
-	gint tmp = -1;
-	gint i = 0;
 
 	commands_hash = OBJ_GET(global_data,"commands_hash");
 	args_hash = OBJ_GET(global_data,"arguments_hash");
@@ -454,16 +447,10 @@ void *thread_dispatcher(gpointer data)
 				break;
 			case WRITE_CMD:
 				write_data(message);
-				if (!message->command->helper_function)
-					printf("CRITICAL ERROR, helper function \"%s\" is NOT found!!\n",
-							message->command->helper_func_name);
-				else
-					message->command->helper_function(
-							message->command->helper_func_arg,
-							message);
+				if (message->command->helper_function)
+					message->command->helper_function(message->command->helper_func_arg,message);
 				break;
 			case NULL_CMD:
-				printf("NULL_CMD, just passing thru\n");
 				break;
 
 				/*
@@ -626,6 +613,7 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 	output->value = value;
 	output->size = size;
 	output->mode = MTX_SIMPLE_WRITE;
+	output->need_page_change = TRUE;
 	output->queue_update = queue_update;
 	io_cmd(firmware->write_command,output);
 	return;
@@ -665,6 +653,7 @@ void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 	output->len = len;
 	output->data = data;
 	output->mode = MTX_CHUNK_WRITE;
+	output->need_page_change = TRUE;
 	output->queue_update = TRUE;
 	io_cmd(firmware->chunk_write_command,output);
 	return;
@@ -840,23 +829,19 @@ void *restore_update(gpointer data)
 void build_output_string(Io_Message *message, Command *command, gpointer data)
 {
 	gint i = 0;
-	gint total = 0;
-	guint8 tmp8 = 0;
-	guint16 tmp16 = 0;
-	guint32 tmp32 = 0;
+	gint v = 0;
 	Output_Data *output = NULL;
 	PotentialArg * arg = NULL;
 	DBlock *block = NULL;
 
 	output = (Output_Data *)data;
 
-	total = total_arg_length(command);
 	message->sequence = g_array_new(FALSE,TRUE,sizeof(DBlock *));
 
 	/* Base command */
 	block = g_new0(DBlock, 1);
 	block->type = DATA;
-	block->str = g_strdup(command->base);
+	block->data = g_strdup(command->base);
 	block->len = strlen(command->base);
 	g_array_append_val(message->sequence,block);
 
@@ -865,76 +850,63 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 	{
 		arg = g_array_index(command->args,PotentialArg *, i);
 		block = g_new0(DBlock, 1);
+		if (arg->type == ACTION)
+		{
+			block->type = ACTION;
+			block->action = arg->action;
+			block->arg = arg->action_arg;
+			g_array_append_val(message->sequence,block);
+			continue;
+		}
+		if (arg->type == STATIC_STRING)
+		{
+			block->type = DATA;
+			block->data = g_strdup(arg->static_string);
+			block->len = strlen(arg->static_string);
+			g_array_append_val(message->sequence,block);
+			continue;
+		}
 		switch (arg->size)
 		{
 			case MTX_U08:
 			case MTX_S08:
 			case MTX_CHAR:
+				/*printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);*/
 				block->type = DATA;
-				tmp8 = (guint8)OBJ_GET(output->object,arg->internal_name);
-				block->str = g_memdup(&tmp8,1);
+				v = (gint)OBJ_GET(output->object,arg->internal_name);
+				block->data = g_new0(guint8,1);
+				block->data[0] = (guint8)v;
 				block->len = 1;
 				break;
 			case MTX_U16:
 			case MTX_S16:
+				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
-				tmp16 = (guint16)OBJ_GET(output->object,arg->internal_name);
-				block->str = g_new0(gchar,2);
-				block->str[0] = (tmp16 & 0xff00) >> 8;
-				block->str[1] = (tmp16 & 0x00ff);
+				v = (gint)OBJ_GET(output->object,arg->internal_name);
+				block->data = g_new0(guint8,2);
+				block->data[0] = (v & 0xff00) >> 8;
+				block->data[1] = (v & 0x00ff);
 				block->len = 2;
 			case MTX_U32:
 			case MTX_S32:
+				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
-				tmp32 = (guint32)OBJ_GET(output->object,arg->internal_name);
-				block->str = g_new0(gchar,4);
-				block->str[0] = (tmp32 & 0xff000000) >> 24;
-				block->str[1] = (tmp32 & 0xff0000) >> 16;
-				block->str[2] = (tmp32 & 0xff00) >> 8;
-				block->str[3] = (tmp32 & 0x00ff);
+				v = (gint)OBJ_GET(output->object,arg->internal_name);
+				block->data = g_new0(guint8,4);
+				block->data[0] = (v & 0xff000000) >> 24;
+				block->data[1] = (v & 0xff0000) >> 16;
+				block->data[2] = (v & 0xff00) >> 8;
+				block->data[3] = (v & 0x00ff);
 				block->len = 4;
 				break;
 			case MTX_UNDEF:
+				printf("arg %i, name \"%s\"\n",i,arg->internal_name);
 				if (!arg->internal_name)
 					printf("ERROR, MTX_UNDEF, donno what to do!!\n");
-				block->str = g_memdup(output->data,output->len);
+				block->data = g_memdup(output->data,output->len);
 				block->len = output->len;
 		}
 		g_array_append_val(message->sequence,block);
 	}
-}
-
-
-gint total_arg_length(Command *cmd)
-{
-	gint i = 0;
-	gint total = 0;
-	PotentialArg * arg = NULL;
-	
-	if (cmd->base)
-		total = strlen(cmd->base);
-	for (i=0;i<cmd->args->len;i++)
-	{
-		arg = g_array_index(cmd->args,PotentialArg *, i);
-		switch (arg->size)
-		{
-			case MTX_U08:
-			case MTX_S08:
-			case MTX_CHAR:
-				total++;
-				break;
-			case MTX_U16:
-			case MTX_S16:
-				total+=2;
-				break;
-			case MTX_U32:
-			case MTX_S32:
-				total+=4;
-				break;
-			case MTX_UNDEF:
-			       break;	
-		}
-	}
-	return total;
 }
 

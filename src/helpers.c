@@ -50,9 +50,18 @@ void start_statuscounts_cb(void)
 }
 
 
+void enable_reboot_button_cb(void)
+{
+	extern GHashTable *dynamic_widgets;
+	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"error_status_reboot_button"),TRUE);
+}
+
+
 void spawn_read_ve_const_cb(void)
 {
 	extern Firmware_Details *firmware;
+	if (!firmware)
+		return;
 	
 	if (firmware->capabilities & MS2_STD)
 		io_cmd("ms2_read_ve_const",NULL);
@@ -98,7 +107,13 @@ void enable_get_data_buttons_cb(void)
 
 void conditional_start_rtv_tickler_cb(void)
 {
-	start_tickler(RTV_TICKLER);
+	static gboolean just_starting = TRUE;
+
+	if (just_starting)
+	{
+		start_tickler(RTV_TICKLER);
+		just_starting = FALSE;
+	}
 }
 
 
@@ -126,7 +141,8 @@ void simple_read_cb(XmlCmdType type, void * data)
 {
 	Io_Message *message  = NULL;
 	Output_Data *output  = NULL;
-	gboolean res = FALSE;
+	gint count = 0;
+	gchar *tmpbuf = NULL;
 	static gint lastcount = 0;
 	extern Firmware_Details *firmware;
 	extern gint ms_ve_goodread_count;
@@ -160,8 +176,8 @@ void simple_read_cb(XmlCmdType type, void * data)
 			printf("SIGNATURE not written yet\n");
 			break;
 		case MS1_VECONST:
-			res = read_data(firmware->page_params[output->page]->length,&message->recv_buf);
-			if (!res)
+			count = read_data(firmware->page_params[output->page]->length,&message->recv_buf);
+			if (count != firmware->page_params[output->page]->length)
 			{
 				printf("ERROR receive failure! (MS1 VECONST)!!!\n");
 				break;
@@ -171,14 +187,13 @@ void simple_read_cb(XmlCmdType type, void * data)
 					firmware->page_params[output->page]->length);
 			backup_current_data(0,message->page);
 			ms_ve_goodread_count++;
-			dump_output(firmware->page_params[output->page]->length,message->recv_buf);
 			break;
 		case MS2_VECONST:
 			printf("MS2_VECONST handler not written yet\n");
 			break;
 		case MS1_RT_VARS:
-			res = read_data(firmware->rtvars_size,&message->recv_buf);
-			if (!res)
+			count = read_data(firmware->rtvars_size,&message->recv_buf);
+			if (count != firmware->rtvars_size)
 			{
 				printf("ERROR receive failure! (RTVARS)!!!\n");
 				break;
@@ -202,14 +217,11 @@ void simple_read_cb(XmlCmdType type, void * data)
 			}
 			else
 				ms_goodread_count++;
-
 			lastcount = ptr[0];
-
 			/* Feed raw buffer over to post_process()
 			 * as a void * and pass it a pointer to the new
 			 * area for the parsed data...
 			 */
-			dump_output(firmware->rtvars_size,message->recv_buf);
 			process_rt_vars((void *)message->recv_buf);
 			break;
 		case MS2_RT_VARS:
@@ -218,5 +230,48 @@ void simple_read_cb(XmlCmdType type, void * data)
 		case MS2_BOOTLOADER:
 			printf("MS2_BOOTLOADER not written yet\n");
 			break;
+		case MS1_GETERROR:
+			count = read_data(1024,&message->recv_buf);
+			if (count <= 10)
+			{
+				thread_update_logbar("error_status_view",NULL,g_strdup("No ECU Errors were reported....\n"),FALSE,FALSE);
+				break;
+			}
+			if (g_utf8_validate(((gchar *)message->recv_buf)+1,count-1,NULL))
+			{
+				thread_update_logbar("error_status_view",NULL,g_strndup(((gchar *)message->recv_buf+7)+1,count-8),FALSE,FALSE);
+				if (dbg_lvl & (IO_PROCESS|SERIAL_RD))
+				{
+					tmpbuf = g_strndup(((gchar *)message->recv_buf)+1,count-1);
+					dbg_func(g_strdup_printf(__FILE__"\tECU  ERROR string: \"%s\"\n",tmpbuf));
+					g_free(tmpbuf);
+				}
+
+			}
+			else
+				thread_update_logbar("error_status_view",NULL,g_strdup("The data came back as gibberish, please try again...\n"),FALSE,FALSE);
+			break;
 	}
+}
+
+/*!
+ \brief burn_ecu_flash() issues the commands to the ECU to burn the contents
+ of RAM to flash.
+ */
+void post_burn_cb()
+{
+	gint i = 0;
+	extern Firmware_Details * firmware;
+	extern volatile gboolean offline;
+
+	//g_usleep(250000);
+
+	if (dbg_lvl & SERIAL_WR)
+		dbg_func(g_strdup(__FILE__": post_burn_cb()\n\tBurn to Flash Completed\n"));
+
+	/* sync temp buffer with current burned settings */
+	for (i=0;i<firmware->total_pages;i++)
+		backup_current_data(firmware->canID,i);
+
+	return;
 }

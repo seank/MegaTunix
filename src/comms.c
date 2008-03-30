@@ -135,8 +135,10 @@ gint comms_test()
  \param data (Output_Data *) pointer to data sent to ECU used to
  update other widgets that refer to that Page/Offset
  */
-void update_write_status(Output_Data *data)
+void update_write_status(void *data)
 {
+	Io_Message *message = (Io_Message *)data;
+	Output_Data *output = (Output_Data *)message->payload;
 	extern Firmware_Details *firmware;
 	guint8 **ecu_data = firmware->ecu_data;
 	guint8 **ecu_data_last = firmware->ecu_data_last;
@@ -145,28 +147,28 @@ void update_write_status(Output_Data *data)
 	extern gboolean paused_handlers;
 
 
-	if ((data->data) && (data->mode == MTX_CHUNK_WRITE))
+	if ((output->data) && (output->mode == MTX_CHUNK_WRITE))
 	{
-		g_free(data->data);
+		g_free(output->data);
 		return;
 	}
 
 	paused_handlers = TRUE;
 
 	/*printf ("page %i, offset %i\n",data->page,data->offset); */
-	for (i=0;i<g_list_length(ve_widgets[data->page][data->offset]);i++)
+	for (i=0;i<g_list_length(ve_widgets[output->page][output->offset]);i++)
 	{
-		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[data->page][data->offset],i),"dl_type") != DEFERRED)
+		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[output->page][output->offset],i),"dl_type") != DEFERRED)
 		{
-			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i))); */
-			update_widget(g_list_nth_data(ve_widgets[data->page][data->offset],i),NULL);
+			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[output->page][output->offset],i))); */
+			update_widget(g_list_nth_data(ve_widgets[output->page][output->offset],i),NULL);
 		}
 		/*	else
-		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[data->page][data->offset],i)));
+		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[output->page][output->offset],i)));
 		*/
 	}
 
-	update_ve3d_if_necessary(data->page,data->offset);
+	update_ve3d_if_necessary(output->page,output->offset);
 
 	paused_handlers = FALSE;
 	/* We check to see if the last burn copy of the VE/constants matches 
@@ -183,7 +185,6 @@ void update_write_status(Output_Data *data)
 			return;
 		}
 	}
-	/* If pchunk dwrite data bound,  FREE IT */
 	set_group_color(BLACK,"burners");
 
 	return;
@@ -346,6 +347,8 @@ void write_data(Io_Message *message)
 	gchar * err_text = NULL;
 	gint i = 0;
 	DBlock *block = NULL;
+	/*gint j = 0;
+	gchar * tmpbuf = NULL;*/
 	extern Serial_Params *serial_params;
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
@@ -357,6 +360,8 @@ void write_data(Io_Message *message)
 	if (offline)
 	{
 		/*printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); */
+		if (!output)
+			return;
 		switch (output->mode)
 		{
 			case MTX_SIMPLE_WRITE:
@@ -377,13 +382,12 @@ void write_data(Io_Message *message)
 		return;		/* can't write anything if disconnected */
 	}
 
-
 	if (output)
 	{
 		if ((firmware->multi_page ) && (output->need_page_change)) 
 		{
 			g_static_mutex_unlock(&serio_mutex);
-			set_ms_page(output->truepgnum);
+			set_ms_page(firmware->page_params[output->page]->truepgnum);
 			g_static_mutex_lock(&serio_mutex);
 		}
 	}
@@ -391,29 +395,45 @@ void write_data(Io_Message *message)
 	for (i=0;i<message->sequence->len;i++)
 	{
 		block = g_array_index(message->sequence,DBlock *,i);
-		if (block->type == DATA)
-
-			res = write (serial_params->fd,block->str,block->len);	/* Send write command */
-		if (res != 1 )
+		if (block->type == ACTION)
 		{
-			err_text = (gchar *)g_strerror(errno);
-			if (dbg_lvl & (SERIAL_WR|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tError writing block %i, ERROR \"%s\"!!!\n",i,err_text));
+			if (block->action == SLEEP)
+				g_usleep(block->arg);
 		}
-		else
+		else if (block->type == DATA)
 		{
-			if (dbg_lvl & SERIAL_WR)
-				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tWrite of block %i to ECU succeeded\n",i));
+			/*
+			   if (dbg_lvl & (SERIAL_WR))
+			   {
+			   tmpbuf = g_strdup("");
+			   for (j=0;j<block->len;j++)
+			   g_sprintf(tmpbuf,"%i",block->data[j]);
+			   printf("Output string %s\n",tmpbuf);
+			   }
+			   */
+			if (dbg_lvl & (SERIAL_WR))
+				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting block %i, \"%s\"\n",i,block->data));
+			res = write (serial_params->fd,block->data,block->len);	/* Send write command */
+			if (res != block->len )
+			{
+				err_text = (gchar *)g_strerror(errno);
+				if (dbg_lvl & (SERIAL_WR|CRITICAL))
+					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tError writing block %i, ERROR \"%s\"!!!\n",i,err_text));
+			}
+			else
+			{
+				if (dbg_lvl & SERIAL_WR)
+					dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tWrite of block %i to ECU succeeded\n",i));
+			}
 		}
 
 	}
-
 	if (output)
 	{
-	if (output->mode == MTX_SIMPLE_WRITE)
-		set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
-	else if (output->mode == MTX_CHUNK_WRITE)
-		store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+		if (output->mode == MTX_SIMPLE_WRITE)
+			set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
+		else if (output->mode == MTX_CHUNK_WRITE)
+			store_new_block(output->canID,output->page,output->offset,output->data,output->len);
 	}
 
 	g_static_mutex_unlock(&serio_mutex);

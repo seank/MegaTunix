@@ -70,6 +70,8 @@ void process_rt_vars(void *incoming)
 	gint minutes = 0;
 	gint seconds = 0;
 
+	if (!incoming)
+		printf("ERROR  INOPUT IS NULL!!!!\n");
 	/* Store timestamps in ringbuffer */
 
 	temp_units = (gint)OBJ_GET(global_data,"temp_units");

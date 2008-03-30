@@ -440,19 +440,26 @@ typedef enum
 	MS2_VECONST,
 	MS2_BOOTLOADER,
 	MS1_RT_VARS,
-	MS2_RT_VARS
+	MS2_RT_VARS,
+	MS1_GETERROR
 }XmlCmdType;
 
 typedef enum
 {
 	DATA=0x2A0,
-	PAUSE
-}BlockType;
+	ACTION,
+	STATIC_STRING
+}ArgType;
 
 typedef enum
 {
 	MS1=0x2B0,
 	MS2
 }XmlEcuType;
+
+typedef enum
+{
+	SLEEP=0x2C0
+}Action;
 
 #endif

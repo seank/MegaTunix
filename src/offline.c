@@ -114,7 +114,7 @@ void set_offline_mode(void)
 	g_module_close(module);
 
 	io_cmd(NULL,pfuncs);
-	io_cmd(firmware->ve_command,NULL);
+	io_cmd(firmware->get_all_command,NULL);
 
 	widget = g_hash_table_lookup(dynamic_widgets,"interrogate_button");
 	if (GTK_IS_WIDGET(widget))

@@ -122,8 +122,6 @@ void thread_update_widget(gchar *, WidgetType, gchar *);
 gboolean queue_function(gchar * );
 void chunk_write(gint, gint, gint, gint, guint8 *);
 void build_output_string(Io_Message *, Command *, gpointer);
-gint total_arg_length(Command *);
-		
 /* Prototypes */
 
 #endif
