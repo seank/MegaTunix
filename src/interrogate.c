@@ -378,6 +378,12 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Rt_Cmd_Key\" variable not found in interrogation profile, ERROR\n"));
 	}
+	if(!cfg_read_string(cfgfile,"parameters","VE_Command",
+				&firmware->VE_Command))
+	{
+		if (dbg_lvl & (INTERROGATOR|CRITICAL))
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"VE_Command\" variable not found in interrogation profile, ERROR\n"));
+	}
 	if(!cfg_read_string(cfgfile,"parameters","VE_Cmd_Key",
 				&firmware->ve_cmd_key))
 	{

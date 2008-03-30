@@ -24,6 +24,7 @@
 typedef struct _PotentialArg PotentialArg;
 typedef struct _Command Command;
 typedef struct _PostFunction PostFunction;
+typedef struct _DBlock DBlock;
 
 /*!
  * \brief _PotentialArgs struct holds information read from the 
@@ -34,7 +35,6 @@ struct _PotentialArg
 	gchar *name;		/* Potential arg name */
 	gchar *desc;		/* Description */
 	gchar *internal_name;	/* Internal name used for linking */
-	gint count;		/* Number of elements to xfer */
 	DataSize size;		/* Size of data */
 };
 
@@ -52,18 +52,26 @@ struct _Command
 	CmdType type;		/* Command type enumeration */
 	GArray *args;		/* Argument list array of PotentialArgs */
 	GArray *post_functions;	/* Argument list array of PostFunctions */
-	gchar *return_data_func;/* Return data function name */
-	XmlCmdType return_data_arg;/* Return data arg (ENUM) */
+	gchar *helper_func_name;/* Return data function name */
+	XmlCmdType helper_func_arg;/* Return data arg (ENUM) */
+	void (*helper_function) (XmlCmdType, void *);/* Helper Function Pointer */
 	gchar *func_call_name;	/* FUNC_CALL function name */
-	XmlCmdType func_call_arg;/* Enum arg to function call */
-	void (*function) (XmlCmdType); /* Function call pointer */
+	XmlEcuType func_call_arg;/* Enum arg to function call */
+	void (*function) (XmlEcuType); /* Function call pointer */
 };
 
 
 struct _PostFunction
 {
 	gchar *name;		/* Function name */
-	void (*function) (XmlCmdType); /* Pointer to function */
+	void (*function) (void); /* Pointer to function */
+};
+
+struct _DBlock
+{
+	BlockType type;		/* Enumerated type */
+	gchar *str;		/* String of data */
+	gint len;		/* length of data */
 };
 /* Prototypes */
 void load_comm_xml(gchar *);

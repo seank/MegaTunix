@@ -418,6 +418,78 @@ jumpout:
 }
 
 
+gboolean read_data(gint total_wanted, void *buffer)
+{
+	gint res = 0;
+	gboolean state = TRUE;
+	gint total_read = 0;
+	gint zerocount = 0;
+	gboolean bad_read = FALSE;
+	guchar buf[4096];
+	guchar *ptr = buf;
+	gchar *err_text = NULL;
+	extern Serial_Params *serial_params;
+	extern Firmware_Details *firmware;
+	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+
+	g_static_mutex_lock(&mutex);
+	if (dbg_lvl & IO_PROCESS)
+		dbg_func(g_strdup("\n"__FILE__": read_data()\tENTERED...\n\n"));
+
+	total_read = 0;
+	zerocount = 0;
+
+	g_static_mutex_lock(&serio_mutex);
+	while ((total_read < total_wanted ) && ((total_wanted-total_read) > 0))
+	{
+		if (dbg_lvl & IO_PROCESS)
+			dbg_func(g_strdup_printf(__FILE__"\t requesting %i bytes\n",total_wanted-total_read));
+
+		total_read += res = read(serial_params->fd,
+				ptr+total_read,
+				total_wanted-total_read);
+
+		/* Increment bad read counter.... */
+		if (res < 0) /* I/O Error */
+		{
+			err_text = (gchar *)g_strerror(errno);
+			if (dbg_lvl & (IO_PROCESS|CRITICAL))
+				dbg_func(g_strdup_printf(__FILE__"\tI/O ERROR: \"%s\"\n",err_text));
+			bad_read = TRUE;
+			break;
+		}
+		if (res == 0)
+			zerocount++;
+
+		if (dbg_lvl & IO_PROCESS)
+			dbg_func(g_strdup_printf(__FILE__"\tread %i bytes, running total %i\n",res,total_read));
+		if (zerocount > 1)  /* 2 bad reads, abort */
+		{
+			bad_read = TRUE;
+			break;
+		}
+	}
+	g_static_mutex_unlock(&serio_mutex);
+	if (bad_read)
+	{
+		if (dbg_lvl & (IO_PROCESS|CRITICAL))
+			dbg_func(g_strdup(__FILE__": read_data()\n\tError reading from ECU\n"));
+		flush_serial(serial_params->fd, TCIOFLUSH);
+		serial_params->errcount++;
+		state = FALSE;
+		goto jumpout;
+	}
+	else
+		buffer = g_memdup(buf,total_read);
+	dump_output(total_read,buf);
+jumpout:
+	if (dbg_lvl & IO_PROCESS)
+		dbg_func(g_strdup("\n"__FILE__": read_data\tLEAVING...\n\n"));
+	g_static_mutex_unlock(&mutex);
+	return state;
+}
+
+
 /*!
  \brief dump_output() dumps the newly read data to the console in HEX for
  debugging purposes

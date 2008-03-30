@@ -30,6 +30,7 @@ megatunix_SOURCES = \
 	fileio.c \
 	firmware.c \
 	gui_handlers.c \
+	helpers.c \
 	init.c \
 	interrogate.c \
 	keybinder.c \

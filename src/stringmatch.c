@@ -37,6 +37,8 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(DUALTABLE));
 	g_hash_table_insert(str_2_enum,"_MSNS_E_",
 			GINT_TO_POINTER(MSNS_E));
+	g_hash_table_insert(str_2_enum,"_MS2_STD_",
+			GINT_TO_POINTER(MS2_STD));
 
 	/* Interrogation field types */
 	g_hash_table_insert(str_2_enum,"_CHAR_",
@@ -53,6 +55,8 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(MTX_U32));
 	g_hash_table_insert(str_2_enum,"_S32_",
 			GINT_TO_POINTER(MTX_S32));
+	g_hash_table_insert(str_2_enum,"_UNDEF_",
+			GINT_TO_POINTER(MTX_UNDEF));
 	g_hash_table_insert(str_2_enum,"_COUNT_",
 			GINT_TO_POINTER(COUNT));
 	g_hash_table_insert(str_2_enum,"_SUBMATCH_",
@@ -266,7 +270,35 @@ void build_string_2_enum_table()
 	/* Function Call */
 	g_hash_table_insert(str_2_enum,"_FUNC_CALL_",
 			GINT_TO_POINTER(FUNC_CALL));
+	g_hash_table_insert(str_2_enum,"_WRITE_THEN_READ_",
+			GINT_TO_POINTER(WRITE_THEN_READ));
+	g_hash_table_insert(str_2_enum,"_WRITE_ONLY_",
+			GINT_TO_POINTER(WRITE_ONLY));
 
+	/* Function Call Arg */
+	g_hash_table_insert(str_2_enum,"_MS1_",
+			GINT_TO_POINTER(MS1));
+	g_hash_table_insert(str_2_enum,"_MS2_",
+			GINT_TO_POINTER(MS2));
+
+
+	/* XmlCmdType's */
+	g_hash_table_insert(str_2_enum,"_WRITE_VERIFY_",
+			GINT_TO_POINTER(WRITE_VERIFY));
+	g_hash_table_insert(str_2_enum,"_MISMATCH_COUNT_",
+			GINT_TO_POINTER(MISMATCH_COUNT));
+	g_hash_table_insert(str_2_enum,"_MS1_CLOCK_",
+			GINT_TO_POINTER(MS1_CLOCK));
+	g_hash_table_insert(str_2_enum,"_MS2_CLOCK_",
+			GINT_TO_POINTER(MS2_CLOCK));
+	g_hash_table_insert(str_2_enum,"_REVISION_",
+			GINT_TO_POINTER(REVISION));
+	g_hash_table_insert(str_2_enum,"_SIGNATURE_",
+			GINT_TO_POINTER(SIGNATURE));
+	g_hash_table_insert(str_2_enum,"_MS1_VECONST_",
+			GINT_TO_POINTER(MS1_VECONST));
+	g_hash_table_insert(str_2_enum,"_MS2_BOOTLOADER_",
+			GINT_TO_POINTER(MS2_BOOTLOADER));
 
 	/*g_hash_table_foreach(str_2_enum,dump_hash,NULL);*/
 

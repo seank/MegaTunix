@@ -11,17 +11,21 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
-#ifndef __DATAIO_H__
-#define __DATAIO_H__
+#ifndef __HELPERS_H__
+#define __HELPERS_H__
 
-#include <enums.h>
+#include <defines.h>
 #include <gtk/gtk.h>
-#include <threads.h>
 
 /* Prototypes */
-gboolean handle_ecu_data(InputHandler, Io_Message * );
-void dump_output(gint, guchar *);
-gboolean read_data(gint , void *);
+void enable_interrogation_button(void);
+void start_statuscounts(void);
+void spawn_read_ve_const(void);
+void enable_get_data_buttons(void);
+void conditional_start_rtv_tickler(void);
+void set_store_black(void);
+void enable_3d_buttons(void);
+void simple_read_callback(XmlCmdType, void *);
 /* Prototypes */
 
 #endif

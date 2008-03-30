@@ -113,6 +113,8 @@ gint _get_sized_data(guint8 *data, gint page, gint offset, DataSize size)
 			result = byte[0] + (byte[1] << 8) + (byte[2] << 16) + (byte[3] << 24);
 			return (gint32)result;
 			break;
+		default:
+			break;
 	}
 	return 0;
 }

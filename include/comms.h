@@ -26,6 +26,7 @@ void readfrom_ecu(Io_Message *);	/* Function to get data FROM ecu */
 void writeto_ecu(Io_Message *);	/* Func to send data to the ECU */
 void burn_ecu_flash(void);		/* run after burn completion */
 void set_ms_page(guint8);	/* Sets the ECU page */
+void write_data(Io_Message *);
 /* Prototypes */
 
 #endif

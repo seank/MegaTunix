@@ -25,6 +25,7 @@ headers = \
 	firmware.h \
 	getfiles.h \
         gui_handlers.h \
+        helpers.h \
         init.h \
         interrogate.h \
 	keybinder.h \

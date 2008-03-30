@@ -128,7 +128,7 @@ void load_commands(GHashTable *commands_hash, xmlNode *node)
 			{
 				cmd = g_new0(Command, 1);
 				cmd->post_functions = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
-				cmd->args = g_array_new(FALSE,TRUE,sizeof(gchar *));
+				cmd->args = g_array_new(FALSE,TRUE,sizeof(PotentialArg *));
 				load_cmd_details(cmd, cur_node);
 				g_hash_table_insert(commands_hash,g_strdup(cmd->name),cmd);
 			}
@@ -177,6 +177,7 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar *tmpbuf = NULL;
+	GModule *module = NULL;
 
 	if (!node->children)
 	{
@@ -200,7 +201,13 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 				tmpbuf = NULL;
 			}
 			if (g_strcasecmp((gchar *)cur_node->name,"func_call_name") == 0)
+			{
 				generic_xml_gchar_import(cur_node,&cmd->func_call_name);
+				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+				if (module)
+					g_module_symbol(module,cmd->func_call_name,(void *)&cmd->function);
+				g_module_close(module);
+			}
 			if (g_strcasecmp((gchar *)cur_node->name,"func_call_arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
@@ -211,12 +218,19 @@ void load_cmd_details(Command *cmd, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"base") == 0)
 				generic_xml_gchar_import(cur_node,&cmd->base);
 
-			if (g_strcasecmp((gchar *)cur_node->name,"return_data_func") == 0)
-				generic_xml_gchar_import(cur_node,&cmd->return_data_func);
-			if (g_strcasecmp((gchar *)cur_node->name,"return_data_arg") == 0)
+			if (g_strcasecmp((gchar *)cur_node->name,"helper_func") == 0)
+			{
+				generic_xml_gchar_import(cur_node,&cmd->helper_func_name);
+				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+				if (module)
+					g_module_symbol(module,cmd->helper_func_name,(void *)&cmd->helper_function);
+				g_module_close(module);
+
+			}
+			if (g_strcasecmp((gchar *)cur_node->name,"helper_func_arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
-				cmd->return_data_arg = translate_string(tmpbuf);
+				cmd->helper_func_arg = translate_string(tmpbuf);
 				g_free(tmpbuf);
 				tmpbuf = NULL;
 			}
@@ -234,6 +248,7 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
 	gchar * tmpbuf = NULL;
+	PotentialArg *arg = NULL;
 
 	if (!node->children)
 	{
@@ -248,7 +263,9 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 			if (g_strcasecmp((gchar *)cur_node->name,"arg") == 0)
 			{
 				generic_xml_gchar_import(cur_node,&tmpbuf);
-				cmd->args = g_array_append_val(cmd->args,tmpbuf);
+				arg = g_hash_table_lookup(OBJ_GET(global_data,"potential_arguments"),tmpbuf);
+				cmd->args = g_array_append_val(cmd->args,arg);
+				g_free(tmpbuf);
 				tmpbuf = NULL;
 			}
 		}
@@ -259,19 +276,14 @@ void load_cmd_args(Command *cmd, xmlNode *node)
 void load_cmd_post_functions(Command *cmd, xmlNode *node)
 {
 	xmlNode *cur_node = NULL;
-	GModule *module = NULL;
 	PostFunction *pf = NULL;
+	GModule *module = NULL;
 
 	if (!node->children)
 	{
 		printf("ERROR, load_cmd_post_functions, xml node is empty!!\n");
 		return;
 	}
-
-	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
-	if (!module)
-		if (dbg_lvl & (CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\tUnable to call g_module_open, error: %s\n",g_module_error()));
 
 	cur_node = node->children;
 	while (cur_node->next)
@@ -282,27 +294,15 @@ void load_cmd_post_functions(Command *cmd, xmlNode *node)
 			{
 				pf = g_new0(PostFunction, 1);
 				generic_xml_gchar_import(cur_node,&pf->name);
-				if (!g_module_symbol(module,pf->name,(void *)&pf->function))
-				{
-					if (dbg_lvl & (CRITICAL))
-						dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\tError finding symbol \"%s\", error:\n\t%s\n",pf->name,g_module_error()));
-					if (!g_module_close(module))
-					{
-						if (dbg_lvl & (CRITICAL))
-							dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\t Failure calling \"g_module_close()\", error %s\n",g_module_error()));
-					}
-				}
+				module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+				if (module)
+					g_module_symbol(module,pf->name,(void *)&pf->function);
+				g_module_close(module);
 				g_array_append_val(cmd->post_functions,pf);
 			}
 		}
 		cur_node = cur_node->next;
 	}
-	if (!g_module_close(module))
-	{
-		if (dbg_lvl & (CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": load_cmd_post_functions()\n\t Failure calling \"g_module_close()\", error %s\n",g_module_error()));
-	}
-
 }
 
 
@@ -310,21 +310,25 @@ void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 {
 	Command *cmd = NULL;
 	PostFunction *pf = NULL;
+	PotentialArg *arg = NULL;
 	gint i = 0;
 
 	cmd = (Command *)value;
-	printf("Command key %s\n",(gchar *)key);
-	printf("Command name %s\n",cmd->name);
-	printf("Command desc %s\n",cmd->desc);
+	printf("Command key \"%s\"\n",(gchar *)key);
+	printf("Command name \"%s\"\n",cmd->name);
+	printf("Command desc \"%s\"\n",cmd->desc);
 	if (cmd->base)
-		printf("Command base %s\n",cmd->base);
-	if (cmd->return_data_func)
-		printf("Return data function \"%s\()\"\n",cmd->return_data_func);
+		printf("Command base \"%s\"\n",cmd->base);
+	if (cmd->helper_function)
+		printf("Helper function \"%s\()\"\n",cmd->helper_func_name);
 	if (cmd->args->len > 0 )
 	{
 		printf("Command args (%i): \n",cmd->args->len);
 		for (i=0;i<cmd->args->len;i++)
-			printf("  %s\n",g_array_index(cmd->args,gchar *,i));
+		{
+			arg = g_array_index(cmd->args,PotentialArg *,i);
+			printf("  %s\n",arg->name);
+		}
 	}
 	if (cmd->post_functions->len > 0 )
 	{
@@ -336,6 +340,6 @@ void xmlcomm_dump_commands(gpointer key, gpointer value, gpointer data)
 		}
 	}
 	if (cmd->type == FUNC_CALL)
-		printf("Function call %s\n",cmd->func_call_name);
+		printf("Function call %s \(%p)\n",cmd->func_call_name,cmd->function);
 	printf("\n\n");
 }

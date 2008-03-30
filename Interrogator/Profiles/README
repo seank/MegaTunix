@@ -55,7 +55,7 @@ VerNumber
 
 Capabilities
   - This is an enumeration not used by most firmwares.  It's best to leave this
-  one's value blank
+  one's value blank except for MS2, use _MS2_STD_ for those.
 
 Rt_Cmd_Key
   - This maps to a code regarding the command sent to the ECU to retrieve the

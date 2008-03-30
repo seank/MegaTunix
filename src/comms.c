@@ -200,7 +200,6 @@ void writeto_ecu(Io_Message *message)
 	Output_Data *output = message->payload;
 
 	gint page = output->page;
-	gint truepgnum = message->truepgnum;
 	gint offset = output->offset;
 	gint value = output->value;
 	gint canID = output->canID;
@@ -279,8 +278,8 @@ void writeto_ecu(Io_Message *message)
 	}
 
 	g_static_mutex_unlock(&serio_mutex);
-	if ((firmware->multi_page ) && (message->need_page_change)) 
-		set_ms_page(truepgnum);
+	if ((firmware->multi_page ) && (output->need_page_change)) 
+		set_ms_page(output->truepgnum);
 	g_static_mutex_lock(&serio_mutex);
 
 	write_cmd = g_strdup(firmware->write_cmd);
@@ -466,6 +465,7 @@ copyover:
 void readfrom_ecu(Io_Message *message)
 {
 	gint result = 0;
+	Output_Data *output  = NULL;
 	extern Serial_Params *serial_params;
 	extern Firmware_Details *firmware;
 	extern gboolean connected;
@@ -480,9 +480,10 @@ void readfrom_ecu(Io_Message *message)
 	if (offline)
 		return;
 
+	output = (Output_Data *)message->payload;
 
-	if ((firmware->multi_page ) && (message->need_page_change)) 
-		set_ms_page(message->truepgnum);
+	if ((firmware->multi_page ) && (output->need_page_change)) 
+		set_ms_page(output->truepgnum);
 
 	g_static_mutex_lock(&mutex);
 
@@ -634,3 +635,89 @@ force_change:
 	return;
 
 }
+
+
+
+/*!
+ \brief writeto_ecu() physiclaly sends the data to the ECU.
+ \param message (Io_Message *) a pointer to a Io_Message
+ */
+void write_data(Io_Message *message)
+{
+	extern gboolean connected;
+	Output_Data *output = message->payload;
+
+	gint res = 0;
+	gchar * err_text = NULL;
+	gint i = 0;
+	DBlock *block = NULL;
+	extern Serial_Params *serial_params;
+	extern Firmware_Details *firmware;
+	extern volatile gboolean offline;
+	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+
+	g_static_mutex_lock(&serio_mutex);
+	g_static_mutex_lock(&mutex);
+
+	if (offline)
+	{
+		/*printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); */
+		switch (output->mode)
+		{
+			case MTX_SIMPLE_WRITE:
+				set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
+				break;
+			case MTX_CHUNK_WRITE:
+				store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+				break;
+		}
+		g_static_mutex_unlock(&serio_mutex);
+		g_static_mutex_unlock(&mutex);
+		return;		/* can't write anything if offline */
+	}
+	if (!connected)
+	{
+		g_static_mutex_unlock(&serio_mutex);
+		g_static_mutex_unlock(&mutex);
+		return;		/* can't write anything if disconnected */
+	}
+
+
+	if ((firmware->multi_page ) && (output->need_page_change)) 
+	{
+		g_static_mutex_unlock(&serio_mutex);
+		set_ms_page(output->truepgnum);
+		g_static_mutex_lock(&serio_mutex);
+	}
+
+	for (i=0;i<message->sequence->len;i++)
+	{
+		block = g_array_index(message->sequence,DBlock *,i);
+		if (block->type == DATA)
+
+			res = write (serial_params->fd,block->str,block->len);	/* Send write command */
+		if (res != 1 )
+		{
+			err_text = (gchar *)g_strerror(errno);
+			if (dbg_lvl & (SERIAL_WR|CRITICAL))
+				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tError writing block %i, ERROR \"%s\"!!!\n",i,err_text));
+		}
+		else
+		{
+			if (dbg_lvl & SERIAL_WR)
+				dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tWrite of block %i to ECU succeeded\n",i));
+		}
+
+	}
+
+	if (output->mode == MTX_SIMPLE_WRITE)
+		set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
+	else if (output->mode == MTX_CHUNK_WRITE)
+		store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+
+	g_static_mutex_unlock(&serio_mutex);
+	g_static_mutex_unlock(&mutex);
+	return;
+}
+
+

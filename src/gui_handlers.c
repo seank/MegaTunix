@@ -89,13 +89,15 @@ volatile gboolean leaving = FALSE;
 EXPORT void leave(GtkWidget *widget, gpointer data)
 {
 	extern GHashTable *dynamic_widgets;
-	extern gint dispatcher_id;
+	extern gint pf_dispatcher_id;
+	extern gint gui_dispatcher_id;
 	extern gint statuscounts_id;
 	extern GStaticMutex serio_mutex;
 	extern GStaticMutex rtv_mutex;
 	extern gboolean connected;
 	extern gboolean interrogated;
-	extern GAsyncQueue *dispatch_queue;
+	extern GAsyncQueue *pf_dispatch_queue;
+	extern GAsyncQueue *gui_dispatch_queue;
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
 	gboolean tmp = TRUE;
@@ -175,9 +177,13 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
-	if (dispatcher_id)
-		g_source_remove(dispatcher_id);
-	dispatcher_id = 0;
+	if (pf_dispatcher_id)
+		g_source_remove(pf_dispatcher_id);
+	pf_dispatcher_id = 0;
+
+	if (gui_dispatcher_id)
+		g_source_remove(gui_dispatcher_id);
+	gui_dispatcher_id = 0;
 
 	g_static_mutex_lock(&rtv_mutex);  /* <-- this makes us wait */
 	g_static_mutex_unlock(&rtv_mutex); /* now unlock */
@@ -193,11 +199,20 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 		count++;
 	}
 	count = 0;
-	while ((g_async_queue_length(dispatch_queue) > 0) && (count < 10))
+	while ((g_async_queue_length(gui_dispatch_queue) > 0) && (count < 10))
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup_printf(__FILE__": LEAVE() draining Dispatch Queue,  current length %i\n",g_async_queue_length(dispatch_queue)));
-		g_async_queue_try_pop(dispatch_queue);
+			dbg_func(g_strdup_printf(__FILE__": LEAVE() draining gui Dispatch Queue, current length %i\n",g_async_queue_length(gui_dispatch_queue)));
+		g_async_queue_try_pop(gui_dispatch_queue);
+		while (gtk_events_pending())
+			gtk_main_iteration();
+		count++;
+	}
+	while ((g_async_queue_length(pf_dispatch_queue) > 0) && (count < 10))
+	{
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup_printf(__FILE__": LEAVE() draining postfunction Dispatch Queue, current length %i\n",g_async_queue_length(pf_dispatch_queue)));
+		g_async_queue_try_pop(pf_dispatch_queue);
 		while (gtk_events_pending())
 			gtk_main_iteration();
 		count++;
@@ -852,6 +867,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 	extern volatile gboolean offline;
 	extern gboolean forced_update;
 	extern GHashTable *dynamic_widgets;
+	extern Firmware_Details *firmware;
 
 	if (!GTK_IS_OBJECT(widget))
 		return FALSE;
@@ -896,7 +912,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			widget = g_hash_table_lookup(dynamic_widgets,"interrogate_button");
 			if (GTK_IS_WIDGET(widget))
 				gtk_widget_set_sensitive(GTK_WIDGET(widget),FALSE);
-			io_cmd(IO_INTERROGATE_ECU, NULL);
+			io_cmd("interrogation", NULL);
 			break;
 		case START_PLAYBACK:
 			start_tickler(LV_PLAYBACK_TICKLER);
@@ -909,7 +925,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			if (offline)
 				break;
 			if (!interrogated)
-				io_cmd(IO_INTERROGATE_ECU, NULL);
+				io_cmd("interrogation", NULL);
 			start_tickler(RTV_TICKLER);
 			forced_update = TRUE;
 			break;
@@ -932,7 +948,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			break;
 		case READ_VE_CONST:
 			set_title(g_strdup("Reading VE/Constants..."));
-			io_cmd(IO_READ_VE_CONST, NULL);
+			io_cmd(firmware->VE_Command, NULL);
 			break;
 		case READ_RAW_MEMORY:
 			if (offline)
@@ -2526,3 +2542,5 @@ void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
 	/*printf ("DONE!\n\n\n");*/
 	g_strfreev(groups);
 }
+
+

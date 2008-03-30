@@ -15,6 +15,7 @@
 #define __THREADS_H__
 
 #include <enums.h>
+#include <xmlcomm.h>
 #include <gtk/gtk.h>
 
 typedef struct _Io_Message Io_Message;
@@ -61,13 +62,14 @@ struct _Output_Data
 	gint page;		/*! Page in ECU */
 	gint offset;		/*! Offset in block */
 	gint value;		/*! Value to send */
+	gint truepgnum;		/*! True Page number */
+	gint need_page_change;	/*! Set to true to force page change */
 	DataSize size;		/*! Size of single write data */
 	gint len;		/*! Length of chunk write block */
 	guint8 *data;		/*! Block of data for chunk write */
 	gboolean queue_update;	/*! If true queues a member widget update */
 	WriteMode mode;		/*! Write mode enum */
 };
-
 
 
 /*!
@@ -79,17 +81,17 @@ struct _Output_Data
  */
 struct _Io_Message
 {
-	Io_Command cmd;		/*! Source command (initiator)*/
-	CmdType command;	/*! Command type */
-	gchar *out_str;		/*! Data sent to the ECU  for READ_CMD's */
+	CmdType cmd_type;	/*! Command type */
 	gint page;		/*! Virtual Page number */
-	gint truepgnum;		/*! Physical page number */
-	gint out_len;		/*! number of bytes in out_str */
-	gint offset;		/*! used for RAW_MEMORY and more */
-	GArray *funcs;		/*! List of functiosn to be dispatched... */
+	gint out_len;	
+	gint offset;	
+	gchar * out_str;
+	GArray *functions;	/*! for gui_dispatch_queue */
+	GArray *sequence;	/*! for sending data to ECU */
 	InputHandler handler;	/*! Command handler for inbound data */
 	void *payload;		/*! data passed along, arbritrary size.. */
-	gboolean need_page_change; /*! flag to set if we need to change page */
+	void *recv_buf;		/* data that comes from ECU */
+	Command *command;	/* Command struct */
 };
 
 
@@ -110,7 +112,8 @@ struct _Text_Message
 
 
 /* Prototypes */
-void io_cmd(Io_Command, gpointer);	/* Send message down the queue */
+void io_cmd(gchar *, gpointer);	/* Send message down the queue */
+//void io_cmd(Io_Command, gpointer);	/* Send message down the queue */
 void *thread_dispatcher(gpointer);	/* thread that processes messages */
 void *restore_update(gpointer);		/* Thread to update tools status.. */
 void start_restore_monitor(void);	/* Thread jumpstarter */
@@ -119,6 +122,8 @@ void thread_update_logbar(gchar *, gchar *, gchar *, gboolean, gboolean);
 void thread_update_widget(gchar *, WidgetType, gchar *);
 gboolean queue_function(gchar * );
 void chunk_write(gint, gint, gint, gint, guint8 *);
+void build_output_string(Io_Message *, Command *, gpointer);
+gint total_arg_length(Command *);
 		
 /* Prototypes */
 

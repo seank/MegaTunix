@@ -9,9 +9,15 @@ name=MegaSquirtnSpark-Extra 029x
 SignatureVia=MS_Signature
 TextVerVia=MS_Textrev
 NumVerVia=MS-VerNum
+Rt_Command=ms1_extra_rtvars
+VE_Command=ms1_veconst
+Burn_Command=ms1_burn
+Write_Commmand=ms1_generic_write
+Chunk_Write_Commmand=ms1_chunk_write
+
+Capabilities=_MSNS_E_
 Rt_Cmd_Key=MSnS-E_RTVars
 VE_Cmd_Key=MS-I_VEconst
-Capabilities=_MSNS_E_
 Write_Cmd=W
 Burn_Cmd=B
 Chunk_Write_Cmd=X

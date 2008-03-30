@@ -89,6 +89,8 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 			case MTX_S32:
 				lower = -2147483648;
 				break;
+			default:
+				break;	
 		}
 	}
 	else
@@ -116,6 +118,8 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 				break;
 			case MTX_U32:
 				upper = 4294967295;
+				break;
+			default:
 				break;
 		}
 	}

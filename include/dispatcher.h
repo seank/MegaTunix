@@ -17,7 +17,8 @@
 #include <gtk/gtk.h>
 
 /* Prototypes */
-gboolean dispatcher(gpointer);
+gboolean pf_dispatcher(gpointer);
+gboolean gui_dispatcher(gpointer);
 /* Prototypes */
 
 #endif

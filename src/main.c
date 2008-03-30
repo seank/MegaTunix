@@ -37,12 +37,14 @@
 
 GThread * thread_dispatcher_id = NULL;
 gboolean ready = FALSE;
-gint dispatcher_id = -1;
+gint pf_dispatcher_id = -1;
+gint gui_dispatcher_id = -1;
 gboolean gl_ability = FALSE;
 Serial_Params *serial_params = NULL;
 Io_Cmds *cmds = NULL;
 GAsyncQueue *io_queue = NULL;
-GAsyncQueue *dispatch_queue = NULL;
+GAsyncQueue *pf_dispatch_queue = NULL;
+GAsyncQueue *gui_dispatch_queue = NULL;
 GObject *global_data = NULL;
 
 /*!
@@ -92,7 +94,8 @@ gint main(gint argc, gchar ** argv)
 
 	/* Create Queue to listen for commands */
 	io_queue = g_async_queue_new();
-	dispatch_queue = g_async_queue_new();
+	pf_dispatch_queue = g_async_queue_new();
+	gui_dispatch_queue = g_async_queue_new();
 
 	read_config();
 	setup_gui();		
@@ -103,7 +106,8 @@ gint main(gint argc, gchar ** argv)
 			TRUE, /* Joinable */
 			NULL); /*GError Pointer */
 
-	dispatcher_id = g_timeout_add(10,(GtkFunction)dispatcher,NULL);
+	pf_dispatcher_id = g_timeout_add(50,(GtkFunction)pf_dispatcher,NULL);
+	gui_dispatcher_id = g_timeout_add(30,(GtkFunction)gui_dispatcher,NULL);
 
 	/* Kickoff fast interrogation */
 	g_timeout_add(250,(GtkFunction)early_interrogation,NULL);

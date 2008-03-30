@@ -186,7 +186,8 @@ typedef enum
 	/* No capabilities == Standard B&G code with no modifications */
 	STANDARD	= 1<<0,
 	DUALTABLE	= 1<<1,
-	MSNS_E		= 1<<2
+	MSNS_E		= 1<<2,
+	MS2_STD		= 1<<3,
 }Capability;
 
 typedef enum
@@ -232,7 +233,10 @@ typedef enum
 	NULL_CMD,
 	INTERROGATION,
 	SILENT,
-	NOISY
+	NOISY,
+	WRITE_THEN_READ,
+	WRITE_ONLY,
+	FUNC_CALL
 }CmdType;
 
 typedef enum
@@ -400,7 +404,8 @@ typedef enum
 	MTX_U16,
 	MTX_S16,
 	MTX_U32,
-	MTX_S32
+	MTX_S32,
+	MTX_UNDEF
 }DataSize;
 
 typedef enum
@@ -429,13 +434,26 @@ typedef enum
 
 typedef enum
 {
-	FUNC_CALL=0x290,
-	WRITE_VERIFY,
+	WRITE_VERIFY=0x290,
 	MISMATCH_COUNT,
-	CLOCK,
+	MS1_CLOCK,
+	MS2_CLOCK,
 	REVISION,
 	SIGNATURE,
-	GENERIC_READ
+	MS1_VECONST,
+	MS2_BOOTLOADER
 }XmlCmdType;
+
+typedef enum
+{
+	DATA=0x2A0,
+	PAUSE
+}BlockType;
+
+typedef enum
+{
+	MS1=0x2B0,
+	MS2
+}XmlEcuType;
 
 #endif

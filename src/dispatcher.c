@@ -23,6 +23,7 @@
 #include <dispatcher.h>
 #include <enums.h>
 #include <gui_handlers.h>
+#include <helpers.h>
 #include <init.h>
 #include <interrogate.h>
 #include <listmgmt.h>
@@ -46,7 +47,8 @@
 #include <unistd.h>
 
 
-extern GAsyncQueue *dispatch_queue;
+extern GAsyncQueue *pf_dispatch_queue;
+extern GAsyncQueue *gui_dispatch_queue;
 extern gboolean connected;			/* valid connection with MS */
 extern volatile gboolean offline;			/* Offline mode */
 extern gboolean tabs_loaded;			/* Tabs loaded? */
@@ -63,13 +65,93 @@ extern GObject *global_data;
  \param data (gpointer) unused
  \returns TRUE 
  */
-gboolean dispatcher(gpointer data)
+gboolean pf_dispatcher(gpointer data)
+{
+	gint len=0;
+	gint i=0;
+	PostFunction *pf=NULL;
+	gint count = 0;
+	Io_Message *message = NULL;
+	extern volatile gboolean leaving;
+
+	if (!pf_dispatch_queue) /*queue not built yet... */
+		return TRUE;
+	/* Endless Loop, wait for message, processs and repeat... */
+trypop:
+	/*printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));*/
+	if (leaving)
+		return TRUE;
+	message = g_async_queue_try_pop(pf_dispatch_queue);
+	if (!message)
+	{
+	/*	printf("no messages waiting, returning\n");*/
+		return TRUE;
+	}
+
+	if (message->command->post_functions != NULL)
+	{
+		len = message->command->post_functions->len;
+		for (i=0;i<len;i++)
+		{
+			if (leaving)
+			{
+				dealloc_message(message);
+				return TRUE;
+			}
+
+			pf = g_array_index(message->command->post_functions,PostFunction *, i);
+			/*printf ("Should run function %s, %p\n",pf->name,pf->function);*/
+			if (!pf->function)
+				printf("ERROR, couldn't find function \"%s\"\n",pf->name);
+			else
+				pf->function();
+
+			gdk_threads_enter();
+			while (gtk_events_pending())
+			{
+				if (leaving)
+				{
+					gdk_threads_leave();
+					goto dealloc;
+				}
+				gtk_main_iteration();
+			}
+			gdk_threads_leave();
+		}
+	}
+dealloc:
+	dealloc_message(message);
+	/*printf ("deallocation of dispatch message complete\n");*/
+	count++;
+	/* try to handle up to 4 messages at a time.  If this is 
+	 * set too high, we can cause the timeout to hog the gui if it's
+	 * too low, things can fall behind. (GL redraw ;( )
+	 * */
+	if(count < 3)
+	{
+		/*printf("trying to handle another message\n");*/
+		goto trypop;
+	}
+	/*printf("returning\n");*/
+	return TRUE;
+}
+
+
+/*!
+ \brief gui_dispatcher() is a GTK+ timeout that runs 30 tiems per second checking
+ for message on the dispatch queue which handles gui operations after a thread
+ function runs, This will attempt to handle multiple messages at a time if the
+ queue has multiple message queued up.
+ \param data (gpointer) unused
+ \returns TRUE 
+ */
+gboolean gui_dispatcher(gpointer data)
 {
 	extern Firmware_Details * firmware;
 	gint len=0;
 	gint i=0;
 	gint j=0;
-	gint val=-1;
+	UpdateFunction val = 0;
 	gint count = 0;
 	GtkWidget *widget = NULL;
 	Io_Message *message = NULL;
@@ -81,23 +163,23 @@ gboolean dispatcher(gpointer data)
 	extern gint mem_view_style[];
 	extern GHashTable *dynamic_widgets;
 
-	if (!dispatch_queue) /*queue not built yet... */
+	if (!gui_dispatch_queue) /*queue not built yet... */
 		return TRUE;
 	/* Endless Loop, wait for message, processs and repeat... */
 trypop:
 	/*printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));*/
 	if (leaving)
 		return TRUE;
-	message = g_async_queue_try_pop(dispatch_queue);
+	message = g_async_queue_try_pop(gui_dispatch_queue);
 	if (!message)
 	{
 	/*	printf("no messages waiting, returning\n");*/
 		return TRUE;
 	}
 
-	if (message->funcs != NULL)
+	if (message->functions != NULL)
 	{
-		len = message->funcs->len;
+		len = message->functions->len;
 		for (i=0;i<len;i++)
 		{
 			if (leaving)
@@ -106,7 +188,7 @@ trypop:
 				return TRUE;
 			}
 
-			val = g_array_index(message->funcs,UpdateFunction, i);
+			val = g_array_index(message->functions,UpdateFunction, i);
 
 			switch ((UpdateFunction)val)
 			{
@@ -173,27 +255,9 @@ trypop:
 					if ((connected) || (offline))
 					{
 						set_title(g_strdup("Reading VE/Constants..."));
-						io_cmd(IO_READ_VE_CONST,NULL);
+						io_cmd(firmware->VE_Command,NULL);
 						set_title(g_strdup("VE/Constants Read..."));
 					}
-					break;
-				case UPD_REENABLE_INTERROGATE_BUTTON:
-					if (leaving)
-						break;
-					if(!offline)
-						gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),TRUE);
-					break;
-				case UPD_REENABLE_GET_DATA_BUTTONS:
-					g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
-					break;
-				case UPD_START_STATUSCOUNTS:
-					start_tickler(SCOUNTS_TICKLER);
-					break;
-				case UPD_START_REALTIME:
-					start_tickler(RTV_TICKLER);
-					break;
-				case UPD_REALTIME:
-					update_runtime_vars();
 					break;
 				case UPD_VE_CONST:
 					update_ve_const();
@@ -205,14 +269,6 @@ trypop:
 					break;
 				case UPD_SET_STORE_RED:
 					set_group_color(RED,"burners");
-					break;
-				case UPD_SET_STORE_BLACK:
-					set_group_color(BLACK,"burners");
-					for (j=0;j<firmware->total_tables;j++)
-						set_reqfuel_color(BLACK,j);
-					break;
-				case UPD_ENABLE_THREE_D_BUTTONS:
-					g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 					break;
 				case UPD_LOGVIEWER:
 					rt_update_logview_traces(FALSE);

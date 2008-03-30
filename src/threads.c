@@ -33,6 +33,7 @@
 #include <string.h>
 #include <threads.h>
 #include <tabloader.h>
+#include <xmlcomm.h>
 #include <unistd.h>
 
 
@@ -56,9 +57,13 @@ gchar *handler_types[]={"Realtime Vars","VE-Block","Raw Memory Dump","Comms Test
  \param data (gpointer) data passed to be appended to the message ot send as
  a "payload")
  */
-void io_cmd(Io_Command cmd, gpointer data)
+void io_cmd(gchar *io_cmd_name, gpointer data)
 {
 	Io_Message *message = NULL;
+	GHashTable *commands_hash = NULL;
+	GHashTable *args_hash = NULL;
+	Command *command = NULL;
+	PotentialArg *arg = NULL;
 	extern Io_Cmds *cmds;
 	extern gboolean tabs_loaded;
 	extern Firmware_Details * firmware;
@@ -68,300 +73,312 @@ void io_cmd(Io_Command cmd, gpointer data)
 	gint tmp = -1;
 	gint i = 0;
 
+	commands_hash = OBJ_GET(global_data,"commands_hash");
+	args_hash = OBJ_GET(global_data,"arguments_hash");
+
+	command = g_hash_table_lookup(commands_hash,io_cmd_name);
+	message = initialize_io_message();
+	message->command = command;
+	message->cmd_type = command->type;
+	message->payload = data;
+	if (command->type != FUNC_CALL)
+		build_output_string(message,command,data);
+
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+
 	/* This function is the bridge from the main GTK thread (gui) to
 	 * the Serial I/O Handler (GThread). Communication is achieved through
 	 * Asynchronous Queues. (preferred method in GLib and should be more 
 	 * portable to more arch's)
 	 */
-	switch (cmd)
+	/*
+	   switch (command->type)
+	   {
+	   case WRITE_THEN_READ:
+	   break;
+	   case WRITE_ONLY:
+	   break;
+	   case FUNC_CALL:
+	   break;
+
+
+	   case IO_REALTIME_READ:
+	   message = initialize_io_message();
+	   message->need_page_change = FALSE;
+	   message->cmd_type = READ_CMD;
+	   message->out_str = g_strdup(cmds->realtime_cmd);
+	   message->out_len = cmds->rt_cmd_len;
+	   message->handler = REALTIME_VARS;
+	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	   tmp = UPD_REALTIME;
+	   g_array_append_val(message->funcs,tmp);
+	   tmp = UPD_LOGVIEWER;
+	   g_array_append_val(message->funcs,tmp);
+	   tmp = UPD_DATALOGGER;
+	   g_array_append_val(message->funcs,tmp);
+	   g_async_queue_ref(io_queue);
+	   g_async_queue_push(io_queue,(gpointer)message);
+	   g_async_queue_unref(io_queue);
+	   break;
+	   case IO_READ_TRIGMON_PAGE:
+	   message = initialize_io_message();
+	   message->need_page_change = TRUE;
+	   message->page = firmware->trigmon_page;
+	   message->truepgnum = firmware->page_params[firmware->trigmon_page]->truepgnum;
+	   message->cmd_type = READ_CMD;
+	   message->out_str = g_strdup(cmds->veconst_cmd);
+	   message->out_len = cmds->ve_cmd_len;
+	   message->handler = VE_BLOCK;
+	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	   tmp = UPD_TRIGTOOTHMON;
+	   g_array_append_val(message->funcs,tmp);
+	   g_async_queue_ref(io_queue);
+	   g_async_queue_push(io_queue,(gpointer)message);
+	   g_async_queue_unref(io_queue);
+	   break;
+	   case IO_READ_TOOTHMON_PAGE:
+	   message = initialize_io_message();
+	   message->need_page_change = TRUE;
+	   message->page = firmware->toothmon_page;
+	   message->truepgnum = firmware->page_params[firmware->toothmon_page]->truepgnum;
+	   message->cmd_type = READ_CMD;
+	   message->out_str = g_strdup(cmds->veconst_cmd);
+	   message->out_len = cmds->ve_cmd_len;
+	   message->handler = VE_BLOCK;
+	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	   tmp = UPD_TRIGTOOTHMON;
+	   g_array_append_val(message->funcs,tmp);
+	   g_async_queue_ref(io_queue);
+	   g_async_queue_push(io_queue,(gpointer)message);
+	   g_async_queue_unref(io_queue);
+	   break;
+	   case IO_CLEAN_REBOOT:
+	   message = initialize_io_message();
+	   message->cmd_type = NULL_CMD;
+	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	   tmp = UPD_GET_BOOT_PROMPT;
+	   g_array_append_val(message->funcs,tmp);
+	   tmp = UPD_JUST_BOOT;
+	   g_array_append_val(message->funcs,tmp);
+	   g_async_queue_ref(io_queue);
+	   g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_REBOOT_GET_ERROR:
+	message = initialize_io_message();
+	message->cmd_type = NULL_CMD;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	tmp = UPD_BURN_MS_FLASH;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_GET_BOOT_PROMPT;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_REBOOT_GET_ERROR;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_GET_BOOT_PROMPT:
+	message = initialize_io_message();
+	message->need_page_change = FALSE;
+	message->cmd_type = READ_CMD;
+	message->out_str = g_strdup("!!");
+	message->out_len = 2;
+	message->handler = NULL_HANDLER;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_BOOT_READ_ERROR:
+	message = initialize_io_message();
+	message->need_page_change = FALSE;
+	message->cmd_type = READ_CMD;
+	message->out_str = g_strdup("X");
+	message->out_len = 1;
+	message->handler = GET_ERROR;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	tmp = UPD_FORCE_UPDATE;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_FORCE_PAGE_CHANGE;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_JUST_BOOT:
+	message = initialize_io_message();
+	message->need_page_change = FALSE;
+	message->cmd_type = READ_CMD;
+	message->out_str = g_strdup("X");
+	message->out_len = 1;
+	message->handler = NULL_HANDLER;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+
+	case IO_INTERROGATE_ECU:
+	gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),FALSE);
+	message = initialize_io_message();
+	message->cmd_type = INTERROGATION;
+	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
+	tmp = UPD_COMMS_STATUS;
+	g_array_append_val(message->funcs,tmp);
+	if (!tabs_loaded)
 	{
-		case IO_REALTIME_READ:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = FALSE;
-			message->command = READ_CMD;
-			message->out_str = g_strdup(cmds->realtime_cmd);
-			message->out_len = cmds->rt_cmd_len;
-			message->handler = REALTIME_VARS;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_REALTIME;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_LOGVIEWER;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_DATALOGGER;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_READ_TRIGMON_PAGE:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = TRUE;
-			message->page = firmware->trigmon_page;
-			message->truepgnum = firmware->page_params[firmware->trigmon_page]->truepgnum;
-			message->command = READ_CMD;
-			message->out_str = g_strdup(cmds->veconst_cmd);
-			message->out_len = cmds->ve_cmd_len;
-			message->handler = VE_BLOCK;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_TRIGTOOTHMON;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_READ_TOOTHMON_PAGE:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = TRUE;
-			message->page = firmware->toothmon_page;
-			message->truepgnum = firmware->page_params[firmware->toothmon_page]->truepgnum;
-			message->command = READ_CMD;
-			message->out_str = g_strdup(cmds->veconst_cmd);
-			message->out_len = cmds->ve_cmd_len;
-			message->handler = VE_BLOCK;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_TRIGTOOTHMON;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_CLEAN_REBOOT:
-			message = initialize_io_message();
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_GET_BOOT_PROMPT;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_JUST_BOOT;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_REBOOT_GET_ERROR:
-			message = initialize_io_message();
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_BURN_MS_FLASH;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_GET_BOOT_PROMPT;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_REBOOT_GET_ERROR;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_GET_BOOT_PROMPT:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = FALSE;
-			message->command = READ_CMD;
-			message->out_str = g_strdup("!!");
-			message->out_len = 2;
-			message->handler = NULL_HANDLER;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_BOOT_READ_ERROR:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = FALSE;
-			message->command = READ_CMD;
-			message->out_str = g_strdup("X");
-			message->out_len = 1;
-			message->handler = GET_ERROR;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_FORCE_UPDATE;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_FORCE_PAGE_CHANGE;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_JUST_BOOT:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = FALSE;
-			message->command = READ_CMD;
-			message->out_str = g_strdup("X");
-			message->out_len = 1;
-			message->handler = NULL_HANDLER;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-
-		case IO_INTERROGATE_ECU:
-			gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),FALSE);
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = INTERROGATION;
-			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-			tmp = UPD_COMMS_STATUS;
-			g_array_append_val(message->funcs,tmp);
-			if (!tabs_loaded)
-			{
-				tmp = UPD_LOAD_REALTIME_MAP;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_INITIALIZE_DASH;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_RT_STATUS;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_RT_TEXT;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_GUI_TABS;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_LOAD_RT_SLIDERS;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_POPULATE_DLOGGER;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_REENABLE_INTERROGATE_BUTTON;
-				g_array_append_val(message->funcs,tmp);
-				tmp = UPD_START_STATUSCOUNTS;
-				g_array_append_val(message->funcs,tmp);
-			}
-			tmp = UPD_READ_VE_CONST;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_UPDATE_VE_CONST:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-			tmp = UPD_VE_CONST;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_ENABLE_THREE_D_BUTTONS;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_SET_STORE_BLACK;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_REENABLE_GET_DATA_BUTTONS;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_LOAD_REALTIME_MAP:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-			tmp = UPD_LOAD_REALTIME_MAP;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_LOAD_GUI_TABS:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-			tmp = UPD_LOAD_GUI_TABS;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-
-		case IO_READ_VE_CONST:
-			if (!firmware)
-				break;
-			g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
-			if (!offline)
-			{
-				for (i=0;i<=firmware->ro_above;i++)
-				{
-					message = initialize_io_message();
-					message->command = READ_CMD;
-					message->truepgnum = firmware->page_params[i]->truepgnum;
-					message->page = i;
-					message->need_page_change = TRUE;
-					message->out_str = g_strdup(cmds->veconst_cmd);
-					message->out_len = cmds->ve_cmd_len;
-					message->handler = VE_BLOCK;
-					g_async_queue_ref(io_queue);
-					g_async_queue_push(io_queue,(gpointer)message);
-					g_async_queue_unref(io_queue);
-				}
-			}
-			message = initialize_io_message();
-			message->command = NULL_CMD;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_VE_CONST;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_ENABLE_THREE_D_BUTTONS;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_SET_STORE_BLACK;
-			g_array_append_val(message->funcs,tmp);
-			tmp = UPD_REENABLE_GET_DATA_BUTTONS;
-			g_array_append_val(message->funcs,tmp);
-			if (just_starting)
-			{
-				tmp = UPD_START_REALTIME;
-				g_array_append_val(message->funcs,tmp);
-				just_starting = FALSE;
-			}
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_READ_RAW_MEMORY:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = READ_CMD;
-			message->need_page_change = FALSE;
-			message->offset = (gint)data;
-			message->out_str = g_strdup(cmds->raw_mem_cmd);
-			message->out_len = cmds->raw_mem_cmd_len;
-			message->handler = RAW_MEMORY_DUMP;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_RAW_MEMORY;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_BURN_MS_FLASH:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->need_page_change = FALSE;
-			message->command = BURN_CMD;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			tmp = UPD_SET_STORE_BLACK;
-			g_array_append_val(message->funcs,tmp);
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
-		case IO_WRITE_DATA:
-			message = initialize_io_message();
-			message->cmd = cmd;
-			message->command = WRITE_CMD;
-			message->page=((Output_Data *)data)->page;
-			message->truepgnum=firmware->page_params[((Output_Data *)data)->page]->truepgnum;
-			message->payload = data;
-			message->need_page_change = TRUE;
-			message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-			if (((Output_Data *)data)->queue_update)
-			{
-				tmp = UPD_WRITE_STATUS;
-				g_array_append_val(message->funcs,tmp);
-			}
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-			break;
+		tmp = UPD_LOAD_REALTIME_MAP;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_INITIALIZE_DASH;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_LOAD_RT_STATUS;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_LOAD_RT_TEXT;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_LOAD_GUI_TABS;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_LOAD_RT_SLIDERS;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_POPULATE_DLOGGER;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_REENABLE_INTERROGATE_BUTTON;
+		g_array_append_val(message->funcs,tmp);
+		tmp = UPD_START_STATUSCOUNTS;
+		g_array_append_val(message->funcs,tmp);
 	}
+	tmp = UPD_READ_VE_CONST;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_UPDATE_VE_CONST:
+	message = initialize_io_message();
+	message->cmd_type = NULL_CMD;
+	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
+	tmp = UPD_VE_CONST;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_ENABLE_THREE_D_BUTTONS;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_SET_STORE_BLACK;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_REENABLE_GET_DATA_BUTTONS;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_LOAD_REALTIME_MAP:
+	message = initialize_io_message();
+	message->cmd_type = NULL_CMD;
+	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
+	tmp = UPD_LOAD_REALTIME_MAP;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_LOAD_GUI_TABS:
+	message = initialize_io_message();
+	message->cmd_type = NULL_CMD;
+	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
+	tmp = UPD_LOAD_GUI_TABS;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+
+	case IO_READ_VE_CONST:
+	if (!firmware)
+		break;
+	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
+	if (!offline)
+	{
+		for (i=0;i<=firmware->ro_above;i++)
+		{
+			message = initialize_io_message();
+			message->cmd_type = READ_CMD;
+			message->truepgnum = firmware->page_params[i]->truepgnum;
+			message->page = i;
+			message->need_page_change = TRUE;
+			message->out_str = g_strdup(cmds->veconst_cmd);
+			message->out_len = cmds->ve_cmd_len;
+			message->handler = VE_BLOCK;
+			g_async_queue_ref(io_queue);
+			g_async_queue_push(io_queue,(gpointer)message);
+			g_async_queue_unref(io_queue);
+		}
+	}
+	message = initialize_io_message();
+	message->cmd_type = NULL_CMD;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	tmp = UPD_VE_CONST;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_ENABLE_THREE_D_BUTTONS;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_SET_STORE_BLACK;
+	g_array_append_val(message->funcs,tmp);
+	tmp = UPD_REENABLE_GET_DATA_BUTTONS;
+	g_array_append_val(message->funcs,tmp);
+	if (just_starting)
+	{
+		tmp = UPD_START_REALTIME;
+		g_array_append_val(message->funcs,tmp);
+		just_starting = FALSE;
+	}
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_READ_RAW_MEMORY:
+	message = initialize_io_message();
+	message->cmd_type = READ_CMD;
+	message->need_page_change = FALSE;
+	message->offset = (gint)data;
+	message->out_str = g_strdup(cmds->raw_mem_cmd);
+	message->out_len = cmds->raw_mem_cmd_len;
+	message->handler = RAW_MEMORY_DUMP;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	tmp = UPD_RAW_MEMORY;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_BURN_MS_FLASH:
+	message = initialize_io_message();
+	message->need_page_change = FALSE;
+	message->cmd_type = BURN_CMD;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	tmp = UPD_SET_STORE_BLACK;
+	g_array_append_val(message->funcs,tmp);
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+	case IO_WRITE_DATA:
+	message = initialize_io_message();
+	message->cmd_type = WRITE_CMD;
+	message->page=((Output_Data *)data)->page;
+	message->truepgnum=firmware->page_params[((Output_Data *)data)->page]->truepgnum;
+	message->payload = data;
+	message->need_page_change = TRUE;
+	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	if (((Output_Data *)data)->queue_update)
+	{
+		tmp = UPD_WRITE_STATUS;
+		g_array_append_val(message->funcs,tmp);
+	}
+	g_async_queue_ref(io_queue);
+	g_async_queue_push(io_queue,(gpointer)message);
+	g_async_queue_unref(io_queue);
+	break;
+}
+*/
 }
 
 
@@ -376,7 +393,7 @@ void *thread_dispatcher(gpointer data)
 {
 	GThread * repair_thread = NULL;
 	extern GAsyncQueue *io_queue;
-	extern GAsyncQueue *dispatch_queue;
+	extern GAsyncQueue *pf_dispatch_queue;
 	extern gboolean port_open;
 	extern volatile gboolean leaving;
 	GTimeVal cur;
@@ -406,8 +423,27 @@ void *thread_dispatcher(gpointer data)
 			g_thread_join(repair_thread);
 		}
 
-		switch ((CmdType)message->command)
+		switch ((CmdType)message->command->type)
 		{
+			case FUNC_CALL:
+				if (!message->command->function)
+					printf("CRITICAL ERROR, function \"%s()\" is not found!!\n",message->command->func_call_name);
+				else
+					message->command->function(message->command->func_call_arg);
+
+				break;
+			case WRITE_ONLY:
+				printf("WRITE_ONLY case not written yet\n");
+				break;
+			case WRITE_THEN_READ:
+				write_data(message);
+				if (!message->command->helper_function)
+					printf("CRITICAL ERROR, helper function \"%s\" is NOT found!!\n",message->command->helper_func_name);
+				else
+					message->command->helper_function(message->command->helper_func_arg,message);
+
+				printf("WRITE_THEN_READ case not written yet\n");
+				break;
 			case INTERROGATION:
 				if (dbg_lvl & THREADS)
 					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case entered\n"));
@@ -507,9 +543,9 @@ void *thread_dispatcher(gpointer data)
 		/* Send rest of message back up to main context for gui
 		 * updates via asyncqueue
 		 */
-		g_async_queue_ref(dispatch_queue);
-		g_async_queue_push(dispatch_queue,(gpointer)message);
-		g_async_queue_unref(dispatch_queue);
+		g_async_queue_ref(pf_dispatch_queue);
+		g_async_queue_push(pf_dispatch_queue,(gpointer)message);
+		g_async_queue_unref(pf_dispatch_queue);
 	}
 }
 
@@ -629,9 +665,10 @@ void  thread_update_logbar(
 		gboolean count,
 		gboolean clear)
 {
+
 	Io_Message *message = NULL;
 	Text_Message *t_message = NULL;
-	extern GAsyncQueue *dispatch_queue;
+	extern GAsyncQueue *gui_dispatch_queue;
 	gint tmp = 0;
 
 	message = initialize_io_message();
@@ -644,13 +681,13 @@ void  thread_update_logbar(
 	t_message->clear = clear;
 
 	message->payload = t_message;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	message->functions = g_array_new(FALSE,TRUE,sizeof(gint));
 	tmp = UPD_LOGBAR;
-	g_array_append_val(message->funcs,tmp);
+	g_array_append_val(message->functions,tmp);
 
-	g_async_queue_ref(dispatch_queue);
-	g_async_queue_push(dispatch_queue,(gpointer)message);
-	g_async_queue_unref(dispatch_queue);
+	g_async_queue_ref(gui_dispatch_queue);
+	g_async_queue_push(gui_dispatch_queue,(gpointer)message);
+	g_async_queue_unref(gui_dispatch_queue);
 	return;
 }
 
@@ -667,7 +704,7 @@ gboolean queue_function(gchar * name)
 {
 	Io_Message *message = NULL;
 	QFunction *qfunc = NULL;
-	extern GAsyncQueue *dispatch_queue;
+	extern GAsyncQueue *gui_dispatch_queue;
 	gint tmp = 0;
 
 	message = initialize_io_message();
@@ -676,13 +713,13 @@ gboolean queue_function(gchar * name)
 	qfunc->func_name = name;
 
 	message->payload = qfunc;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	message->functions = g_array_new(FALSE,TRUE,sizeof(gint));
 	tmp = UPD_RUN_FUNCTION;
-	g_array_append_val(message->funcs,tmp);
+	g_array_append_val(message->functions,tmp);
 
-	g_async_queue_ref(dispatch_queue);
-	g_async_queue_push(dispatch_queue,(gpointer)message);
-	g_async_queue_unref(dispatch_queue);
+	g_async_queue_ref(gui_dispatch_queue);
+	g_async_queue_push(gui_dispatch_queue,(gpointer)message);
+	g_async_queue_unref(gui_dispatch_queue);
 	return FALSE;
 }
 
@@ -702,9 +739,10 @@ void  thread_update_widget(
 		WidgetType type,
 		gchar * msg)
 {
+
 	Io_Message *message = NULL;
 	Widget_Update *w_update = NULL;
-	extern GAsyncQueue *dispatch_queue;
+	extern GAsyncQueue *gui_dispatch_queue;
 	gint tmp = 0;
 
 	message = initialize_io_message();
@@ -715,13 +753,13 @@ void  thread_update_widget(
 	w_update->msg = msg;
 
 	message->payload = w_update;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
+	message->functions = g_array_new(FALSE,TRUE,sizeof(gint));
 	tmp = UPD_WIDGET;
-	g_array_append_val(message->funcs,tmp);
+	g_array_append_val(message->functions,tmp);
 
-	g_async_queue_ref(dispatch_queue);
-	g_async_queue_push(dispatch_queue,(gpointer)message);
-	g_async_queue_unref(dispatch_queue);
+	g_async_queue_ref(gui_dispatch_queue);
+	g_async_queue_push(gui_dispatch_queue,(gpointer)message);
+	g_async_queue_unref(gui_dispatch_queue);
 	return;
 }
 
@@ -765,3 +803,110 @@ void *restore_update(gpointer data)
 
 	return NULL;
 }
+
+
+
+/*! 
+ \brief build_output_string() is called when doing output to the ECU, to 
+ append the needed data together into one nice string for sending
+ */
+void build_output_string(Io_Message *message, Command *command, gpointer data)
+{
+	gint i = 0;
+	gint total = 0;
+	guint8 tmp8 = 0;
+	guint16 tmp16 = 0;
+	guint32 tmp32 = 0;
+	Output_Data *output = NULL;
+	PotentialArg * arg = NULL;
+	DBlock *block = NULL;
+
+	output = (Output_Data *)data;
+
+	total = total_arg_length(command);
+	message->sequence = g_array_new(FALSE,TRUE,sizeof(DBlock *));
+
+	/* Base command */
+	block = g_new0(DBlock, 1);
+	block->type = DATA;
+	block->str = g_strdup(command->base);
+	block->len = strlen(command->base);
+	g_array_append_val(message->sequence,block);
+
+	for (i=0;i<command->args->len;i++)
+	{
+		arg = g_array_index(command->args,PotentialArg *, i);
+		block = g_new0(DBlock, 1);
+		switch (arg->size)
+		{
+			case MTX_U08:
+			case MTX_S08:
+			case MTX_CHAR:
+				block->type = DATA;
+				tmp8 = (guint8)OBJ_GET(output->object,arg->internal_name);
+				block->str = g_memdup(&tmp8,1);
+				block->len = 1;
+				break;
+			case MTX_U16:
+			case MTX_S16:
+				block->type = DATA;
+				tmp16 = (guint16)OBJ_GET(output->object,arg->internal_name);
+				block->str = g_new0(gchar,2);
+				block->str[0] = (tmp16 & 0xff00) >> 8;
+				block->str[1] = (tmp16 & 0x00ff);
+				block->len = 2;
+			case MTX_U32:
+			case MTX_S32:
+				block->type = DATA;
+				tmp32 = (guint32)OBJ_GET(output->object,arg->internal_name);
+				block->str = g_new0(gchar,4);
+				block->str[0] = (tmp32 & 0xff000000) >> 24;
+				block->str[1] = (tmp32 & 0xff0000) >> 16;
+				block->str[2] = (tmp32 & 0xff00) >> 8;
+				block->str[3] = (tmp32 & 0x00ff);
+				block->len = 4;
+				break;
+			case MTX_UNDEF:
+				if (!arg->internal_name)
+					printf("ERROR, MTX_UNDEF, donno what to do!!\n");
+				block->str = g_memdup(output->data,output->len);
+				block->len = output->len;
+		}
+		g_array_append_val(message->sequence,block);
+	}
+}
+
+
+gint total_arg_length(Command *cmd)
+{
+	gint i = 0;
+	gint total = 0;
+	PotentialArg * arg = NULL;
+	
+	if (cmd->base)
+		total = strlen(cmd->base);
+	for (i=0;i<cmd->args->len;i++)
+	{
+		arg = g_array_index(cmd->args,PotentialArg *, i);
+		switch (arg->size)
+		{
+			case MTX_U08:
+			case MTX_S08:
+			case MTX_CHAR:
+				total++;
+				break;
+			case MTX_U16:
+			case MTX_S16:
+				total+=2;
+				break;
+			case MTX_U32:
+			case MTX_S32:
+				total+=4;
+				break;
+			case MTX_UNDEF:
+			       break;	
+		}
+	}
+	return total;
+}
+

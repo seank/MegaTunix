@@ -61,6 +61,7 @@ struct _Firmware_Details
 	gchar *rt_cmd_key;	/*! string key to hashtable for RT command */
 	gchar *ve_cmd_key;	/*! string key to hashtable for VE command */
 	gchar *raw_mem_cmd_key;	/*! string key to hashtable for RAW command */
+	gchar *VE_Command;	/*! New VE Command string */
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */

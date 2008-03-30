@@ -19,6 +19,12 @@
 			<internal_name>num_bytes</internal_name>
 			<size>_U16_</size>
 		</arg>
+		<arg>
+			<name>MS1_NUM_BYTES</name>
+			<desc>Length of data to transfer (read or write)</desc>
+			<internal_name>num_bytes</internal_name>
+			<size>_U08_</size>
+		</arg>
 	
 		<arg>
 			<name>MS1_PAGE</name>
@@ -48,25 +54,28 @@
 			<name>MS1_DATACHUNK</name>
 			<desc>Data to transfer to ECU, length is variable. Only applies to chunk write compatible firmwares </desc>
 			<internal_name>data</internal_name>
+			<size>_UNDEF_</size>
 		</arg>
 		<arg>
 			<name>MS2_DATACHUNK</name>
 			<desc>Data to transfer to ECU, length is variable </desc>
 			<internal_name>data</internal_name>
+			<size>_UNDEF_</size>
 		</arg>
 		<arg>
-			<name>PAUSE</name>
+			<name>MS2_PAUSE</name>
 			<desc>Pause during transfer</desc>
 			<useconds>50000</useconds>
+			<size>_UNDEF_</size>
 		</arg>
 	</potential_args>
 	<commands>
 		<cmd>
 			<name>ms1_std_rtvars</name>
 			<desc>Gets the realtime vars from the ECU, returns a var length block</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>A</base>
-			<return_data_func>rtvars_newdata_callback</return_data_func>
+			<helper_func>rtvars_newdata_callback</helper_func>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -76,9 +85,9 @@
 		<cmd>
 			<name>ms1_extra_rtvars</name>
 			<desc>Gets the realtime vars from the ECU, returns a var length block</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>R</base>
-			<return_data_func>rtvars_newdata_callback</return_data_func>
+			<helper_func>rtvars_newdata_callback</helper_func>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -88,13 +97,13 @@
 		<cmd>
 			<name>ms2_rtvars</name>
 			<desc>Gets the realtime vars from the ECU, returns a var length block</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>a</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
 			</args>
-			<return_data_func>rtvars_newdata_callback</return_data_func>
+			<helper_func>rtvars_newdata_callback</helper_func>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -104,7 +113,7 @@
 		<cmd>
 			<name>ms2_generic_read</name>
 			<desc>Generic read function, gets data from any can_id table and offset</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>r</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
@@ -114,9 +123,32 @@
 			</args>
 		</cmd>
 		<cmd>
+			<name>ms1_generic_write</name>
+			<desc>Generic write function, sets data to any page and offset</desc>
+			<type>_WRITE_ONLY_</type>
+			<base>W</base>
+			<args>
+				<arg>MS1_PAGE</arg>
+				<arg>MS1_OFFSET</arg>
+				<arg>MS1_BYTE</arg>
+			</args>
+		</cmd>
+		<cmd>
+			<name>ms1_chunk_write</name>
+			<desc>MS1 Chunk write function, sets data to any page and offset</desc>
+			<type>_WRITE_ONLY_</type>
+			<base>X</base>
+			<args>
+				<arg>MS1_PAGE</arg>
+				<arg>MS1_OFFSET</arg>
+				<arg>MS1_NUM_BYTES</arg>
+				<arg>MS1_DATACHUNK</arg>
+			</args>
+		</cmd>
+		<cmd>
 			<name>ms2_generic_write</name>
 			<desc>Generic write function, sets data to any can_id. table and offset</desc>
-			<type>WRITE_ONLY</type>
+			<type>_WRITE_ONLY_</type>
 			<base>w</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
@@ -129,7 +161,7 @@
 		<cmd>
 			<name>ms2_echo_write</name>
 			<desc>echo-back write function, sets data to any can_id. table and offset, then echos everything back to the sender</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>e</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
@@ -138,25 +170,35 @@
 				<arg>MS2_NUM_BYTES</arg>
 				<arg>MS2_DATACHUNK</arg>
 			</args>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>WRITE_VERIFY</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_WRITE_VERIFY_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms2_verify</name>
 			<desc>verify function, does a RAM to flash comparison for the passed canid and table and returns the number of MISMATCHED bytes</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>y</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
 			</args>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>MISMATCH_COUNT</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_MISMATCH_COUNT_</helper_func_arg>
+		</cmd>
+		<cmd>
+			<name>ms1_burn</name>
+			<desc>burns the current page flash</desc>
+			<type>_WRITE_ONLY_</type>
+			<base>B</base>
+			<post_functions>
+				<function>post_burn_callback</function>
+				<function>set_store_black</function>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_burn</name>
 			<desc>burns the passed can_id and table_index from ram to flash</desc>
-			<type>WRITE_ONLY</type>
+			<type>_WRITE_ONLY_</type>
 			<base>b</base>
 			<args>
 				<arg>MS2_CAN_ID</arg>
@@ -170,7 +212,7 @@
 		<cmd>
 			<name>ms2_table_reflash</name>
 			<desc>This command wipes the flash of the passed table index, then expects 1024 words (2kbytes) to replace it</desc>
-			<type>WRITE_ONLY</type>
+			<type>_WRITE_ONLY_</type>
 			<base>t</base>
 			<args>
 				<arg>MS2_TABLE_INDEX</arg>
@@ -181,70 +223,70 @@
 		<cmd>
 			<name>ms1_get_clock</name>
 			<desc>Triggers the ecu to echo back it's 8bit clock</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>C</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>MS1_CLOCK</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_MS1_CLOCK_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms2_get_clock</name>
 			<desc>Triggers the ecu to echo back it's 16 bit clock</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>c</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>MS2_CLOCK</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_MS2_CLOCK_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms1_get_revision</name>
 			<desc>Triggers the ecu to echo back it's textual revision</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>T</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>REVISION</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_REVISION_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms2_get_revision</name>
 			<desc>Triggers the ecu to echo back it's textual revision</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>R</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>REVISION</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_REVISION_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>get_signature</name>
 			<desc>Triggers the ecu to echo back it's api signature</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>S</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>SIGNATURE</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_SIGNATURE_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms1_veconst</name>
 			<desc>Triggers the MS1 to return the VE/Constants for the previously set page</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>V</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>MS1_VECONST</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_MS1_VECONST_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms2_reinit</name>
 			<desc>Triggers the ecu to recompute some soft init variables, required for soem variables being modified</desc>
-			<type>WRITE_ONLY</type>
+			<type>_WRITE_ONLY_</type>
 			<base>!x</base>
 		</cmd>
 		<cmd>
 			<name>ms2_reboot</name>
 			<desc>Triggers the ecu to reboot</desc>
-			<type>WRITE_ONLY</type>
+			<type>_WRITE_ONLY_</type>
 			<base>!!x</base>
 		</cmd>
 		<cmd>
 			<name>ms2_goto_bootloader</name>
 			<desc>Triggers the ecu to reboot into the bootloader</desc>
-			<type>WRITE_THEN_READ</type>
+			<type>_WRITE_THEN_READ_</type>
 			<base>!!!x</base>
-			<return_data_func>simple_read_callback</return_data_func>
-			<return_data_arg>MS2_BOOTLOADER</return_data_arg>
+			<helper_func>simple_read_callback</helper_func>
+			<helper_func_arg>_MS2_BOOTLOADER_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>interrogation</name>
@@ -261,7 +303,7 @@
 				<function>populate_dlog_choices</function>
 				<function>enable_interrogation_button</function>
 				<function>start_statuscounts</function>
-				<function>read_ve_const</function>
+				<function>spawn_read_ve_const</function>
 			</post_functions>
 		</cmd>
 		<cmd>
@@ -269,7 +311,7 @@
 			<desc>Reads ALL ecu vars for ALL modules </desc>
 			<type>_FUNC_CALL_</type>
 			<func_call_name>read_ve_const</func_call_name>
-			<func_call_arg>MS2</func_call_arg>
+			<func_call_arg>_MS2_</func_call_arg>
 			<post_functions>
 				<function>update_ve_const</function>
 				<function>enable_3d_buttons</function>
@@ -283,7 +325,7 @@
 			<desc>Reads ALL ecu vars for ALL modules </desc>
 			<type>_FUNC_CALL_</type>
 			<func_call_name>read_ve_const</func_call_name>
-			<func_call_arg>MS1</func_call_arg>
+			<func_call_arg>_MS1_</func_call_arg>
 			<post_functions>
 				<function>update_ve_const</function>
 				<function>enable_3d_buttons</function>

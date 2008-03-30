@@ -650,9 +650,9 @@ Io_Message * initialize_io_message()
 	Io_Message *message = NULL;
 
 	message = g_new0(Io_Message, 1);
-	message->out_str = NULL;
-	message->funcs = NULL;
+	message->sequence = NULL;
 	message->payload = NULL;
+	message->recv_buf = NULL;
 
 	return message;
 }
@@ -722,8 +722,6 @@ void dealloc_message(Io_Message * message)
 	Output_Data *data;
         if (message->out_str)
                 g_free(message->out_str);
-        if (message->funcs)
-                g_array_free(message->funcs,TRUE);
         if (message->payload)
 	{
 		data = (Output_Data *)message->payload;
