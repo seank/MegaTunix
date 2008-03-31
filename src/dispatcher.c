@@ -166,9 +166,8 @@ gboolean gui_dispatcher(gpointer data)
 	Text_Message *t_message = NULL;
 	Widget_Update *w_update = NULL;
 	QFunction *qfunc = NULL;
-	extern gboolean forced_update;
 	extern volatile gboolean leaving;
-	extern gint mem_view_style[];
+	//extern gint mem_view_style[];
 	extern GHashTable *dynamic_widgets;
 
 	if (!gui_dispatch_queue) /*queue not built yet... */
@@ -238,18 +237,11 @@ trypop:
 					message->payload = NULL;
 					break;
 					reset_temps(OBJ_GET(global_data,"temp_units"));
+					/*
 				case UPD_RAW_MEMORY:
 					update_raw_memory_view(mem_view_style[message->offset],message->offset);
 					break;
-				case UPD_COMMS_STATUS:
-					update_comms_status();
-					break;
-				case UPD_FORCE_UPDATE:
-					forced_update = TRUE;
-					break;
-				case UPD_FORCE_PAGE_CHANGE:
-					force_page_change = TRUE;
-					break;
+					*/
 			}
 
 			gdk_threads_enter();

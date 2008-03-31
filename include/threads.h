@@ -112,7 +112,6 @@ struct _Text_Message
 
 /* Prototypes */
 void io_cmd(gchar *, gpointer);	/* Send message down the queue */
-//void io_cmd(Io_Command, gpointer);	/* Send message down the queue */
 void *thread_dispatcher(gpointer);	/* thread that processes messages */
 void *restore_update(gpointer);		/* Thread to update tools status.. */
 void start_restore_monitor(void);	/* Thread jumpstarter */

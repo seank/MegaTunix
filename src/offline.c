@@ -53,7 +53,6 @@ void set_offline_mode(void)
 	extern GHashTable *dynamic_widgets;
 	GtkWidget * widget = NULL;
 	gchar * filename = NULL;
-	Detection_Test *test = NULL;
 	GArray *tests = NULL;
 	GHashTable *tests_hash = NULL;
 	gboolean tmp = TRUE;

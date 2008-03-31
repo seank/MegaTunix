@@ -94,289 +94,6 @@ void io_cmd(gchar *io_cmd_name, void *data)
 	g_async_queue_push(io_queue,(gpointer)message);
 	g_async_queue_unref(io_queue);
 
-	/* This function is the bridge from the main GTK thread (gui) to
-	 * the Serial I/O Handler (GThread). Communication is achieved through
-	 * Asynchronous Queues. (preferred method in GLib and should be more 
-	 * portable to more arch's)
-	 */
-	/*
-	   switch (command->type)
-	   {
-	   case IO_REALTIME_READ:
-	   message = initialize_io_message();
-	   message->need_page_change = FALSE;
-	   message->cmd_type = READ_CMD;
-	   message->out_str = g_strdup(cmds->realtime_cmd);
-	   message->out_len = cmds->rt_cmd_len;
-	   message->handler = REALTIME_VARS;
-	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	   tmp = UPD_REALTIME;
-	   g_array_append_val(message->funcs,tmp);
-	   tmp = UPD_LOGVIEWER;
-	   g_array_append_val(message->funcs,tmp);
-	   tmp = UPD_DATALOGGER;
-	   g_array_append_val(message->funcs,tmp);
-	   g_async_queue_ref(io_queue);
-	   g_async_queue_push(io_queue,(gpointer)message);
-	   g_async_queue_unref(io_queue);
-	   break;
-	   case IO_READ_TRIGMON_PAGE:
-	   message = initialize_io_message();
-	   message->need_page_change = TRUE;
-	   message->page = firmware->trigmon_page;
-	   message->truepgnum = firmware->page_params[firmware->trigmon_page]->truepgnum;
-	   message->cmd_type = READ_CMD;
-	   message->out_str = g_strdup(cmds->veconst_cmd);
-	   message->out_len = cmds->ve_cmd_len;
-	   message->handler = VE_BLOCK;
-	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	   tmp = UPD_TRIGTOOTHMON;
-	   g_array_append_val(message->funcs,tmp);
-	   g_async_queue_ref(io_queue);
-	   g_async_queue_push(io_queue,(gpointer)message);
-	   g_async_queue_unref(io_queue);
-	   break;
-	   case IO_READ_TOOTHMON_PAGE:
-	   message = initialize_io_message();
-	   message->need_page_change = TRUE;
-	   message->page = firmware->toothmon_page;
-	   message->truepgnum = firmware->page_params[firmware->toothmon_page]->truepgnum;
-	   message->cmd_type = READ_CMD;
-	   message->out_str = g_strdup(cmds->veconst_cmd);
-	   message->out_len = cmds->ve_cmd_len;
-	   message->handler = VE_BLOCK;
-	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	   tmp = UPD_TRIGTOOTHMON;
-	   g_array_append_val(message->funcs,tmp);
-	   g_async_queue_ref(io_queue);
-	   g_async_queue_push(io_queue,(gpointer)message);
-	   g_async_queue_unref(io_queue);
-	   break;
-	   case IO_CLEAN_REBOOT:
-	   message = initialize_io_message();
-	   message->cmd_type = NULL_CMD;
-	   message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	   tmp = UPD_GET_BOOT_PROMPT;
-	   g_array_append_val(message->funcs,tmp);
-	   tmp = UPD_JUST_BOOT;
-	   g_array_append_val(message->funcs,tmp);
-	   g_async_queue_ref(io_queue);
-	   g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_REBOOT_GET_ERROR:
-	message = initialize_io_message();
-	message->cmd_type = NULL_CMD;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	tmp = UPD_BURN_MS_FLASH;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_GET_BOOT_PROMPT;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_REBOOT_GET_ERROR;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_GET_BOOT_PROMPT:
-	message = initialize_io_message();
-	message->need_page_change = FALSE;
-	message->cmd_type = READ_CMD;
-	message->out_str = g_strdup("!!");
-	message->out_len = 2;
-	message->handler = NULL_HANDLER;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_BOOT_READ_ERROR:
-	message = initialize_io_message();
-	message->need_page_change = FALSE;
-	message->cmd_type = READ_CMD;
-	message->out_str = g_strdup("X");
-	message->out_len = 1;
-	message->handler = GET_ERROR;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	tmp = UPD_FORCE_UPDATE;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_FORCE_PAGE_CHANGE;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_JUST_BOOT:
-	message = initialize_io_message();
-	message->need_page_change = FALSE;
-	message->cmd_type = READ_CMD;
-	message->out_str = g_strdup("X");
-	message->out_len = 1;
-	message->handler = NULL_HANDLER;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-
-	case IO_INTERROGATE_ECU:
-	gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),FALSE);
-	message = initialize_io_message();
-	message->cmd_type = INTERROGATION;
-	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-	tmp = UPD_COMMS_STATUS;
-	g_array_append_val(message->funcs,tmp);
-	if (!tabs_loaded)
-	{
-		tmp = UPD_LOAD_REALTIME_MAP;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_INITIALIZE_DASH;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_LOAD_RT_STATUS;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_LOAD_RT_TEXT;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_LOAD_GUI_TABS;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_LOAD_RT_SLIDERS;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_POPULATE_DLOGGER;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_REENABLE_INTERROGATE_BUTTON;
-		g_array_append_val(message->funcs,tmp);
-		tmp = UPD_START_STATUSCOUNTS;
-		g_array_append_val(message->funcs,tmp);
-	}
-	tmp = UPD_READ_VE_CONST;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_UPDATE_VE_CONST:
-	message = initialize_io_message();
-	message->cmd_type = NULL_CMD;
-	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-	tmp = UPD_VE_CONST;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_ENABLE_THREE_D_BUTTONS;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_SET_STORE_BLACK;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_REENABLE_GET_DATA_BUTTONS;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_LOAD_REALTIME_MAP:
-	message = initialize_io_message();
-	message->cmd_type = NULL_CMD;
-	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-	tmp = UPD_LOAD_REALTIME_MAP;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_LOAD_GUI_TABS:
-	message = initialize_io_message();
-	message->cmd_type = NULL_CMD;
-	message->funcs = g_array_new(TRUE,TRUE,sizeof(gint));
-	tmp = UPD_LOAD_GUI_TABS;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-
-	case IO_READ_VE_CONST:
-	if (!firmware)
-		break;
-	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
-	if (!offline)
-	{
-		for (i=0;i<=firmware->ro_above;i++)
-		{
-			message = initialize_io_message();
-			message->cmd_type = READ_CMD;
-			message->truepgnum = firmware->page_params[i]->truepgnum;
-			message->page = i;
-			message->need_page_change = TRUE;
-			message->out_str = g_strdup(cmds->veconst_cmd);
-			message->out_len = cmds->ve_cmd_len;
-			message->handler = VE_BLOCK;
-			g_async_queue_ref(io_queue);
-			g_async_queue_push(io_queue,(gpointer)message);
-			g_async_queue_unref(io_queue);
-		}
-	}
-	message = initialize_io_message();
-	message->cmd_type = NULL_CMD;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	tmp = UPD_VE_CONST;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_ENABLE_THREE_D_BUTTONS;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_SET_STORE_BLACK;
-	g_array_append_val(message->funcs,tmp);
-	tmp = UPD_REENABLE_GET_DATA_BUTTONS;
-	g_array_append_val(message->funcs,tmp);
-	if (just_starting)
-	{
-		tmp = UPD_START_REALTIME;
-		g_array_append_val(message->funcs,tmp);
-		just_starting = FALSE;
-	}
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_READ_RAW_MEMORY:
-	message = initialize_io_message();
-	message->cmd_type = READ_CMD;
-	message->need_page_change = FALSE;
-	message->offset = (gint)data;
-	message->out_str = g_strdup(cmds->raw_mem_cmd);
-	message->out_len = cmds->raw_mem_cmd_len;
-	message->handler = RAW_MEMORY_DUMP;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	tmp = UPD_RAW_MEMORY;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_BURN_MS_FLASH:
-	message = initialize_io_message();
-	message->need_page_change = FALSE;
-	message->cmd_type = BURN_CMD;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	tmp = UPD_SET_STORE_BLACK;
-	g_array_append_val(message->funcs,tmp);
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-	case IO_WRITE_DATA:
-	message = initialize_io_message();
-	message->cmd_type = WRITE_CMD;
-	message->page=((Output_Data *)data)->page;
-	message->truepgnum=firmware->page_params[((Output_Data *)data)->page]->truepgnum;
-	message->payload = data;
-	message->need_page_change = TRUE;
-	message->funcs = g_array_new(FALSE,TRUE,sizeof(gint));
-	if (((Output_Data *)data)->queue_update)
-	{
-		tmp = UPD_WRITE_STATUS;
-		g_array_append_val(message->funcs,tmp);
-	}
-	g_async_queue_ref(io_queue);
-	g_async_queue_push(io_queue,(gpointer)message);
-	g_async_queue_unref(io_queue);
-	break;
-}
-*/
 }
 
 
@@ -438,7 +155,7 @@ void *thread_dispatcher(gpointer data)
 				else
 				{
 					/*printf("Calling FUNC_CALL, function \"%s()\" \n",
-							message->command->func_call_name);*/
+					  message->command->func_call_name);*/
 					message->command->function(
 							message->command,
 							message->command->func_call_arg);
@@ -452,99 +169,10 @@ void *thread_dispatcher(gpointer data)
 			case NULL_CMD:
 				break;
 
-				/*
-			case INTERROGATION:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case entered\n"));
-				if (!port_open)
-				{
-					if (dbg_lvl & (THREADS|CRITICAL))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tLINK DOWN, Interrogate_ecu requested, aborting call\n"));
-					thread_update_logbar("interr_view","warning",g_strdup("Interrogation failed due to disconnected Serial Link. Check COMMS Tab...\n"),FALSE,FALSE);
-					thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Disconnected link, check Communications tab..."));
-					if (dbg_lvl & THREADS)
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case leaving, link NOT up\n"));
-					break;
-				}
-				if ((connected) && (!offline))
-				{
-					interrogate_ecu();
-				}
-				else
-				{
-					thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Not Connected, Check Serial Parameters..."));
-					thread_update_logbar("interr_view","warning",g_strdup("Interrogation failed due to Link Problem. Check COMMS Tab...\n"),FALSE,FALSE);
-
-				}
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tInterrogation case leaving\n"));
-				break;
-			case READ_CMD:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tread_cmd case entered\n"));
-				if (!port_open)
-				{
-					if (dbg_lvl & (THREADS|CRITICAL))
-						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, read_command requested, call aborted \n"));
-					break;
-				}
-				if (dbg_lvl & (SERIAL_RD|THREADS))
-					dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tread_command requested (%s)\n",handler_types[message->handler]));
-				if (connected)
-					readfrom_ecu(message);
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tread_cmd case leaving\n"));
-				break;
-			case WRITE_CMD:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\twrite_cmd case entered\n"));
-				if ((!port_open) && (!offline))
-				{
-					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
-						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, write_command requested, call aborted \n"));
-					break;
-				}
-				if (dbg_lvl & (SERIAL_WR|THREADS))
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\twrite_command requested\n"));
-				if ((connected) || (offline))
-					writeto_ecu(message);
-				else
-				{
-					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\twriteto_ecu skipped, NOT Connected!!\n"));
-				}
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\twrite_cmd case leaving\n"));
-				break;
-			case BURN_CMD:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tburn_cmd case entered\n"));
-				if (!port_open)
-				{
-					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
-						dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\tLINK DOWN, burn_command requested, call aborted \n"));
-					break;
-				}
-				if (dbg_lvl & (SERIAL_WR|THREADS))
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tburn_command requested\n"));
-				if ((connected) || (offline))
-					burn_ecu_flash();
-				else
-				{
-					if (dbg_lvl & (SERIAL_WR|THREADS|CRITICAL))
-						dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tburn_ecu_flash skipped, NOT Connected!!\n"));
-				}
-
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tburn_cmd case leaving\n"));
-				break;
-			case NULL_CMD:
-				if (dbg_lvl & THREADS)
-					dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tnull_command requested\n"));
-				break;
-
-				*/
 			default:
+				if (dbg_lvl & CRITICAL)
+					dbg_func(g_strdup_printf(__FILE__": thread_dispatcher()\n\t Hit default case, this SHOULD NOT HAPPEN it's a bug, notify author! \n"));
+
 				break;
 
 		}
@@ -840,7 +468,7 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 	/* Base command */
 	block = g_new0(DBlock, 1);
 	block->type = DATA;
-	block->data = g_strdup(command->base);
+	block->data = (guint8 *)g_strdup(command->base);
 	block->len = strlen(command->base);
 	g_array_append_val(message->sequence,block);
 
@@ -860,7 +488,7 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 		if (arg->type == STATIC_STRING)
 		{
 			block->type = DATA;
-			block->data = g_strdup(arg->static_string);
+			block->data = (guint8 *)g_strdup(arg->static_string);
 			block->len = strlen(arg->static_string);
 			g_array_append_val(message->sequence,block);
 			continue;

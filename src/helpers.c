@@ -188,6 +188,8 @@ void simple_read_cb(XmlCmdType type, void * data)
 	extern gint ms_goodread_count;
 	guchar *ptr = NULL;
 	static gboolean just_starting = TRUE;
+	extern gboolean forced_update;
+	extern gboolean force_page_change;
 
 
 	message = (Io_Message *)data;
@@ -263,6 +265,8 @@ void simple_read_cb(XmlCmdType type, void * data)
 			printf("MS2_BOOTLOADER not written yet\n");
 			break;
 		case MS1_GETERROR:
+			forced_update = TRUE;
+			force_page_change = TRUE;
 			count = read_data(-1,&message->recv_buf);
 			if (count <= 10)
 			{
