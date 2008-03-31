@@ -363,7 +363,7 @@
 			</post_functions>
 		</cmd>
 		<cmd>
-			<name>ms1_read_ve_const</name>
+			<name>ms1_read_all</name>
 			<desc>Reads ALL ecu vars for ALL modules </desc>
 			<type>_FUNC_CALL_</type>
 			<func_call_name>read_ve_const</func_call_name>

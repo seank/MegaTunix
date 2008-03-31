@@ -65,10 +65,7 @@ void spawn_read_ve_const_cb(void)
 	if (!firmware)
 		return;
 	
-	if (firmware->capabilities & MS2_STD)
-		io_cmd("ms2_read_ve_const",NULL);
-	else
-		io_cmd("ms1_read_ve_const",NULL);
+	io_cmd(firmware->get_all_command,NULL);
 }
 
 void read_ve_const(void *data, XmlCmdType type)
