@@ -22,13 +22,14 @@ void enable_interrogation_button_cb(void);
 void start_statuscounts_cb(void);
 void spawn_read_ve_const_cb(void);
 void enable_get_data_buttons_cb(void);
+void enable_ttm_buttons_cb(void);
 void enable_reboot_button_cb(void);
 void conditional_start_rtv_tickler_cb(void);
 void set_store_black_cb(void);
 void enable_3d_buttons_cb(void);
 void reset_temps_cb(void);
 void simple_read_cb(XmlCmdType, void *);
-void read_ve_const(XmlEcuType);
+void read_ve_const(XmlCmdType);
 /* Prototypes */
 
 #endif

@@ -441,7 +441,9 @@ typedef enum
 	MS2_BOOTLOADER,
 	MS1_RT_VARS,
 	MS2_RT_VARS,
-	MS1_GETERROR
+	MS1_GETERROR,
+	MS1_E_TRIGMON,
+	MS1_E_TOOTHMON
 }XmlCmdType;
 
 typedef enum
@@ -450,12 +452,6 @@ typedef enum
 	ACTION,
 	STATIC_STRING
 }ArgType;
-
-typedef enum
-{
-	MS1=0x2B0,
-	MS2
-}XmlEcuType;
 
 typedef enum
 {

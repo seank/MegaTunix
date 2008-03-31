@@ -22,6 +22,7 @@
 #include <glib/gprintf.h>
 #include <math.h>
 #include <t-logger.h>
+#include <threads.h>
 #include <timeout_handlers.h>
 #include <logviewer_gui.h>
 #include <rtv_processor.h>
@@ -119,9 +120,9 @@ EXPORT gboolean logger_display_config_event(GtkWidget * widget, GdkEventConfigur
 	if (ttm_data->page < 0)
 		return TRUE;
 
-	crunch_trigtooth_data(ttm_data->page);
+	_crunch_trigtooth_data(ttm_data->page);
 	if (ttm_data->peak > 0)
-		update_trigtooth_display(ttm_data->page);
+		_update_trigtooth_display(ttm_data->page);
 	return TRUE;
 }
 
@@ -138,7 +139,12 @@ EXPORT gboolean logger_display_expose_event(GtkWidget * widget, GdkEventExpose *
 }
 
 
-void crunch_trigtooth_data(gint page)
+void crunch_trigtooth_data()
+{
+	_crunch_trigtooth_data(ttm_data->page);
+}
+
+void _crunch_trigtooth_data(gint page)
 {
 	extern Firmware_Details *firmware;
 	gint canID = firmware->canID;
@@ -312,7 +318,13 @@ void crunch_trigtooth_data(gint page)
 }
 
 
-void update_trigtooth_display(gint page)
+void update_trigtooth_display()
+{
+	_update_trigtooth_display(ttm_data->page);
+}
+
+
+void _update_trigtooth_display(gint page)
 {
 #ifdef HAVE_CAIRO
 	cairo_update_trigtooth_display(page);

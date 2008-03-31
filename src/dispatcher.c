@@ -238,52 +238,17 @@ trypop:
 					message->payload = NULL;
 					break;
 					reset_temps(OBJ_GET(global_data,"temp_units"));
-				case UPD_VE_CONST:
-					update_ve_const();
-					setup_menu_handlers();
-					break;
-				case UPD_TRIGTOOTHMON:
-					crunch_trigtooth_data(message->page);
-					update_trigtooth_display(message->page);
-					break;
-				case UPD_SET_STORE_RED:
-					set_group_color(RED,"burners");
-					break;
-				case UPD_LOGVIEWER:
-					rt_update_logview_traces(FALSE);
-					break;
 				case UPD_RAW_MEMORY:
 					update_raw_memory_view(mem_view_style[message->offset],message->offset);
 					break;
-				case UPD_DATALOGGER:
-					run_datalog();
-					break;
 				case UPD_COMMS_STATUS:
 					update_comms_status();
-					break;
-				case UPD_WRITE_STATUS:
-					update_write_status(message->payload);
-					break;
-				case UPD_GET_BOOT_PROMPT:
-					if (connected)
-						io_cmd(IO_GET_BOOT_PROMPT,NULL);
-					break;
-				case UPD_REBOOT_GET_ERROR:
-					if (connected)
-						io_cmd(IO_BOOT_READ_ERROR,NULL);
-					break;
-				case UPD_JUST_BOOT:
-					if (connected)
-						io_cmd(IO_JUST_BOOT,NULL);
 					break;
 				case UPD_FORCE_UPDATE:
 					forced_update = TRUE;
 					break;
 				case UPD_FORCE_PAGE_CHANGE:
 					force_page_change = TRUE;
-					break;
-				case UPD_INITIALIZE_DASH:
-					initialize_dashboards();
 					break;
 			}
 

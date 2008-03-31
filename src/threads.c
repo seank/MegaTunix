@@ -420,7 +420,7 @@ void *thread_dispatcher(gpointer data)
 			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
 			g_thread_join(repair_thread);
 		}
-/*		if (!port_open)
+		if (!port_open)
 		{
 			if (dbg_lvl & (THREADS|CRITICAL))
 				dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tLINK DOWN, Can't process requested command, aborting call\n"));
@@ -428,7 +428,6 @@ void *thread_dispatcher(gpointer data)
 			thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Disconnected link, check Communications tab..."));
 			continue;
 		}
-		*/
 
 		switch ((CmdType)message->command->type)
 		{

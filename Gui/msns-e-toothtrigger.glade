@@ -114,6 +114,7 @@
 				  <child>
 				    <widget class="GtkRadioButton" id="toothlogger_disable_radio_button">
 				      <property name="visible">True</property>
+				      <property name="sensitive">False</property>
 				      <property name="can_focus">True</property>
 				      <property name="label" translatable="yes">Disabled</property>
 				      <property name="use_underline">True</property>
@@ -136,6 +137,7 @@
 				  <child>
 				    <widget class="GtkRadioButton" id="toothlogger_enable_radio_button">
 				      <property name="visible">True</property>
+				      <property name="sensitive">False</property>
 				      <property name="can_focus">True</property>
 				      <property name="label" translatable="yes">Enabled</property>
 				      <property name="use_underline">True</property>
@@ -204,6 +206,7 @@
 				  <child>
 				    <widget class="GtkRadioButton" id="triggerlogger_enable_radio_button">
 				      <property name="visible">True</property>
+				      <property name="sensitive">False</property>
 				      <property name="can_focus">True</property>
 				      <property name="label" translatable="yes">Enabled</property>
 				      <property name="use_underline">True</property>
@@ -226,6 +229,7 @@
 				  <child>
 				    <widget class="GtkRadioButton" id="triggerlogger_disable_radio_button">
 				      <property name="visible">True</property>
+				      <property name="sensitive">False</property>
 				      <property name="can_focus">True</property>
 				      <property name="label" translatable="yes">Disabled</property>
 				      <property name="use_underline">True</property>

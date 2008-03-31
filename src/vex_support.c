@@ -548,7 +548,7 @@ gboolean all_table_import(GIOChannel *iochannel)
 			dbg_func(g_strdup_printf(__FILE__": all_table_import()\n\tRead was unsuccessful. %i %i %i %i \n",vex->got_page, vex->got_load, vex->got_rpm, vex->got_ve));
 		return FALSE;
 	}
-	io_cmd(IO_UPDATE_VE_CONST,NULL);
+	update_ve_const();
 	return TRUE;
 }
 
@@ -617,7 +617,7 @@ void single_table_import(GIOChannel *iochannel, gint table_num)
 			dbg_func(g_strdup_printf(__FILE__": single_table_import()\n\tRead was unsuccessful. %i %i %i %i \n",vex->got_page, vex->got_load, vex->got_rpm, vex->got_ve));
 		return;
 	}
-	io_cmd(IO_UPDATE_VE_CONST,NULL);
+	update_ve_const();
 	return;
 }
 
@@ -1269,7 +1269,7 @@ void revert_to_previous_data()
 		}
 		memcpy(ecu_data[page], ecu_data_backup[page],firmware->page_params[page]->length);
 	}
-	io_cmd(IO_UPDATE_VE_CONST,NULL);
+	update_ve_const();
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"tools_undo_vex_button"),FALSE);
 	update_logbar("tools_view","warning",g_strdup("Reverting to previous settings....\n"),FALSE,FALSE);
 	io_cmd(firmware->burn_command,NULL);

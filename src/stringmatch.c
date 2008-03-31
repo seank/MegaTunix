@@ -275,12 +275,6 @@ void build_string_2_enum_table()
 	g_hash_table_insert(str_2_enum,"_NULL_CMD_",
 			GINT_TO_POINTER(NULL_CMD));
 
-	/* Function Call Arg */
-	g_hash_table_insert(str_2_enum,"_MS1_",
-			GINT_TO_POINTER(MS1));
-	g_hash_table_insert(str_2_enum,"_MS2_",
-			GINT_TO_POINTER(MS2));
-
 	/* XmlCmdType's */
 	g_hash_table_insert(str_2_enum,"_WRITE_VERIFY_",
 			GINT_TO_POINTER(WRITE_VERIFY));
@@ -306,6 +300,10 @@ void build_string_2_enum_table()
 			GINT_TO_POINTER(MS2_RT_VARS));
 	g_hash_table_insert(str_2_enum,"_MS1_GETERROR_",
 			GINT_TO_POINTER(MS1_GETERROR));
+	g_hash_table_insert(str_2_enum,"_MS1_E_TRIGMON_",
+			GINT_TO_POINTER(MS1_E_TRIGMON));
+	g_hash_table_insert(str_2_enum,"_MS1_E_TOOTHMON_",
+			GINT_TO_POINTER(MS1_E_TOOTHMON));
 
 	/* Action's */
 	g_hash_table_insert(str_2_enum,"_SLEEP_",

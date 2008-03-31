@@ -267,10 +267,10 @@ gboolean signal_toothtrig_read(TicklerType type)
 	switch (type)
 	{
 		case TOOTHMON_TICKLER:
-			io_cmd(IO_READ_TOOTHMON_PAGE,NULL);
+			io_cmd("ms1_e_read_toothmon",NULL);
 			break;
 		case TRIGMON_TICKLER:
-			io_cmd(IO_READ_TRIGMON_PAGE,NULL);
+			io_cmd("ms1_e_read_trigmon",NULL);
 			break;
 		default:
 			break;

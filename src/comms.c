@@ -87,7 +87,7 @@ gint comms_test()
 		connected = FALSE;
 		return connected;
 	}
-	result = handle_ecu_data(C_TEST,NULL);
+	result = read_data(1,NULL);
 	if (!result) /* Failure,  Attempt MS-II method */
 	{
 		if (write(serial_params->fd,"c",1) != 1)
@@ -99,7 +99,7 @@ gint comms_test()
 			connected = FALSE;
 			return connected;
 		}
-		result = handle_ecu_data(C_TEST,NULL);
+		result = read_data(2,NULL);
 	}
 	if (result)	/* Success */
 	{
@@ -335,7 +335,7 @@ force_change:
 
 
 /*!
- \brief writeto_ecu() physiclaly sends the data to the ECU.
+ \brief write_data() physiclaly sends the data to the ECU.
  \param message (Io_Message *) a pointer to a Io_Message
  */
 void write_data(Io_Message *message)
@@ -423,7 +423,7 @@ void write_data(Io_Message *message)
 			else
 			{
 				if (dbg_lvl & SERIAL_WR)
-					dbg_func(g_strdup_printf(__FILE__": writeto_ecu()\n\tWrite of block %i to ECU succeeded\n",i));
+					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWrite of block %i to ECU succeeded\n",i));
 			}
 		}
 

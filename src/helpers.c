@@ -39,7 +39,9 @@ void enable_interrogation_button_cb(void)
 {
 	extern GHashTable *dynamic_widgets;
 	extern volatile gboolean offline;
-	if(!offline)
+	extern gboolean interrogated;
+
+	if ((!offline) && (!interrogated))
 		gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),TRUE);
 }
 
@@ -69,7 +71,7 @@ void spawn_read_ve_const_cb(void)
 		io_cmd("ms1_read_ve_const",NULL);
 }
 
-void read_ve_const(void *data, XmlEcuType type)
+void read_ve_const(void *data, XmlCmdType type)
 {
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
@@ -78,23 +80,53 @@ void read_ve_const(void *data, XmlEcuType type)
 	gint i = 0;
 
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
-	if (type == MS2)
-		printf("MS2 read_ve_const not written yet\n");
-	if (type == MS1)
+	switch (type)
 	{
-		if (!offline)
-		{
-			for (i=0;i<=firmware->ro_above;i++)
+		case MS1_VECONST:
+
+			if (!offline)
+			{
+				for (i=0;i<=firmware->ro_above;i++)
+				{
+					output = g_new0(Output_Data,1);
+					output->page=i;
+					output->truepgnum = firmware->page_params[i]->truepgnum;
+					output->need_page_change = TRUE;
+					io_cmd(firmware->ve_command,output);
+				}
+			}
+			command = (Command *)data;
+			io_cmd(NULL,command->post_functions);
+			break;
+		case MS2_VECONST:
+			printf("MS2 read_ve_const not written yet\n");
+			break;
+		case MS1_E_TRIGMON:
+			if (!offline)
 			{
 				output = g_new0(Output_Data,1);
-				output->page=i;
-				output->truepgnum = firmware->page_params[i]->truepgnum;
+				output->page=firmware->trigmon_page;
+				output->truepgnum = firmware->page_params[firmware->trigmon_page]->truepgnum;
 				output->need_page_change = TRUE;
 				io_cmd(firmware->ve_command,output);
+				command = (Command *)data;
+				io_cmd(NULL,command->post_functions);
 			}
-		}
-		command = (Command *)data;
-		io_cmd(NULL,command->post_functions);
+			break;
+		case MS1_E_TOOTHMON:
+			if (!offline)
+			{
+				output = g_new0(Output_Data,1);
+				output->page=firmware->toothmon_page;
+				output->truepgnum = firmware->page_params[firmware->toothmon_page]->truepgnum;
+				output->need_page_change = TRUE;
+				io_cmd(firmware->ve_command,output);
+				command = (Command *)data;
+				io_cmd(NULL,command->post_functions);
+			}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -102,6 +134,12 @@ void read_ve_const(void *data, XmlEcuType type)
 void enable_get_data_buttons_cb(void)
 {
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
+}
+
+
+void enable_ttm_buttons_cb(void)
+{
+	g_list_foreach(get_list("ttm_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
@@ -178,10 +216,7 @@ void simple_read_cb(XmlCmdType type, void * data)
 		case MS1_VECONST:
 			count = read_data(firmware->page_params[output->page]->length,&message->recv_buf);
 			if (count != firmware->page_params[output->page]->length)
-			{
-				printf("ERROR receive failure! (MS1 VECONST)!!!\n");
 				break;
-			}
 			store_new_block(output->canID,output->page,0,
 					message->recv_buf,
 					firmware->page_params[output->page]->length);
@@ -194,10 +229,7 @@ void simple_read_cb(XmlCmdType type, void * data)
 		case MS1_RT_VARS:
 			count = read_data(firmware->rtvars_size,&message->recv_buf);
 			if (count != firmware->rtvars_size)
-			{
-				printf("ERROR receive failure! (RTVARS)!!!\n");
 				break;
-			}
 			ptr = (guchar *)message->recv_buf;
 			/* Test for MS reset */
 			if (just_starting)
@@ -231,7 +263,7 @@ void simple_read_cb(XmlCmdType type, void * data)
 			printf("MS2_BOOTLOADER not written yet\n");
 			break;
 		case MS1_GETERROR:
-			count = read_data(1024,&message->recv_buf);
+			count = read_data(-1,&message->recv_buf);
 			if (count <= 10)
 			{
 				thread_update_logbar("error_status_view",NULL,g_strdup("No ECU Errors were reported....\n"),FALSE,FALSE);
@@ -250,6 +282,8 @@ void simple_read_cb(XmlCmdType type, void * data)
 			}
 			else
 				thread_update_logbar("error_status_view",NULL,g_strdup("The data came back as gibberish, please try again...\n"),FALSE,FALSE);
+			break;
+		default:
 			break;
 	}
 }
