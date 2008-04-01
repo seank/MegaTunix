@@ -43,7 +43,7 @@ extern GObject *global_data;
  It's purpose is to load all the glade files and datamaps as specified in the
  interrogation profile of the detected firmware. 
  */
-gboolean load_gui_tabs(void)
+EXPORT gboolean load_gui_tabs(void)
 {
 	extern Firmware_Details * firmware;
 	gint i = 0;
@@ -220,7 +220,6 @@ void group_free(gpointer value)
 			g_free(OBJ_GET(group->object,group->keys[i]));
 		OBJ_SET(group->object,group->keys[i],NULL);
 	}
-	//g_object_destroy(group->object);
 	g_object_unref(group->object);
 	g_strfreev(group->keys);
 	g_free(group->keytypes);
@@ -466,14 +465,11 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 
 
 	if (GTK_IS_CONTAINER(widget))
-	{
 		gtk_container_foreach(GTK_CONTAINER(widget),bind_data,user_data);
-	}
 	section = (char *)glade_get_widget_name(widget);
 	if (section == NULL)
-	{
 		return;
-	}
+
 	g_free(OBJ_GET(widget,"name"));
 	OBJ_SET(widget,"name",g_strdup(section));
 	if(cfg_read_string(cfgfile,section,"keys",&tmpbuf))

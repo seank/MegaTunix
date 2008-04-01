@@ -43,7 +43,7 @@ extern GObject *global_data;
  from the file specified in the firmware's interrogation profile, and populate
  the gui wiht the newly created sliders.
  */
-void load_sliders()
+EXPORT void load_sliders()
 {
 	ConfigFile *cfgfile = NULL;
 	Rt_Slider *slider = NULL;

@@ -99,15 +99,15 @@ void bind_keys(GObject *object, ConfigFile *cfgfile, gchar *section, gchar ** ke
 					if ((tmpstr) && (g_strrstr(keys[i],"bind_to_list")!= NULL))
 					{
 						tmpstr = g_strconcat(tmpstr,",",tmpbuf,NULL);
+						g_free(OBJ_GET(object,keys[i]));
 						OBJ_SET(object,
 								keys[i],
 								g_strdup(tmpstr));
 						g_free(tmpstr);
 					}
 					else
-						OBJ_SET(object,
-								keys[i],
-								g_strdup(tmpbuf));
+						OBJ_SET(object,keys[i],g_strdup(tmpbuf));
+								
 					g_free(tmpbuf);
 				}
 				else

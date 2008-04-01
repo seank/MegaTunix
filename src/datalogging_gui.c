@@ -52,7 +52,7 @@ static gboolean header_needed = FALSE;
  processed.  All of the logable variables are then placed here to user 
  selecting during datalogging.
  */
-void populate_dlog_choices()
+EXPORT void populate_dlog_choices()
 {
 	gint i,j,k;
 	GtkWidget *vbox = NULL;
@@ -306,7 +306,7 @@ void write_log_header(GIOChannel *iochannel, gboolean override)
  \brief run_datalog() gets called each time data arrives after rtvar 
  processing and logs the selected values to the file
  */
-void run_datalog(void)
+EXPORT void run_datalog(void)
 {
 	gint i = 0;
 	gint j = 0;

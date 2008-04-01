@@ -15,6 +15,7 @@
 #include <configfile.h>
 #include <conversions.h>
 #include <defines.h>
+#include <enums.h>
 #include <debugging.h>
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -726,8 +727,15 @@ Table_Params * initialize_table_params(void)
 void dealloc_message(Io_Message * message)
 {
 	Output_Data *data;
-        if (message->out_str)
-                g_free(message->out_str);
+	if (message->functions)
+		dealloc_array(message->functions, FUNCTIONS);
+	if (message->sequence)
+		dealloc_array(message->sequence, SEQUENCE);
+	if (message->recv_buf)
+		g_free(message->recv_buf);
+	if (message->command)
+		if (message->command->type == NULL_CMD)
+			g_free(message->command);
         if (message->payload)
 	{
 		data = (Output_Data *)message->payload;
@@ -737,6 +745,51 @@ void dealloc_message(Io_Message * message)
 	}
         g_free(message);
 	message = NULL;
+}
+
+
+void dealloc_array(GArray *array, ArrayType type)
+{
+	DBlock *db = NULL;
+	PotentialArg *arg = NULL;
+	gint i = 0;
+
+	switch (type)
+	{
+		case FUNCTIONS:
+			g_array_free(array,TRUE);
+			break;
+		case SEQUENCE:
+			for (i=0;i<array->len;i++)
+			{
+				db = g_array_index(array,DBlock *,i);
+				if (!db)
+					continue;
+				if (db->data)
+					g_free(db->data);
+				g_free(db);
+			}
+			g_array_free(array,TRUE);
+			break;
+		case ARGS:
+			for (i=0;i<array->len;i++)
+			{
+				arg = g_array_index(array,PotentialArg *,i);
+				if (!arg)
+					continue;
+				if (arg->name)
+					g_free(arg->name);
+				if (arg->desc)
+					g_free(arg->desc);
+				if (arg->internal_name)
+					g_free(arg->internal_name);
+				if (arg->static_string)
+					g_free(arg->static_string);
+				g_free(arg);
+			}
+			g_array_free(array,TRUE);
+			break;
+	}
 }
 
 

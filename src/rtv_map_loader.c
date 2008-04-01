@@ -44,7 +44,7 @@ extern GObject *global_data;
  firmware's interrogation profile, and sets up the necessary arrays for storage
  of data coming from the ECU (temporary arrays for the last 50 or so entries)
  */
-gboolean load_realtime_map(void )
+EXPORT gboolean load_realtime_map(void )
 {
 	ConfigFile *cfgfile;
 	extern Firmware_Details *firmware;

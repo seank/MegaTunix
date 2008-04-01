@@ -29,16 +29,16 @@
 #include <widgetmgmt.h>
 
 
-/*!
- \brief load_status() is called to create the ECU status window, load the 
- settings from the StatusMapFile.
- */
 
 extern gint dbg_lvl;
 GtkWidget *status_window = NULL;
 extern GObject *global_data;
 
-void load_status(void)
+/*!
+ \brief load_status() is called to create the ECU status window, load the 
+ settings from the StatusMapFile.
+ */
+EXPORT void load_status(void)
 {
 	ConfigFile *cfgfile = NULL;
 	extern Firmware_Details *firmware;

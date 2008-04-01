@@ -149,23 +149,33 @@ void  update_logbar(
 	extern volatile gboolean leaving;
 
 	if (leaving)
+	{
+		g_free(message);
 		return;
+	}
 
 	widget = (GtkWidget *)g_hash_table_lookup(dynamic_widgets,view_name);
 
 	if (!widget)
+	{
+		g_free(message);
 		return;
+	}
 	if (!GTK_IS_OBJECT(widget))
 	{
 		if (dbg_lvl & CRITICAL)
 			dbg_func(g_strdup_printf(__FILE__": update_logbar()\n\t Textview name passed: \"%s\" wasn't registered, not updating\n",view_name));
+		g_free(message);
 		return;
 	}
 
 	/* Add the message to the end of the textview */
 	textbuffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (widget));
 	if (!textbuffer)
+	{
+		g_free(message);
 		return;
+	}
 	gtk_text_buffer_get_end_iter (textbuffer, &iter);
 	result = OBJ_GET(widget,"counter");	
 	if (result == NULL)

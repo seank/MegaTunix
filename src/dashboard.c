@@ -622,7 +622,7 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	return FALSE;
 }
 
-void initialize_dashboards()
+EXPORT void initialize_dashboards()
 {
 	GtkWidget * label = NULL;
 	gchar * tmpbuf = NULL;

@@ -35,7 +35,7 @@ extern gint dbg_lvl;
 extern GObject *global_data;
 
 
-void enable_interrogation_button_cb(void)
+EXPORT void enable_interrogation_button_cb(void)
 {
 	extern GHashTable *dynamic_widgets;
 	extern volatile gboolean offline;
@@ -46,20 +46,20 @@ void enable_interrogation_button_cb(void)
 }
 
 
-void start_statuscounts_cb(void)
+EXPORT void start_statuscounts_cb(void)
 {
 	start_tickler(SCOUNTS_TICKLER);
 }
 
 
-void enable_reboot_button_cb(void)
+EXPORT void enable_reboot_button_cb(void)
 {
 	extern GHashTable *dynamic_widgets;
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"error_status_reboot_button"),TRUE);
 }
 
 
-void spawn_read_ve_const_cb(void)
+EXPORT void spawn_read_ve_const_cb(void)
 {
 	extern Firmware_Details *firmware;
 	if (!firmware)
@@ -68,7 +68,7 @@ void spawn_read_ve_const_cb(void)
 	io_cmd(firmware->get_all_command,NULL);
 }
 
-void read_ve_const(void *data, XmlCmdType type)
+EXPORT void read_ve_const(void *data, XmlCmdType type)
 {
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
@@ -128,19 +128,19 @@ void read_ve_const(void *data, XmlCmdType type)
 }
 
 
-void enable_get_data_buttons_cb(void)
+EXPORT void enable_get_data_buttons_cb(void)
 {
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-void enable_ttm_buttons_cb(void)
+EXPORT void enable_ttm_buttons_cb(void)
 {
 	g_list_foreach(get_list("ttm_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-void conditional_start_rtv_tickler_cb(void)
+EXPORT void conditional_start_rtv_tickler_cb(void)
 {
 	static gboolean just_starting = TRUE;
 
@@ -152,7 +152,7 @@ void conditional_start_rtv_tickler_cb(void)
 }
 
 
-void set_store_black_cb(void)
+EXPORT void set_store_black_cb(void)
 {
 	gint j = 0;
 	extern Firmware_Details *firmware;
@@ -162,17 +162,17 @@ void set_store_black_cb(void)
 		set_reqfuel_color(BLACK,j);
 }
 
-void enable_3d_buttons_cb(void)
+EXPORT void enable_3d_buttons_cb(void)
 {
 	g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
-void reset_temps_cb(void)
+EXPORT void reset_temps_cb(void)
 {
 	reset_temps(OBJ_GET(global_data,"temp_units"));
 }
 
-void simple_read_cb(XmlCmdType type, void * data)
+EXPORT void simple_read_cb(XmlCmdType type, void * data)
 {
 	Io_Message *message  = NULL;
 	Output_Data *output  = NULL;
@@ -219,7 +219,7 @@ void simple_read_cb(XmlCmdType type, void * data)
 			store_new_block(output->canID,output->page,0,
 					message->recv_buf,
 					firmware->page_params[output->page]->length);
-			backup_current_data(0,message->page);
+			backup_current_data(0,output->page);
 			ms_ve_goodread_count++;
 			break;
 		case MS2_VECONST:
@@ -293,7 +293,7 @@ void simple_read_cb(XmlCmdType type, void * data)
  \brief burn_ecu_flash() issues the commands to the ECU to burn the contents
  of RAM to flash.
  */
-void post_burn_cb()
+EXPORT void post_burn_cb()
 {
 	gint i = 0;
 	extern Firmware_Details * firmware;

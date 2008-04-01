@@ -54,7 +54,7 @@ gboolean interrogated = FALSE;
  those tests in turn, reading the responses and them comparing the group of
  responses against a list of interrogation profiles until it finds a match.
  */
-void interrogate_ecu()
+EXPORT void interrogate_ecu()
 {
 	GArray *tests = NULL;
 	extern GHashTable *dynamic_widgets;
@@ -514,6 +514,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			}
 			i++;
 		}
+		g_strfreev(list);
 	}
 
 	/* Allocate space for Table Offsets structures.... */
@@ -1071,11 +1072,13 @@ GArray * validate_and_load_tests(GHashTable **tests_hash)
 			test->test_arg_count = g_strv_length(test->test_vector);
 			test->test_arg_types = g_array_new(FALSE,TRUE,sizeof(DataSize));
 			vector = g_strsplit(tmpbuf,",",-1);
+			g_free(tmpbuf);
 			for (j=0;j<test->test_arg_count;j++)
 			{
 				result = translate_string(vector[j]);
 				g_array_insert_val(test->test_arg_types,j,result);
 			}
+			g_strfreev(vector);
 
 			g_free(section);
 			g_array_append_val(tests,test);

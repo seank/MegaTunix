@@ -135,7 +135,7 @@ gint comms_test()
  \param data (Output_Data *) pointer to data sent to ECU used to
  update other widgets that refer to that Page/Offset
  */
-void update_write_status(void *data)
+EXPORT void update_write_status(void *data)
 {
 	Io_Message *message = (Io_Message *)data;
 	Output_Data *output = (Output_Data *)message->payload;

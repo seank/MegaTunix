@@ -185,6 +185,8 @@ void *thread_dispatcher(gpointer data)
 			g_async_queue_push(pf_dispatch_queue,(gpointer)message);
 			g_async_queue_unref(pf_dispatch_queue);
 		}
+		else
+			dealloc_message(message);
 	}
 }
 

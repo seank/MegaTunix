@@ -40,7 +40,7 @@ extern GObject *global_data;
  from the file specified in the firmware's interrogation profile, and populate
  a new window with the runtiem vars text value box.
  */
-void load_rt_text()
+EXPORT void load_rt_text()
 {
 	ConfigFile *cfgfile = NULL;
 	Rt_Text *rt_text = NULL;

@@ -81,10 +81,6 @@ struct _Output_Data
  */
 struct _Io_Message
 {
-	gint page;		/*! Virtual Page number */
-	gint out_len;	
-	gint offset;	
-	gchar * out_str;
 	GArray *functions;	/*! for gui_dispatch_queue */
 	GArray *sequence;	/*! for sending data to ECU */
 	InputHandler handler;	/*! Command handler for inbound data */

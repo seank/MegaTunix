@@ -30,6 +30,7 @@ void dealloc_message(Io_Message * );
 void dealloc_w_update(Widget_Update * );
 void dealloc_table_params(Table_Params * );
 void dealloc_qfunction(QFunction * );
+void dealloc_array(GArray *, ArrayType );
 Io_Message * initialize_io_message(void);
 Text_Message * initialize_text_message(void);
 Page_Params * initialize_page_params(void);

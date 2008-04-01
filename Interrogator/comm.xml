@@ -91,6 +91,7 @@
 			</args>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_MS1_GETERROR_</helper_func_arg>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>enable_reboot_button_cb</function>
 			</post_functions>
@@ -102,6 +103,7 @@
 			<base>A</base>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_MS1_RT_VARS_</helper_func_arg>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -115,6 +117,7 @@
 			<base>R</base>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_MS1_RT_VARS_</helper_func_arg>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -132,6 +135,7 @@
 			</args>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_MS2_RT_VARS_</helper_func_arg>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>update_runtime_vars</function>
 				<function>rt_update_logview_traces</function>
@@ -159,6 +163,7 @@
 				<arg>MS1_OFFSET</arg>
 				<arg>MS1_BYTE</arg>
 			</args>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function_w_arg>update_write_status</function_w_arg>
 			</post_functions>
@@ -173,6 +178,7 @@
 				<arg>MS1_NUM_BYTES</arg>
 				<arg>DATACHUNK</arg>
 			</args>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function_w_arg>update_write_status</function_w_arg>
 			</post_functions>
@@ -190,6 +196,7 @@
 				<arg>DATACHUNK</arg>
 			</args>
 			<post_functions>
+			<defer_post_functions>FALSE</defer_post_functions>
 				<function_w_arg>update_write_status</function_w_arg>
 			</post_functions>
 		</cmd>
@@ -207,6 +214,7 @@
 			</args>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_WRITE_VERIFY_</helper_func_arg>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function_w_arg>update_write_status</function_w_arg>
 			</post_functions>
@@ -228,6 +236,7 @@
 			<desc>burns the current page flash</desc>
 			<type>_WRITE_CMD_</type>
 			<base>B</base>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>post_burn_cb</function>
 				<function>set_store_black_cb</function>
@@ -242,6 +251,7 @@
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
 			</args>
+			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
 				<function>post_burn_cb</function>
 				<function>set_store_black_cb</function>
@@ -335,13 +345,13 @@
 			<post_functions>
 				<function>load_realtime_map</function>
 				<function>initialize_dashboards</function>
-				<function>load_gui_tabs</function>
 				<function>load_status</function>
 				<function>load_sliders</function>
 				<function>load_rt_text</function>
+				<function>load_gui_tabs</function>
+				<function>start_statuscounts_cb</function>
 				<function>populate_dlog_choices</function>
 				<function>enable_interrogation_button_cb</function>
-				<function>start_statuscounts_cb</function>
 				<function>spawn_read_ve_const_cb</function>
 				<function>reset_temps_cb</function>
 			</post_functions>

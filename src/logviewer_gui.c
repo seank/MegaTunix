@@ -300,7 +300,7 @@ void populate_viewer()
 		if (playback_mode)
 		{
 			object = g_array_index(log_info->log_list,GObject *, i);        
-			name = g_strdup(OBJ_GET(object,"lview_name"));
+			name = OBJ_GET(object,"lview_name");
 		}
 		else
 		{
@@ -380,7 +380,6 @@ void populate_viewer()
 			}
 		}
 	}
-	g_free(name);
 	lv_data->active_traces = g_hash_table_size(lv_data->traces);
 	/* If traces selected, emit a configure_Event to clear the window
 	 * and draw the traces (IF ONLY reading a log for playback)
@@ -720,12 +719,12 @@ void draw_infotext()
 	
 	lv_data->spread = (gint)((float)h/(float)lv_data->active_traces);
 	name_x = text_border;
+	layout = gtk_widget_create_pango_layout(lv_data->darea,NULL);
 	for (i=0;i<lv_data->active_traces;i++)
 	{
 		v_value = (Viewable_Value *)g_list_nth_data(lv_data->tlist,i);
 		info_ctr = (lv_data->spread * (i+1))- (lv_data->spread/2);
 
-		layout = gtk_widget_create_pango_layout(lv_data->darea,NULL);
 		pango_layout_set_markup(layout,v_value->vname,-1);
 		pango_layout_set_font_description(layout,lv_data->font_desc);
 		pango_layout_get_pixel_size(layout,&width,&height);
@@ -826,7 +825,7 @@ void draw_valtext(gboolean force_draw)
  just the new data...
  \returns TRUE
  */
-gboolean rt_update_logview_traces(gboolean force_redraw)
+EXPORT gboolean rt_update_logview_traces(gboolean force_redraw)
 {
 	extern gboolean connected;
 	extern gboolean interrogated;

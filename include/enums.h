@@ -410,4 +410,11 @@ typedef enum
 	SLEEP=0x2C0
 }Action;
 
+typedef enum
+{
+	FUNCTIONS=0x2D0,
+	SEQUENCE,
+	ARGS
+}ArrayType;
+
 #endif

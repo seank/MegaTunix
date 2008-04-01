@@ -53,7 +53,7 @@ GStaticMutex rtv_mutex = G_STATIC_MUTEX_INIT;
  \brief update_runtime_vars() updates all of the runtime sliders on all
  visible portions of the gui
  */
-gboolean update_runtime_vars()
+EXPORT gboolean update_runtime_vars()
 {
 	gint i = 0;
 	Ve_View_3D * ve_view = NULL;
