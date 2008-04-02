@@ -65,10 +65,18 @@ EXPORT void load_sliders()
 	extern gboolean interrogated;
 
 	if (!((connected) && (interrogated)))
+	{
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup(__FILE__": load_sliders()\n\tERROR, NOT connected and not interrogated, returning!\n\n"));
 		return;
+	}
 
 	if ((!tabs_loaded) || (leaving))
+	{
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup(__FILE__": load_sliders()\n\tERROR, tabs not loaded or leaving, returning!\n\n"));
 		return;
+	}
 	if ((rtvars_loaded == FALSE) || (tabs_loaded == FALSE))
 	{
 		if (ww_sliders)

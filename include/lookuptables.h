@@ -44,5 +44,6 @@ gboolean lookuptables_configurator(GtkWidget *, gpointer );
 gboolean lookuptables_configurator_hide(GtkWidget *, gpointer );
 gboolean lookuptable_change(GtkCellRenderer *, gchar  *, gchar  *, gpointer );
 void update_lt_config(gpointer , gpointer , gpointer );
+void dump_lookuptables(gpointer , gpointer , gpointer);
 
 #endif

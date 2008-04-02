@@ -74,7 +74,7 @@ void get_table(gpointer table_name, gpointer fname, gpointer user_data)
 
 
 /*!
- \brief load_table() physically handles load ingthe table datafrom disk, 
+ \brief load_table() physically handles loading the table datafrom disk, 
  populating and array and sotring a pointer to that array in the lookuptables
  hashtable referenced by the table_name passed
  \param table_name (gchar *) key to lookuptables hashtable
@@ -134,7 +134,8 @@ gboolean load_table(gchar *table_name, gchar *filename)
 	g_strfreev(vector);
 	if (!lookuptables)
 		lookuptables = g_hash_table_new(g_str_hash,g_str_equal);
-	g_hash_table_insert(lookuptables,table_name,lookuptable);
+	g_hash_table_insert(lookuptables,g_strdup(table_name),lookuptable);
+	/*g_hash_table_foreach(lookuptables,dump_lookuptables,NULL);*/
 
 	return TRUE;
 }
@@ -562,3 +563,24 @@ void update_lt_config(gpointer key, gpointer value, gpointer data)
 	cfg_write_string(cfgfile,"lookuptables",(gchar *)key,lookuptable->filename);
 
 }
+
+
+/*!
+ \brief dump_hash() is a debug function to dump the contents of the str_2_enum
+ hashtable to check for errors or problems
+ \param key (gpointer) key name in the hashtable
+ \param value (gpointer) value (enumeration value) in the hashtable
+ \param user_data (gpointer) unused...
+ */
+void dump_lookuptables(gpointer key, gpointer value, gpointer user_data)
+{
+	LookupTable *table;
+	table = (LookupTable *)value;
+	/*
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": dump_hash()\n\tKey %s, Value %p, %s\n",(gchar *)key, value,table->filename));
+		*/
+		printf(__FILE__": dump_hash()\n\tKey %s, Value %p, %s\n",(gchar *)key, value,table->filename);
+}
+
+

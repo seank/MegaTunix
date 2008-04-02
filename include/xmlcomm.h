@@ -59,10 +59,10 @@ struct _Command
 	gchar *helper_func_name;/* Return data function name */
 	gboolean defer_post_functions;	/* deferred post functions */
 	XmlCmdType helper_func_arg;/* Return data arg (ENUM) */
-	void (*helper_function) (XmlCmdType, void *);/* Helper Function Pointer */
+	void  (*helper_function) (void *, XmlCmdType);/* Helper Function Pointer */
 	gchar *func_call_name;	/* FUNC_CALL function name */
 	XmlCmdType func_call_arg;/* Enum arg to function call */
-	void (*function) (void *, XmlCmdType); /* Function call pointer */
+	gboolean (*function) (void *, XmlCmdType); /* Function call pointer */
 };
 
 

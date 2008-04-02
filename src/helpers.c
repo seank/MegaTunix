@@ -68,7 +68,7 @@ EXPORT void spawn_read_ve_const_cb(void)
 	io_cmd(firmware->get_all_command,NULL);
 }
 
-EXPORT void read_ve_const(void *data, XmlCmdType type)
+EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 {
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
@@ -125,6 +125,7 @@ EXPORT void read_ve_const(void *data, XmlCmdType type)
 		default:
 			break;
 	}
+	return TRUE;
 }
 
 
@@ -167,12 +168,18 @@ EXPORT void enable_3d_buttons_cb(void)
 	g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
+
+EXPORT void disable_burner_buttons_cb(void)
+{
+	g_list_foreach(get_list("burners"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
+}
+
 EXPORT void reset_temps_cb(void)
 {
 	reset_temps(OBJ_GET(global_data,"temp_units"));
 }
 
-EXPORT void simple_read_cb(XmlCmdType type, void * data)
+EXPORT void simple_read_cb(void * data, XmlCmdType type)
 {
 	Io_Message *message  = NULL;
 	Output_Data *output  = NULL;
@@ -297,7 +304,6 @@ EXPORT void post_burn_cb()
 {
 	gint i = 0;
 	extern Firmware_Details * firmware;
-	extern volatile gboolean offline;
 
 	//g_usleep(250000);
 

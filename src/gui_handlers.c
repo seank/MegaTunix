@@ -101,6 +101,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	extern GAsyncQueue *io_queue;
 	extern GAsyncQueue *serial_repair_queue;
 	extern Firmware_Details *firmware;
+	extern volatile gboolean offline;
 	gboolean tmp = TRUE;
 	GIOChannel * iochannel = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
@@ -173,18 +174,11 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	/* Commits any pending data to ECU flash */
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() before burn\n"));
-	if ((connected) && (interrogated))
+	if ((connected) && (interrogated) && (!offline))
 		io_cmd(firmware->burn_command,NULL);
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
-	if (pf_dispatcher_id)
-		g_source_remove(pf_dispatcher_id);
-	pf_dispatcher_id = 0;
-
-	if (gui_dispatcher_id)
-		g_source_remove(gui_dispatcher_id);
-	gui_dispatcher_id = 0;
 
 	g_static_mutex_lock(&rtv_mutex);  /* <-- this makes us wait */
 	g_static_mutex_unlock(&rtv_mutex); /* now unlock */
@@ -218,6 +212,13 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 			gtk_main_iteration();
 		count++;
 	}
+	if (pf_dispatcher_id)
+		g_source_remove(pf_dispatcher_id);
+	pf_dispatcher_id = 0;
+
+	if (gui_dispatcher_id)
+		g_source_remove(gui_dispatcher_id);
+	gui_dispatcher_id = 0;
 
 
 	/* Grab and release all mutexes to get them to relinquish

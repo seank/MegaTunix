@@ -27,6 +27,7 @@
 #include <init.h>
 #include <interrogate.h>
 #include <listmgmt.h>
+#include <lookuptables.h>
 #include <logviewer_gui.h>
 #include <menu_handlers.h>
 #include <mode_select.h>
@@ -100,11 +101,16 @@ trypop:
 			}
 
 			pf = g_array_index(message->command->post_functions,PostFunction *, i);
+			if (!pf)
+			{
+				printf("ERROR postfunction was null, continuing\n");
+				continue;
+			}
 			/*printf ("Should run function %s, %p\n",pf->name,pf->function);*/
 			if (pf->w_arg)
 			{
 				if (!pf->function_w_arg)
-					printf("ERROR, couldn't find function \"%s\"\n",pf->name);
+					printf("ERROR, couldn't find function w arg \"%s\"\n",pf->name);
 				else
 					pf->function_w_arg(message);
 			}

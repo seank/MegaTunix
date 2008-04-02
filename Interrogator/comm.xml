@@ -346,9 +346,9 @@
 				<function>load_realtime_map</function>
 				<function>initialize_dashboards</function>
 				<function>load_status</function>
-				<function>load_sliders</function>
 				<function>load_rt_text</function>
 				<function>load_gui_tabs</function>
+				<function>load_sliders</function>
 				<function>start_statuscounts_cb</function>
 				<function>populate_dlog_choices</function>
 				<function>enable_interrogation_button_cb</function>
@@ -357,7 +357,7 @@
 			</post_functions>
 		</cmd>
 		<cmd>
-			<name>ms2_read_ve_const</name>
+			<name>ms2_read_all</name>
 			<desc>Reads ALL ecu vars for ALL modules </desc>
 			<type>_FUNC_CALL_</type>
 			<func_call_name>read_ve_const</func_call_name>

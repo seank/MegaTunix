@@ -1332,6 +1332,7 @@ void set_logviewer_mode(Lv_Mode mode)
  */
 EXPORT void finish_logviewer(void)
 {
+	return;
 	GtkWidget * widget = NULL;
 	gint lv_zoom = 0;
 	extern GHashTable *dynamic_widgets;

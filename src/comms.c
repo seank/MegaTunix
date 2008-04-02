@@ -359,9 +359,9 @@ void write_data(Io_Message *message)
 
 	if (offline)
 	{
-		/*printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); */
 		if (!output)
 			return;
+		printf ("OFFLINE writing value at %i,%i [%i]\n",output->page,output->offset,output->value); 
 		switch (output->mode)
 		{
 			case MTX_SIMPLE_WRITE:

@@ -68,7 +68,7 @@ EXPORT gboolean load_gui_tabs(void)
 	extern gboolean connected;
 	extern volatile gboolean offline;
 
-	if (!((((connected) || (offline))) && (!tabs_loaded)))
+	if (!(((connected) || (offline)) && (!tabs_loaded)))
 		return FALSE;
 	if (!firmware)
 		return FALSE;

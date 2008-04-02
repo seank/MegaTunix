@@ -76,6 +76,7 @@ void io_cmd(gchar *io_cmd_name, void *data)
 	{
 		message = initialize_io_message();
 		message->command = g_new0(Command, 1);
+		message->command->defer_post_functions = FALSE;
 		message->command->post_functions = (GArray *)data;
 		message->command->type = NULL_CMD;
 	}
@@ -111,6 +112,7 @@ void *thread_dispatcher(gpointer data)
 	extern GAsyncQueue *pf_dispatch_queue;
 	extern gboolean port_open;
 	extern volatile gboolean leaving;
+	gboolean result;
 	GTimeVal cur;
 	Io_Message *message = NULL;	
 
@@ -137,7 +139,7 @@ void *thread_dispatcher(gpointer data)
 			repair_thread = g_thread_create(serial_repair_thread,NULL,TRUE,NULL);
 			g_thread_join(repair_thread);
 		}
-		if (!port_open)
+		if ((!port_open) && (!offline))
 		{
 			if (dbg_lvl & (THREADS|CRITICAL))
 				dbg_func(g_strdup(__FILE__": thread_dispatcher()\n\tLINK DOWN, Can't process requested command, aborting call\n"));
@@ -150,23 +152,25 @@ void *thread_dispatcher(gpointer data)
 		{
 			case FUNC_CALL:
 				if (!message->command->function)
-					printf("CRITICAL ERROR, function \"%s()\" is not found!!\n",
-							message->command->func_call_name);
+					printf("CRITICAL ERROR, function \"%s()\" is not found!!\n",message->command->func_call_name);
 				else
 				{
-					/*printf("Calling FUNC_CALL, function \"%s()\" \n",
-					  message->command->func_call_name);*/
-					message->command->function(
+					/*printf("Calling FUNC_CALL, function \"%s()\" \n",message->command->func_call_name);*/
+					result = message->command->function(
 							message->command,
 							message->command->func_call_arg);
+
+				if (!result)
+					message->command->defer_post_functions=TRUE;
 				}
 				break;
 			case WRITE_CMD:
 				write_data(message);
 				if (message->command->helper_function)
-					message->command->helper_function(message->command->helper_func_arg,message);
+					message->command->helper_function(message, message->command->helper_func_arg);
 				break;
 			case NULL_CMD:
+				/*printf("null_cmd, just passing thru\n");*/
 				break;
 
 			default:
@@ -495,6 +499,8 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 			g_array_append_val(message->sequence,block);
 			continue;
 		}
+		if (!output)
+			continue;
 		switch (arg->size)
 		{
 			case MTX_U08:

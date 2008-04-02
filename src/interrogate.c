@@ -54,7 +54,7 @@ gboolean interrogated = FALSE;
  those tests in turn, reading the responses and them comparing the group of
  responses against a list of interrogation profiles until it finds a match.
  */
-EXPORT void interrogate_ecu()
+EXPORT gboolean interrogate_ecu()
 {
 	GArray *tests = NULL;
 	extern GHashTable *dynamic_widgets;
@@ -89,7 +89,7 @@ EXPORT void interrogate_ecu()
 			dbg_func(g_strdup(__FILE__": interrogate_ecu()\n\tNOT connected to ECU!!!!\n"));
 		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),TRUE);
 		g_static_mutex_unlock(&mutex);
-		return;
+		return FALSE;
 	}
 	thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogating ECU..."));
 
@@ -102,7 +102,7 @@ EXPORT void interrogate_ecu()
 			dbg_func(g_strdup(__FILE__": interrogate_ecu()\n\t validate_and_load_tests() didn't return a valid list of commands\n\t MegaTunix was NOT installed correctly, Aborting Interrogation\n"));
 		g_static_mutex_unlock(&mutex);
 		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),TRUE);
-		return;
+		return FALSE;
 	}
 	/* how many tests.... */
 	tests_to_run = tests->len;
@@ -227,7 +227,7 @@ EXPORT void interrogate_ecu()
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup("\n"__FILE__": interrogate_ecu() LEAVING\n\n"));
 	thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("Interrogation Complete..."));
-	return;
+	return interrogated;
 }
 
 
@@ -509,6 +509,8 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			}
 			else
 			{
+				if (dbg_lvl & (INTERROGATOR|CRITICAL))
+					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t\ \"[lookuptables]\"\n\t section loading table %s, file %s\n",list[i],tmpbuf));
 				get_table(list[i],tmpbuf,NULL);
 				g_free(tmpbuf);
 			}

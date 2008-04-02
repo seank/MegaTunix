@@ -103,6 +103,16 @@ void load_dependancies(GObject *object, ConfigFile *cfgfile,gchar * section)
 			else
 				OBJ_SET(dep_obj,key,GINT_TO_POINTER(tmpi));
 			g_free(key);
+			key = g_strdup_printf("%s_size",deps[i]);
+			if (!cfg_read_string(cfgfile,section,key,&tmpbuf))
+				OBJ_SET(dep_obj,key,GINT_TO_POINTER(MTX_U08));
+			else
+			{
+				tmpi = translate_string(tmpbuf);
+				OBJ_SET(dep_obj,key,GINT_TO_POINTER(tmpi));
+				g_free(tmpbuf);
+			}
+			g_free(key);
 			key = g_strdup_printf("%s_bitshift",deps[i]);
 			if (!cfg_read_int(cfgfile,section,key,&tmpi))
 			{
@@ -151,6 +161,16 @@ void load_dependancies(GObject *object, ConfigFile *cfgfile,gchar * section)
 			}
 			else
 				OBJ_SET(dep_obj,key,GINT_TO_POINTER(tmpi));
+			g_free(key);
+			key = g_strdup_printf("%s_size",deps[i]);
+			if (!cfg_read_string(cfgfile,section,key,&tmpbuf))
+				OBJ_SET(dep_obj,key,GINT_TO_POINTER(MTX_U08));
+			else
+			{
+				tmpi = translate_string(tmpbuf);
+				OBJ_SET(dep_obj,key,GINT_TO_POINTER(tmpi));
+				g_free(tmpbuf);
+			}
 			g_free(key);
 		}
 			

@@ -99,17 +99,29 @@ void set_offline_mode(void)
 	interrogated = TRUE;
 
 	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
-	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction));
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
 	pf->name = g_strdup("load_realtime_map");
-	g_module_symbol(module,pf->name,(void *)&pf->function);
-	g_array_append_val(pfuncs,pf);
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
 
 	pf = g_new0(PostFunction,1);
 	pf->name = g_strdup("load_gui_tabs");
-	g_module_symbol(module,pf->name,(void *)&pf->function);
-	g_array_append_val(pfuncs,pf);
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("disable_burner_buttons_cb");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	
 	g_module_close(module);
 
 	io_cmd(NULL,pfuncs);
@@ -126,6 +138,18 @@ void set_offline_mode(void)
 	offline_ecu_restore(NULL,NULL);
 	free_tests_array(tests);
 
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("reset_temps_cb");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+
+	io_cmd(NULL,pfuncs);
 }
 
 

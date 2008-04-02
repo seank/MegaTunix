@@ -171,6 +171,9 @@ void restore_all_ecu_settings(gchar *filename)
 {
 	extern Firmware_Details *firmware;
 	ConfigFile *cfgfile;
+	GArray *pfuncs = NULL;
+	PostFunction *pf = NULL;
+	GModule *module = NULL;
 	gchar * section = NULL;
 	gint canID = firmware->canID;
 	DataSize size = MTX_U08;
@@ -259,6 +262,24 @@ void restore_all_ecu_settings(gchar *filename)
 		}
 		start_restore_monitor();
 	}
-	update_ve_const();
-	set_store_black_cb();
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("update_ve_const");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("set_store_black_cb");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+
+	io_cmd(NULL,pfuncs);
+
 }

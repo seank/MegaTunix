@@ -27,9 +27,10 @@ void enable_reboot_button_cb(void);
 void conditional_start_rtv_tickler_cb(void);
 void set_store_black_cb(void);
 void enable_3d_buttons_cb(void);
+void disable_burner_buttons_cb(void);
 void reset_temps_cb(void);
-void simple_read_cb(XmlCmdType, void *);
-void read_ve_const(XmlCmdType);
+void simple_read_cb(void *, XmlCmdType);
+gboolean read_ve_const(XmlCmdType);
 /* Prototypes */
 
 #endif

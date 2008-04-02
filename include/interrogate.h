@@ -40,7 +40,7 @@ struct _Detection_Test
 
 };
 /* Prototypes */
-void interrogate_ecu(void);
+gboolean interrogate_ecu(void);
 gboolean determine_ecu(GArray *,GHashTable *);
 GArray * validate_and_load_tests(GHashTable **);
 gboolean check_for_match(GHashTable *,gchar *);
