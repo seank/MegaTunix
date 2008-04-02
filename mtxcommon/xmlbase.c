@@ -133,6 +133,7 @@ void generic_xml_color_import(xmlNode *node, gpointer dest)
 {
 	xmlNode *cur_node = NULL;
 	GdkColor *color = NULL;
+	gchar **vector = NULL;
 
 	if (!node->children)
 	{
@@ -141,18 +142,29 @@ void generic_xml_color_import(xmlNode *node, gpointer dest)
 	}
 	color = (GdkColor *)dest;
 	cur_node = node->children;
-	while (cur_node->next)
+	if (!cur_node->next)	/* OLD Style color block */
 	{
-		if (cur_node->type == XML_ELEMENT_NODE)
+		vector = g_strsplit((gchar*)node->children->content," ", 0);
+		color->red = (guint16)g_ascii_strtod(vector[0],NULL);
+		color->green = (guint16)g_ascii_strtod(vector[1],NULL);
+		color->blue = (guint16)g_ascii_strtod(vector[2],NULL);
+		g_strfreev(vector);
+	}
+	else
+	{
+		while (cur_node->next)
 		{
-			if (g_strcasecmp((gchar *)cur_node->name,"red") == 0)
-				generic_xml_gint_import(cur_node,&color->red);
-			if (g_strcasecmp((gchar *)cur_node->name,"green") == 0)
-				generic_xml_gint_import(cur_node,&color->green);
-			if (g_strcasecmp((gchar *)cur_node->name,"blue") == 0)
-				generic_xml_gint_import(cur_node,&color->blue);
+			if (cur_node->type == XML_ELEMENT_NODE)
+			{
+				if (g_strcasecmp((gchar *)cur_node->name,"red") == 0)
+					generic_xml_gint_import(cur_node,&color->red);
+				if (g_strcasecmp((gchar *)cur_node->name,"green") == 0)
+					generic_xml_gint_import(cur_node,&color->green);
+				if (g_strcasecmp((gchar *)cur_node->name,"blue") == 0)
+					generic_xml_gint_import(cur_node,&color->blue);
+			}
+			cur_node = cur_node->next;
 		}
-		cur_node = cur_node->next;
 	}
 }
 

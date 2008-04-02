@@ -1022,6 +1022,7 @@ EXPORT gboolean animate_gauge(GtkWidget *widget, gpointer data)
 {
 	gfloat lower = 0.0;
 	gfloat upper = 0.0;
+
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
@@ -1045,14 +1046,14 @@ gboolean sweep_gauge(gpointer data)
 	static gboolean rising = TRUE;
 	GtkWidget * gauge = NULL;
 
+	gauge = (GtkWidget *)data;
+
 	if (!GTK_IS_WIDGET(gauge))
 		return FALSE;
 
-	gauge = (GtkWidget *)data;
-
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), LBOUND, &lower);
 	mtx_gauge_face_get_attribute(MTX_GAUGE_FACE(gauge), UBOUND, &upper);
-	interval = (upper-lower)/100.0;
+	interval = (upper-lower)/75.0;
 	cur_val = mtx_gauge_face_get_value(MTX_GAUGE_FACE (gauge));
 	if (cur_val >= upper)
 		rising = FALSE;

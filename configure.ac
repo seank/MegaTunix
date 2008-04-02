@@ -191,6 +191,7 @@ src/Makefile
 gaugedesigner/resources.rc
 gaugedesigner/Makefile
 gaugedesigner/gauges/Makefile
+gaugedesigner/gauges/Speco/Makefile
 gaugedesigner/gauges/SportComp/Makefile
 gaugedesigner/gauges/UltraLite/Makefile
 gaugedesigner/gauges/Cobalt/Makefile

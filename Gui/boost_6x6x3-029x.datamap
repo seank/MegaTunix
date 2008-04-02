@@ -104,8 +104,8 @@ key_types=_INT_,_STRING_,_STRING_,_STRING_,_STRING_
 page=1
 table_num=7
 post_function_with_arg=create_gauge
-gaugexml=SportComp/AM_SportComp_TPSADC_Gauge.xml
-datasource=tpsadc
+gaugexml=SportComp/AM_SportComp_TPSpercent_Gauge.xml
+datasource=tpspercent
 
 [B1_gaugeframe3]
 keys=page,post_function_with_arg,gaugexml,datasource,table_num
@@ -115,6 +115,15 @@ table_num=7
 post_function_with_arg=create_gauge
 gaugexml=SportComp/AM_SportComp_MAP_Gauge.xml
 datasource=mapkpa
+
+[B1_gaugeframe4]
+keys=page,post_function_with_arg,gaugexml,datasource,table_num
+key_types=_INT_,_STRING_,_STRING_,_STRING_,_STRING_
+page=1
+table_num=7
+post_function_with_arg=create_gauge
+gaugexml=SportComp/AM_SportComp_DC_Gauge.xml
+datasource=bcDC
 
 [B2_gaugeframe1]
 keys=page,post_function_with_arg,gaugexml,datasource,table_num
@@ -131,8 +140,8 @@ key_types=_INT_,_STRING_,_STRING_,_STRING_,_STRING_
 page=1
 table_num=8
 post_function_with_arg=create_gauge
-gaugexml=SportComp/AM_SportComp_TPSADC_Gauge.xml
-datasource=tpsadc
+gaugexml=SportComp/AM_SportComp_TPSpercent_Gauge.xml
+datasource=tpspercent
 
 [B2_gaugeframe3]
 keys=page,post_function_with_arg,gaugexml,datasource,table_num
@@ -167,8 +176,8 @@ key_types=_INT_,_STRING_,_STRING_,_STRING_,_STRING_
 page=1
 table_num=9
 post_function_with_arg=create_gauge
-gaugexml=SportComp/AM_SportComp_TPSADC_Gauge.xml
-datasource=tpsadc
+gaugexml=SportComp/AM_SportComp_TPSpercent_Gauge.xml
+datasource=tpspercent
 
 [B3_gaugeframe3]
 keys=page,post_function_with_arg,gaugexml,datasource,table_num
@@ -178,6 +187,15 @@ table_num=9
 post_function_with_arg=create_gauge
 gaugexml=SportComp/AM_SportComp_MAP_Gauge.xml
 datasource=mapkpa
+
+[B3_gaugeframe4]
+keys=page,post_function_with_arg,gaugexml,datasource,table_num
+key_types=_INT_,_STRING_,_STRING_,_STRING_,_STRING_
+page=1
+table_num=9
+post_function_with_arg=create_gauge
+gaugexml=SportComp/AM_SportComp_DC_Gauge.xml
+datasource=bcDC
 
 #----- Widgets ----------------------------------------------------------------
 

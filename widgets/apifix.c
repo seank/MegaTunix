@@ -52,8 +52,6 @@ int main (int argc, char **argv)
 	traverse(topdir);
 
 
-
-
 	gtk_window_set_decorated(GTK_WINDOW(window),FALSE);
 	mtx_gauge_face_set_show_drag_border (MTX_GAUGE_FACE (gauge), TRUE);
 

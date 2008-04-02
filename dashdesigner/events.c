@@ -654,6 +654,9 @@ void update_properties(GtkWidget * widget, Choice choice)
 	GtkWidget *sep = NULL;
 	gint len = 0;
 
+	if(!GTK_IS_WIDGET(widget))
+		return;
+
 	if (choice == GAUGE_ADD)
 	{
 		table = gtk_table_new(3,2,FALSE);

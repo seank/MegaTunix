@@ -8,9 +8,9 @@ demo_SOURCES = demo.c gauge.h
 
 piedemo_SOURCES = piedemo.c piegauge.h
 
-#apifix_SOURCES = apifix.c gauge.h
+apifix_SOURCES = apifix.c gauge.h
 
-noinst_PROGRAMS = demo piedemo
+noinst_PROGRAMS = demo piedemo apifix
 
 noinst_LTLIBRARIES = libmtxgauge.la
 
@@ -22,7 +22,7 @@ demo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcomm
 
 piedemo_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
 
-#apifix_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
+apifix_LDADD = @GTK_LIBS@ @LIBXML2_LIBS@  ./libmtxgauge.la ../mtxcommon/libmtxcommon.la @EXTRA_LIBS@
 
 COMMON_FLAGS = @PROF_FLAGS@ @DEBUG_FLAGS@ 
 

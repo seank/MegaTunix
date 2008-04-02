@@ -239,7 +239,7 @@ typedef enum
 {
 	UPD_LOGBAR=0x180,
 	UPD_WIDGET,
-//	UPD_RAW_MEMORY,
+/*	UPD_RAW_MEMORY,*/
 	UPD_RUN_FUNCTION
 }UpdateFunction;
 
