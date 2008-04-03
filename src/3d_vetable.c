@@ -321,21 +321,27 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("x_active_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("x_active_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("y_active_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("y_active_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("z_active_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("z_active_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 3, 4,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
@@ -347,21 +353,27 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("x_runtime_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("x_runtime_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 1, 2,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("y_runtime_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("y_runtime_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 2, 3,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
 	set_fixed_size(label,12);
 
-	register_widget(g_strdup_printf("z_runtime_label_%i",table_num),label);
+	tmpbuf = g_strdup_printf("z_runtime_label_%i",table_num);
+	register_widget(tmpbuf,label);
+	g_free(tmpbuf);
 	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 3, 4,
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
@@ -406,13 +418,17 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	gtk_table_set_col_spacings(GTK_TABLE(table),5);
 	gtk_box_pack_start(GTK_BOX(hbox),table,TRUE,TRUE,0);
 
-	register_widget(g_strdup_printf("ve3d_rt_table0_%i",table_num),table);
+	tmpbuf = g_strdup_printf("ve3d_rt_table0_%i",table_num);
+	register_widget(tmpbuf,table);
+	g_free(tmpbuf);
 
 	table = gtk_table_new(2,2,FALSE);
 	gtk_table_set_col_spacings(GTK_TABLE(table),5);
 	gtk_box_pack_start(GTK_BOX(hbox),table,TRUE,TRUE,0);
 
-	register_widget(g_strdup_printf("ve3d_rt_table1_%i",table_num),table);
+	tmpbuf = g_strdup_printf("ve3d_rt_table1_%i",table_num);
+	register_widget(tmpbuf,table);
+	g_free(tmpbuf);
 
 	load_ve3d_sliders(table_num);
 
@@ -443,19 +459,34 @@ gint free_ve3d_view(GtkWidget *widget)
 
 	OBJ_SET(g_hash_table_lookup(dynamic_widgets,tmpbuf),"ve_view",NULL);
 	g_free(tmpbuf);
-	deregister_widget(g_strdup_printf("ve_view_%i",ve_view->table_num));
 
-	deregister_widget(g_strdup_printf("x_active_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("ve_view_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 
-	deregister_widget(g_strdup_printf("y_active_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("x_active_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 
-	deregister_widget(g_strdup_printf("z_active_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("y_active_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 
-	deregister_widget(g_strdup_printf("x_runtime_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("z_active_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 
-	deregister_widget(g_strdup_printf("y_runtime_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("x_runtime_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 
-	deregister_widget(g_strdup_printf("z_runtime_label_%i",ve_view->table_num));
+	tmpbuf = g_strdup_printf("y_runtime_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
+
+	tmpbuf = g_strdup_printf("z_runtime_label_%i",ve_view->table_num);
+	deregister_widget(tmpbuf);
+	g_free(tmpbuf);
 	g_free(ve_view->x_source);
 	g_free(ve_view->y_source);
 	g_free(ve_view->z_source);

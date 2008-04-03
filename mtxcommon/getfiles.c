@@ -307,6 +307,7 @@ gchar * choose_file(MtxFileIO *data)
 			gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(dialog),defdir);
 			gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (dialog), data->default_filename );
 		}
+		g_free(defdir);
 
 	}
 	else

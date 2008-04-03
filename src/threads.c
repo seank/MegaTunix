@@ -86,7 +86,8 @@ void io_cmd(gchar *io_cmd_name, void *data)
 		command = g_hash_table_lookup(commands_hash,io_cmd_name);
 		message = initialize_io_message();
 		message->command = command;
-		message->payload = data;
+		if (data)
+			message->payload = data;
 		if (command->type != FUNC_CALL)
 			build_output_string(message,command,data);
 	}
@@ -467,7 +468,8 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 	PotentialArg * arg = NULL;
 	DBlock *block = NULL;
 
-	output = (Output_Data *)data;
+	if (data)
+		output = (Output_Data *)data;
 
 	message->sequence = g_array_new(FALSE,TRUE,sizeof(DBlock *));
 

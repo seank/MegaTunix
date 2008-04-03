@@ -356,12 +356,12 @@ void write_data(Io_Message *message)
 
 	g_static_mutex_lock(&serio_mutex);
 	g_static_mutex_lock(&mutex);
-
+	
 	if (offline)
 	{
 		if (!output)
 			return;
-		printf ("OFFLINE writing value at %i,%i [%i]\n",output->page,output->offset,output->value); 
+		//printf ("OFFLINE writing value at %i,%i [%i]\n",output->page,output->offset,output->value); 
 		switch (output->mode)
 		{
 			case MTX_SIMPLE_WRITE:

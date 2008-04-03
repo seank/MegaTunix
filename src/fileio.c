@@ -141,11 +141,12 @@ void backup_all_ecu_settings(gchar *filename)
 		cfg_write_int(cfgfile,section,"num_variables",firmware->page_params[i]->length);
 		for(x=0;x<firmware->page_params[i]->length;x++)
 		{
-			string = g_string_append(string,g_strdup_printf("%i",get_ecu_data(canID,i,x,size)));
+			g_string_append_printf(string,"%i",get_ecu_data(canID,i,x,size));
 			if (x < (firmware->page_params[i]->length-1))
 				string = g_string_append(string,",");
 		}
 		cfg_write_string(cfgfile,section,"data",string->str);
+		g_free(section);
 		g_string_free(string,TRUE);
 	}
 	update_logbar("tools_view",NULL,g_strdup_printf("Full Backup Complete...\n"),FALSE,FALSE);
@@ -153,8 +154,6 @@ void backup_all_ecu_settings(gchar *filename)
 	cfg_free(cfgfile);
 	g_free(cfgfile);
 
-	if (section)
-		g_free(section);
 }
 
 

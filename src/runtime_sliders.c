@@ -303,7 +303,7 @@ finish_off:
 		cfg_free(cfgfile);
 		g_free(cfgfile);
 	}
-	else
+	if (filename)
 		g_free(filename);
 }
 

@@ -23,13 +23,14 @@
 #include <getfiles.h>
 #include <gui_handlers.h>
 #include <notifications.h>
+#include <serialio.h>
+#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <vex_support.h>
-#include <string.h>
-#include <stdlib.h>
+#include <xmlcomm.h>
 #include <threads.h>
-#include <serialio.h>
 
 gchar *vex_comment;
 extern gint dbg_lvl;
@@ -311,44 +312,44 @@ gboolean all_table_export(GIOChannel *iochannel)
 		if (vex_comment == NULL)
 			vex_comment = g_strdup("No comment given");
 
-		output = g_string_append(output, "EVEME 1.0\n");
-		output = g_string_append(output, "UserRev: 1.00\n");
-		output = g_string_append(output, g_strdup_printf("UserComment: Table %i; (%s) %s\n",table,firmware->table_params[table]->table_name,vex_comment));
-		output = g_string_append(output, g_strdup_printf("Date: %.2i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year)));
+		g_string_append_printf(output, "EVEME 1.0\n");
+		g_string_append_printf(output, "UserRev: 1.00\n");
+		g_string_append_printf(output,"UserComment: Table %i; (%s) %s\n",table,firmware->table_params[table]->table_name,vex_comment);
+		g_string_append_printf(output,"Date: %.2i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year));
 
-		output = g_string_append(output, g_strdup_printf("Time: %.2i:%.2i\n",tm->tm_hour,tm->tm_min));
-		output = g_string_append(output, g_strdup_printf("Page %i\n",z_page));
-		output = g_string_append(output, g_strdup_printf("VE Table RPM Range              [%2i]\n",x_bincount));
+		g_string_append_printf(output,"Time: %.2i:%.2i\n",tm->tm_hour,tm->tm_min);
+		g_string_append_printf(output,"Page %i\n",z_page);
+		g_string_append_printf(output,"VE Table RPM Range              [%2i]\n",x_bincount);
 
 		for (i=0;i<x_bincount;i++)
-			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size)));
+			g_string_append_printf(output,"   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size));
 
-		output = g_string_append(output, g_strdup_printf("VE Table Load Range (MAP)       [%2i]\n",y_bincount));
+		g_string_append_printf(output, "VE Table Load Range (MAP)       [%2i]\n",y_bincount);
 		for (i=0;i<y_bincount;i++)
-			output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size)));
+			g_string_append_printf(output,"   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size));
 
-		output = g_string_append(output, g_strdup_printf("VE Table                        [%3i][%3i]\n",x_bincount,y_bincount));
-		output = g_string_append(output, "           ");
+		g_string_append_printf(output,"VE Table                        [%3i][%3i]\n",x_bincount,y_bincount);
+		g_string_append_printf(output, "           ");
 		for (i=0;i<x_bincount;i++)
 		{
-			output = g_string_append(output, g_strdup_printf("[%3d]",i));
+			g_string_append_printf(output,"[%3d]",i);
 			if (i < (x_bincount-1))
-				output = g_string_append(output, " ");
+				g_string_append_printf(output, " ");
 		}
-		output = g_string_append(output, "\n");
+		g_string_append_printf(output, "\n");
 		index = 0;
 		for (i=0;i<x_bincount;i++)
 		{
-			output = g_string_append(output,g_strdup_printf("   [%3d] =",i));
+			g_string_append_printf(output,"   [%3d] =",i);
 			for (j=0;j<y_bincount;j++)
 			{
 				if (j == 0)
-					output = g_string_append (output,g_strdup_printf("  %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
+					g_string_append_printf (output,"  %3d",get_ecu_data(canID,z_page,index+z_base,z_size));
 				else
-					output = g_string_append (output,g_strdup_printf("   %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
+					g_string_append_printf (output,"   %3d",get_ecu_data(canID,z_page,index+z_base,z_size));
 				index++;
 			}
-			output = g_string_append(output,"\n");
+			g_string_append_printf(output,"\n");
 		}
 	}
 	status = g_io_channel_write_chars(
@@ -426,44 +427,44 @@ void single_table_export(GIOChannel *iochannel, gint table_num)
 	if (vex_comment == NULL)
 		vex_comment = g_strdup("No comment given");
 
-	output = g_string_append(output, "EVEME 1.0\n");
-	output = g_string_append(output, "UserRev: 1.00\n");
-	output = g_string_append(output, g_strdup_printf("UserComment: Table %i; (%s) %s\n",table,firmware->table_params[table]->table_name,vex_comment));
-	output = g_string_append(output, g_strdup_printf("Date: %i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year)));
+	g_string_append_printf(output, "EVEME 1.0\n");
+	g_string_append_printf(output, "UserRev: 1.00\n");
+	g_string_append_printf(output, "UserComment: Table %i; (%s) %s\n",table,firmware->table_params[table]->table_name,vex_comment);
+	g_string_append_printf(output, "Date: %i-%.2i-%i\n",1+(tm->tm_mon),tm->tm_mday,1900+(tm->tm_year));
 
-	output = g_string_append(output, g_strdup_printf("Time: %.2i:%.2i\n",tm->tm_hour,tm->tm_min));
-	output = g_string_append(output, g_strdup_printf("Page %i\n",z_page));
-	output = g_string_append(output, g_strdup_printf("VE Table RPM Range              [%2i]\n",x_bincount));
+	g_string_append_printf(output, "Time: %.2i:%.2i\n",tm->tm_hour,tm->tm_min);
+	g_string_append_printf(output, "Page %i\n",z_page);
+	g_string_append_printf(output, "VE Table RPM Range              [%2i]\n",x_bincount);
 
 	for (i=0;i<x_bincount;i++)
-		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size)));
+		g_string_append_printf(output,"   [%3d] = %3d\n",i,get_ecu_data(canID,x_page,x_base+i,x_size));
 
-	output = g_string_append(output, g_strdup_printf("VE Table Load Range (MAP)       [%2i]\n",y_bincount));
+	g_string_append_printf(output, "VE Table Load Range (MAP)       [%2i]\n",y_bincount);
 	for (i=0;i<y_bincount;i++)
-		output = g_string_append(output,g_strdup_printf("   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size)));
+		g_string_append_printf(output, "   [%3d] = %3d\n",i,get_ecu_data(canID,y_page,y_base+i,y_size));
 
-	output = g_string_append(output, g_strdup_printf("VE Table                        [%3i][%3i]\n",x_bincount,y_bincount));
-	output = g_string_append(output, "           ");
+	g_string_append_printf(output, "VE Table                        [%3i][%3i]\n",x_bincount,y_bincount);
+	g_string_append_printf(output, "           ");
 	for (i=0;i<x_bincount;i++)
 	{
-		output = g_string_append(output, g_strdup_printf("[%3d]",i));
+		g_string_append_printf(output, "[%3d]",i);
 		if (i < (x_bincount-1))
-			output = g_string_append(output, " ");
+			g_string_append_printf(output, " ");
 	}
-	output = g_string_append(output, "\n");
+	g_string_append_printf(output, "\n");
 	index = 0;
 	for (i=0;i<x_bincount;i++)
 	{
-		output = g_string_append(output,g_strdup_printf("   [%3d] =",i));
+		g_string_append_printf(output, "   [%3d] =",i);
 		for (j=0;j<y_bincount;j++)
 		{
 			if (j == 0)
-				output = g_string_append (output,g_strdup_printf("  %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
+				g_string_append_printf (output, "  %3d",get_ecu_data(canID,z_page,index+z_base,z_size));
 			else
-				output = g_string_append (output,g_strdup_printf("   %3d",get_ecu_data(canID,z_page,index+z_base,z_size)));
+				g_string_append_printf (output, "   %3d",get_ecu_data(canID,z_page,index+z_base,z_size));
 			index++;
 		}
-		output = g_string_append(output,"\n");
+		g_string_append_printf(output,"\n");
 	}
 	status = g_io_channel_write_chars(
 			iochannel,output->str,output->len,&count,NULL);
@@ -496,6 +497,9 @@ gboolean all_table_import(GIOChannel *iochannel)
 	gboolean go=TRUE;
 	GIOStatus status = G_IO_STATUS_NORMAL;
 	Vex_Import *vex = NULL;
+	GModule *module = NULL;
+	PostFunction *pf = NULL;
+	GArray *pfuncs = NULL;
 	extern GHashTable *dynamic_widgets;
 
 	if (!iochannel)
@@ -548,7 +552,17 @@ gboolean all_table_import(GIOChannel *iochannel)
 			dbg_func(g_strdup_printf(__FILE__": all_table_import()\n\tRead was unsuccessful. %i %i %i %i \n",vex->got_page, vex->got_load, vex->got_rpm, vex->got_ve));
 		return FALSE;
 	}
-	update_ve_const();
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("update_ve_const");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+	io_cmd(NULL,pfuncs);
 	return TRUE;
 }
 
@@ -567,6 +581,9 @@ void single_table_import(GIOChannel *iochannel, gint table_num)
 	gboolean go=TRUE;
 	GIOStatus status = G_IO_STATUS_NORMAL;
 	Vex_Import *vex = NULL;
+	GModule *module = NULL;
+	PostFunction *pf = NULL;
+	GArray *pfuncs = NULL;
 	extern GHashTable *dynamic_widgets;
 
 	if (!iochannel)
@@ -617,7 +634,17 @@ void single_table_import(GIOChannel *iochannel, gint table_num)
 			dbg_func(g_strdup_printf(__FILE__": single_table_import()\n\tRead was unsuccessful. %i %i %i %i \n",vex->got_page, vex->got_load, vex->got_rpm, vex->got_ve));
 		return;
 	}
-	update_ve_const();
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("update_ve_const");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+	io_cmd(NULL,pfuncs);
 	return;
 }
 
@@ -809,7 +836,7 @@ GIOStatus process_table(Vex_Import *vex)
 
 	/* Search for out magic semicolon, if missing AND multi-table/page
 	 * firmware, ABORT */
-	if ((vex->table < 0) && (vex->table >= firmware->total_tables))
+	if ((vex->table < 0) && (vex->table <= firmware->total_tables))
 	{
 		if ((!g_strrstr(vex->comment,";")) && (firmware->total_tables == firmware->total_tables))
 		{
@@ -1128,6 +1155,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	DataSize size = 0;
 	gint table = -1;
 
+	printf("feed data\n");
 	/* Since we assume the page is where the table is this can cause
 	 * major problems with some firmwares that use two tables inside
 	 * of one page....
@@ -1137,7 +1165,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	if ((table < 0) || (table >= firmware->total_tables))
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup(__FILE__": feed_import_data_to_ecu()\n\ttable passed is out of range\n"));
+			dbg_func(g_strdup_printf(__FILE__": feed_import_data_to_ecu()\n\ttable passed (%i) is out of range(%i)\n",table,firmware->total_tables));
 		return;
 	}
 
@@ -1145,11 +1173,16 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	if (firmware->table_params[table]->x_bincount != vex->total_x_bins)
 	{
 		update_logbar("tools_view","warning",g_strdup_printf("VEX Import: number of RPM bins inside VEXfile and FIRMWARE DO NOT MATCH (%i!=%i), aborting!!!\n",firmware->table_params[table]->x_bincount,vex->total_x_bins),FALSE,FALSE);
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup_printf(__FILE__": VEX Import: number of RPM bins inside VEXfile and FIRMWARE DO NOT MATCH (%i!=%i), aborting!!!\n",firmware->table_params[table]->x_bincount,vex->total_x_bins));
+
 		return;
 	}
 	if (firmware->table_params[table]->y_bincount != vex->total_y_bins)
 	{
 		update_logbar("tools_view","warning",g_strdup_printf("VEX Import: number of LOAD bins inside VEXfile and FIRMWARE DO NOT MATCH (%i!=%i), aborting!!!\n",firmware->table_params[table]->y_bincount,vex->total_y_bins),FALSE,FALSE);
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup_printf(__FILE__": VEX Import: number of LOAD bins inside VEXfile and FIRMWARE DO NOT MATCH (%i!=%i), aborting!!!\n",firmware->table_params[table]->y_bincount,vex->total_y_bins));
 		return;
 	}
 
@@ -1166,6 +1199,8 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	size = firmware->table_params[table]->x_size;
 	if (firmware->chunk_support)
 	{
+		printf("chunk write X vars\n");
+
 		total = (vex->total_x_bins);
 		data = g_new0(guint8, total);
 		for (i=0;i<total;i++)
@@ -1174,6 +1209,8 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	}
 	else
 	{
+		printf("std write X vars\n");
+
 		for (i=0;i<vex->total_x_bins;i++)
 		{
 			if (vex->x_bins[i] != get_ecu_data_last(canID,page,base+i,size))
@@ -1187,6 +1224,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	size = firmware->table_params[table]->y_size;
 	if (firmware->chunk_support)
 	{
+		printf("chunk write Y vars\n");
 		total = (vex->total_y_bins);
 		data = g_new0(guchar, total);
 		for (i=0;i<total;i++)
@@ -1195,6 +1233,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	}
 	else
 	{
+		printf("std write Y vars\n");
 		for (i=0;i<vex->total_y_bins;i++)
 		{
 			if (vex->y_bins[i] != get_ecu_data_last(canID,page,base+i,size))
@@ -1208,6 +1247,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	size = firmware->table_params[table]->z_size;
 	if (firmware->chunk_support)
 	{
+		printf("chunk write Z vars\n");
 		total = (vex->total_y_bins)*(vex->total_x_bins);
 		data = g_new0(guchar, total);
 		for (i=0;i<total;i++)
@@ -1216,6 +1256,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	}
 	else
 	{
+		printf("std write Z vars\n");
 		for (i=0;i<((vex->total_y_bins)*(vex->total_x_bins));i++)
 		{
 			if (vex->tbl_bins[i] != get_ecu_data_last(canID,page,base+i,size))
@@ -1239,6 +1280,9 @@ void revert_to_previous_data()
 	gint offset=0;
 	gint total = 0;
 	guchar *data = NULL;
+	GModule *module = NULL;
+	PostFunction *pf = NULL;
+	GArray *pfuncs = NULL;
 	/* Called to back out a load of a VEtable from VEX import */
 	extern Firmware_Details *firmware;
 	guint8 **ecu_data = firmware->ecu_data;
@@ -1269,7 +1313,18 @@ void revert_to_previous_data()
 		}
 		memcpy(ecu_data[page], ecu_data_backup[page],firmware->page_params[page]->length);
 	}
-	update_ve_const();
+	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
+	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
+
+	pf = g_new0(PostFunction,1);
+	pf->name = g_strdup("update_ve_const");
+	if (module)
+		g_module_symbol(module,pf->name,(void *)&pf->function);
+	pf->w_arg = FALSE;
+	pfuncs = g_array_append_val(pfuncs,pf);
+	g_module_close(module);
+	io_cmd(NULL,pfuncs);
+
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"tools_undo_vex_button"),FALSE);
 	update_logbar("tools_view","warning",g_strdup("Reverting to previous settings....\n"),FALSE,FALSE);
 	io_cmd(firmware->burn_command,NULL);

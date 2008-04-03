@@ -221,7 +221,7 @@ handler=_GENERIC_
 
 [warmup_entry_1]
 keys=offset
-key_types=_INT
+key_types=_INT_
 offset=68
 group=warmup_bins
 

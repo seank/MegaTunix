@@ -657,6 +657,8 @@ Io_Message * initialize_io_message()
 	Io_Message *message = NULL;
 
 	message = g_new0(Io_Message, 1);
+	message->functions = NULL;
+	message->command = NULL;
 	message->sequence = NULL;
 	message->payload = NULL;
 	message->recv_buf = NULL;
@@ -729,10 +731,13 @@ void dealloc_message(Io_Message * message)
 	Output_Data *data;
 	if (message->functions)
 		dealloc_array(message->functions, FUNCTIONS);
+	message->functions = NULL;
 	if (message->sequence)
 		dealloc_array(message->sequence, SEQUENCE);
+	message->sequence = NULL;
 	if (message->recv_buf)
 		g_free(message->recv_buf);
+	message->recv_buf = NULL;
 	if (message->command)
 		if (message->command->type == NULL_CMD)
 			g_free(message->command);
@@ -742,6 +747,7 @@ void dealloc_message(Io_Message * message)
 		if (GTK_IS_OBJECT(data->object))
 			gtk_object_destroy(GTK_OBJECT(data->object));
                 g_free(message->payload);
+		message->payload = NULL;
 	}
         g_free(message);
 	message = NULL;
