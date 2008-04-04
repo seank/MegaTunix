@@ -62,6 +62,8 @@ EXPORT gboolean interrogate_ecu()
 	Detection_Test *test = NULL;
 	guchar uint8 = 0;
 	gchar sint8 = 0;
+	guint16 uint16 = 0;
+	gint16 sint16 = 0;
 	gint size = 4096;
 	gint res = 0;
 	gint count = 0;
@@ -139,12 +141,30 @@ EXPORT gboolean interrogate_ecu()
 				if (dbg_lvl & INTERROGATOR)
 					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",uint8));
 			}
+			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_U16)
+			{
+				uint16 = (guint16)atoi(test->test_vector[j]);
+				res = write(serial_params->fd,&uint16,2);
+				if (res != 1)
+					interrogate_error("U16 Write error",j);
+				if (dbg_lvl & INTERROGATOR)
+					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",uint8));
+			}
 			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_S08)
 			{
 				sint8 = (gint8)atoi(test->test_vector[j]);
 				res = write(serial_params->fd,&sint8,1);
 				if (res != 1)
 					interrogate_error("S08 Write error",j);
+				if (dbg_lvl & INTERROGATOR)
+					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",sint8));
+			}
+			if (g_array_index(test->test_arg_types,DataSize,j) == MTX_S16)
+			{
+				sint16 = (gint16)atoi(test->test_vector[j]);
+				res = write(serial_params->fd,&sint16,2);
+				if (res != 1)
+					interrogate_error("S16 Write error",j);
 				if (dbg_lvl & INTERROGATOR)
 					dbg_func(g_strdup_printf("\tSent command \"%i\"\n",sint8));
 			}
