@@ -14,6 +14,7 @@
 #include <config.h>
 #include <defines.h>
 #include <debugging.h>
+#include <firmware.h>
 #include <mode_select.h>
 #include <threads.h>
 
@@ -51,14 +52,17 @@ void set_widget_active(gpointer widget, gpointer state)
  \brief drain_hashtable() is called to send all the dat from a hashtable to
  the ECU
  \param offset (gpointer) offset in ecu_data this value goes to
- \param value (gpointer) pointer to Output_Data Struct
+ \param value (gpointer) pointer to OutputData Struct
  \param page (gpointer) unused.
  */
 gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 {
-	Output_Data *data = (Output_Data *)value;
+	extern Firmware_Details *firmware;
+	OutputData *data = (OutputData *)value;
+
 	/* called per element from the hash table to drain and send to ECU */
-	send_to_ecu(data->canID, data->page, data->offset, data->size, data->value, data->queue_update);
-	g_free(data);
+	OBJ_SET(data->object,"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
+	data->need_page_change = TRUE;
+	io_cmd(firmware->write_command,data);
 	return TRUE;
 }

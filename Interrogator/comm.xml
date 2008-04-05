@@ -132,7 +132,7 @@
 			</post_functions>
 		</cmd>
 		<cmd>
-			<name>ms2_rtvars</name>
+			<name>ms2_std_rtvars</name>
 			<desc>Gets the realtime vars from the ECU, returns a var length block</desc>
 			<type>_WRITE_CMD_</type>
 			<base>a</base>
@@ -260,6 +260,7 @@
 			<args>
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
+				<arg>PAUSE_50MS</arg>
 			</args>
 			<defer_post_functions>FALSE</defer_post_functions>
 			<post_functions>
@@ -325,6 +326,20 @@
 			<base>V</base>
 			<helper_func>simple_read_cb</helper_func>
 			<helper_func_arg>_MS1_VECONST_</helper_func_arg>
+		</cmd>
+		<cmd>
+			<name>ms2_veconst</name>
+			<desc>Triggers the MS1 to return the VE/Constants for canID and page passed</desc>
+			<type>_WRITE_CMD_</type>
+			<base>r</base>
+			<args>
+				<arg>MS2_CAN_ID</arg>
+				<arg>MS2_TABLE_INDEX</arg>
+				<arg>MS2_OFFSET</arg>
+				<arg>MS2_NUM_BYTES</arg>
+			</args>
+			<helper_func>simple_read_cb</helper_func>
+			<helper_func_arg>_MS2_VECONST_</helper_func_arg>
 		</cmd>
 		<cmd>
 			<name>ms2_reinit</name>

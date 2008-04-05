@@ -520,6 +520,8 @@ void flush_rt_arrays()
 	for(i=0;i<firmware->rtvars_size;i++)
 	{
 		/* Get list of derived vars for raw offset "i" */
+		if (i > rtv_map->rtv_array->len-1)
+			break;
 		list = g_array_index(rtv_map->rtv_array,GList *,i);
 		if (list == NULL) /* no derived vars for this variable */
 			continue;

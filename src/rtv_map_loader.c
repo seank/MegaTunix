@@ -80,7 +80,7 @@ EXPORT gboolean load_realtime_map(void )
 	if (!filename)
 	{
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\t File not found!!, exiting function\n"));
+			dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\t File \"%s.rtv_map\" not found!!, exiting function\n",firmware->rtv_map_file));
 		set_title(g_strdup("ERROR RT Map file DOES NOT EXIST!!!"));
 		return FALSE;
 	}

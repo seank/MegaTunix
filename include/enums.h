@@ -184,10 +184,13 @@ typedef enum
 typedef enum
 {	/* up to 32 Capability flags.... */
 	/* No capabilities == Standard B&G code with no modifications */
-	STANDARD	= 1<<0,
-	DUALTABLE	= 1<<1,
+	MS1		= 1<<0,
+	MS1_STD		= 1<<1,
 	MSNS_E		= 1<<2,
-	MS2_STD		= 1<<3
+	DUALTABLE	= 1<<3,
+	MS2		= 1<<4,
+	MS2_STD		= 1<<5,
+	MS2_EXTRA	= 1<<6
 }Capability;
 
 typedef enum
@@ -341,7 +344,8 @@ typedef enum
 typedef enum
 {
 	MTX_SIMPLE_WRITE=0x240,
-	MTX_CHUNK_WRITE
+	MTX_CHUNK_WRITE,
+	MTX_CMD_WRITE
 }WriteMode;
 
 typedef enum

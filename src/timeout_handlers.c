@@ -18,6 +18,7 @@
 #include <enums.h>
 #include <firmware.h>
 #include <gui_handlers.h>
+#include <init.h>
 #include <runtime_gui.h>
 #include <logviewer_gui.h>
 #include <notifications.h>
@@ -225,6 +226,7 @@ void stop_tickler(TicklerType type)
 gboolean signal_read_rtvars()
 {
 	gint length = 0;
+	OutputData *output = NULL;
 	extern Firmware_Details *firmware;
 	extern GAsyncQueue *io_queue;
 	extern gboolean rtvars_loaded;
@@ -243,7 +245,16 @@ gboolean signal_read_rtvars()
 
 	if (!rtvars_loaded)
 		return TRUE;
-	io_cmd(firmware->rt_command,NULL);			
+	if (firmware->capabilities & MS2)
+	{
+		output = initialize_outputdata();
+		OBJ_SET(output->object,"canID", GINT_TO_POINTER(firmware->canID));
+		OBJ_SET(output->object,"page", GINT_TO_POINTER(firmware->ms2_rt_page));
+		OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
+		io_cmd(firmware->rt_command,output);			
+	}
+	else
+		io_cmd(firmware->rt_command,NULL);			
 	return TRUE;	/* Keep going.... */
 }
 

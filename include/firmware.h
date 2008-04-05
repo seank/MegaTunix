@@ -70,6 +70,7 @@ struct _Firmware_Details
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
 	gint canID;		/*! CanID for this firmware.. */
 	gint rtvars_size;       /*! Size of Realtime vars datablock */
+	gint ms2_rt_page;	/*! Page where the MS2 RT vars reside */
 	gint memblock_size;     /*! Size of Raw_Memory datablock */
 	gint capabilities;	/*! Enum list of capabilities*/
 	gboolean multi_page;	/*! Multi-page firmware */

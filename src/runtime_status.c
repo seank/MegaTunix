@@ -82,6 +82,13 @@ EXPORT void load_status(void)
 
 	set_title(g_strdup("Loading RT Status..."));
 	filename = get_file(g_strconcat(RTSTATUS_DATA_DIR,PSEP,firmware->status_map_file,NULL),g_strdup("status_conf"));
+	if (!filename)
+	{
+		if (dbg_lvl & (RTMLOADER|CRITICAL))
+			dbg_func(g_strdup_printf(__FILE__": load_runtmie_status()\n\t File \"%s.status_conf\" not found!!, exiting function\n",firmware->status_map_file));
+		set_title(g_strdup("ERROR RT Statusfile DOES NOT EXIST!!!"));
+		return;
+	}
         cfgfile = cfg_open_file(filename);
         if (cfgfile)
 	{

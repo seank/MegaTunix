@@ -373,11 +373,31 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\tfile:%s opened successfully\n",filename));
+	if(!cfg_read_string(cfgfile,"parameters","Capabilities",
+				&tmpbuf))
+	{
+		if (dbg_lvl & (INTERROGATOR|CRITICAL))
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Capabilities\" enumeration list not found in interrogation profile, ERROR\n"));
+	}
+	else
+	{
+		firmware->capabilities = translate_capabilities(tmpbuf);
+		g_free(tmpbuf);
+	}
 	if(!cfg_read_string(cfgfile,"parameters","RT_Command",
 				&firmware->rt_command))
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"RT_Command\" variable not found in interrogation profile, ERROR\n"));
+	}
+	if (firmware->capabilities & MS2)
+	{
+		if(!cfg_read_int(cfgfile,"parameters","MS2_RT_Page",
+					&firmware->ms2_rt_page))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"MS2_RT_Page\" variable not found in interrogation profile, ERROR\n"));
+		}
 	}
 	if(!cfg_read_int(cfgfile,"parameters","RT_total_bytes",
 				&firmware->rtvars_size))
@@ -415,7 +435,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"MultiPage\" flag not found in interrogation profile, ERROR\n"));
 	}
-	if (firmware->multi_page)
+	if ((firmware->multi_page) && (!(firmware->capabilities & MS2)))
 	{
 		if(!cfg_read_string(cfgfile,"parameters","Page_Cmd",
 					&firmware->page_cmd))
@@ -451,17 +471,6 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"TotalTables\" value not found in interrogation profile, ERROR\n"));
-	}
-	if(!cfg_read_string(cfgfile,"parameters","Capabilities",
-				&tmpbuf))
-	{
-		if (dbg_lvl & (INTERROGATOR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Capabilities\" enumeration list not found in interrogation profile, ERROR\n"));
-	}
-	else
-	{
-		firmware->capabilities = translate_capabilities(tmpbuf);
-		g_free(tmpbuf);
 	}
 	if(!cfg_read_string(cfgfile,"gui","LoadTabs",
 				&tmpbuf))
@@ -530,7 +539,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			else
 			{
 				if (dbg_lvl & (INTERROGATOR|CRITICAL))
-					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t\ \"[lookuptables]\"\n\t section loading table %s, file %s\n",list[i],tmpbuf));
+					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t \"[lookuptables]\"\n\t section loading table %s, file %s\n",list[i],tmpbuf));
 				get_table(list[i],tmpbuf,NULL);
 				g_free(tmpbuf);
 			}
@@ -1199,12 +1208,15 @@ gboolean check_for_match(GHashTable *tests_hash, gchar *filename)
 		/*printf("checking for match on %s\n",match_on[i]);*/
 		test = g_hash_table_lookup(tests_hash,match_on[i]);
 		if (!test)
+		{
 			printf("ERROR test data not found for test %s\n",match_on[i]);
+			continue;
+		}
 
 		/* If the test_name is NOT IN the interrogation profile,  we 
 		 * abort as it's NOT match
 		 */
-		if (cfg_read_string(cfgfile,"interrogation",test->test_name,&tmpbuf) == FALSE)
+		if (!cfg_read_string(cfgfile,"interrogation",test->test_name,&tmpbuf))
 		{
 			if (dbg_lvl & INTERROGATOR)
 				dbg_func(g_strdup_printf("\n"__FILE__": check_for_match()\n\tMISMATCH,\"%s\" is NOT a match...\n\n",filename));

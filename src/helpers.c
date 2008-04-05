@@ -19,6 +19,7 @@
 #include <debugging.h>
 #include <enums.h>
 #include <firmware.h>
+#include <init.h>
 #include <listmgmt.h>
 #include <mode_select.h>
 #include <notifications.h>
@@ -72,7 +73,7 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 {
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
-	Output_Data *output = NULL;
+	OutputData *output = NULL;
 	Command *command = NULL;
 	gint i = 0;
 
@@ -85,9 +86,9 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			{
 				for (i=0;i<=firmware->ro_above;i++)
 				{
-					output = g_new0(Output_Data,1);
-					output->page=i;
-					output->truepgnum = firmware->page_params[i]->truepgnum;
+					output = initialize_outputdata();
+					OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
+					OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
 					output->need_page_change = TRUE;
 					io_cmd(firmware->ve_command,output);
 				}
@@ -96,14 +97,29 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			io_cmd(NULL,command->post_functions);
 			break;
 		case MS2_VECONST:
-			printf("MS2 read_ve_const not written yet\n");
+			if (!offline)
+			{
+				for (i=0;i<firmware->total_pages;i++)
+				{
+					output = initialize_outputdata();
+					OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
+					OBJ_SET(output->object,"canID",GINT_TO_POINTER(firmware->canID));
+					OBJ_SET(output->object,"offset", GINT_TO_POINTER(0));
+					OBJ_SET(output->object,"num_bytes", GINT_TO_POINTER(firmware->page_params[i]->length));
+					OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
+					output->need_page_change = FALSE;
+					io_cmd(firmware->ve_command,output);
+				}
+			}
+			command = (Command *)data;
+			io_cmd(NULL,command->post_functions);
 			break;
 		case MS1_E_TRIGMON:
 			if (!offline)
 			{
-				output = g_new0(Output_Data,1);
-				output->page=firmware->trigmon_page;
-				output->truepgnum = firmware->page_params[firmware->trigmon_page]->truepgnum;
+				output = initialize_outputdata();
+				OBJ_SET(output->object,"page",GINT_TO_POINTER(firmware->trigmon_page));
+				OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[firmware->trigmon_page]->truepgnum));
 				output->need_page_change = TRUE;
 				io_cmd(firmware->ve_command,output);
 				command = (Command *)data;
@@ -113,9 +129,9 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 		case MS1_E_TOOTHMON:
 			if (!offline)
 			{
-				output = g_new0(Output_Data,1);
-				output->page=firmware->toothmon_page;
-				output->truepgnum = firmware->page_params[firmware->toothmon_page]->truepgnum;
+				output = initialize_outputdata();
+				OBJ_SET(output->object,"page",GINT_TO_POINTER(firmware->toothmon_page));
+				OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[firmware->toothmon_page]->truepgnum));
 				output->need_page_change = TRUE;
 				io_cmd(firmware->ve_command,output);
 				command = (Command *)data;
@@ -182,22 +198,25 @@ EXPORT void reset_temps_cb(void)
 EXPORT void simple_read_cb(void * data, XmlCmdType type)
 {
 	Io_Message *message  = NULL;
-	Output_Data *output  = NULL;
+	OutputData *output  = NULL;
 	gint count = 0;
 	gchar *tmpbuf = NULL;
+	gint page = -1;
+	gint canID = -1;
 	static gint lastcount = 0;
 	extern Firmware_Details *firmware;
 	extern gint ms_ve_goodread_count;
 	extern gint ms_reset_count;
 	extern gint ms_goodread_count;
-	guchar *ptr = NULL;
+	guint8 *ptr8 = NULL;
+	guint16 *ptr16 = NULL;
 	static gboolean just_starting = TRUE;
 	extern gboolean forced_update;
 	extern gboolean force_page_change;
 
 
 	message = (Io_Message *)data;
-	output = (Output_Data *)message->payload;
+	output = (OutputData *)message->payload;
 
 	switch (type)
 	{
@@ -220,42 +239,42 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
 			printf("SIGNATURE not written yet\n");
 			break;
 		case MS1_VECONST:
-			count = read_data(firmware->page_params[output->page]->length,&message->recv_buf);
-			if (count != firmware->page_params[output->page]->length)
-				break;
-			store_new_block(output->canID,output->page,0,
-					message->recv_buf,
-					firmware->page_params[output->page]->length);
-			backup_current_data(0,output->page);
-			ms_ve_goodread_count++;
-			break;
 		case MS2_VECONST:
-			printf("MS2_VECONST handler not written yet\n");
+			page = (gint)OBJ_GET(output->object,"page");
+			canID = (gint)OBJ_GET(output->object,"canID");
+			count = read_data(firmware->page_params[page]->length,&message->recv_buf);
+			if (count != firmware->page_params[page]->length)
+				break;
+			store_new_block(canID,page,0,
+					message->recv_buf,
+					firmware->page_params[page]->length);
+			backup_current_data(0,page);
+			ms_ve_goodread_count++;
 			break;
 		case MS1_RT_VARS:
 			count = read_data(firmware->rtvars_size,&message->recv_buf);
 			if (count != firmware->rtvars_size)
 				break;
-			ptr = (guchar *)message->recv_buf;
+			ptr8 = (guchar *)message->recv_buf;
 			/* Test for MS reset */
 			if (just_starting)
 			{
-				lastcount = ptr[0];
+				lastcount = ptr8[0];
 				just_starting = FALSE;
 			}
 			/* Check for clock jump from the MS, a 
 			 * jump in time from the MS clock indicates 
 			 * a reset due to power and/or noise.
 			 */
-			if ((lastcount - ptr[0] > 1) && \
-					(lastcount - ptr[0] != 255))
+			if ((lastcount - ptr8[0] > 1) && \
+					(lastcount - ptr8[0] != 255))
 			{
 				ms_reset_count++;
 				gdk_beep();
 			}
 			else
 				ms_goodread_count++;
-			lastcount = ptr[0];
+			lastcount = ptr8[0];
 			/* Feed raw buffer over to post_process()
 			 * as a void * and pass it a pointer to the new
 			 * area for the parsed data...
@@ -263,7 +282,34 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
 			process_rt_vars((void *)message->recv_buf);
 			break;
 		case MS2_RT_VARS:
-			printf("MS2_RTVARS_CALLBACK not written yet\n");
+			count = read_data(firmware->rtvars_size,&message->recv_buf);
+			if (count != firmware->rtvars_size)
+				break;
+			ptr16 = (guint16 *)message->recv_buf;
+			/* Test for MS reset */
+			if (just_starting)
+			{
+				lastcount = ptr16[0];
+				just_starting = FALSE;
+			}
+			/* Check for clock jump from the MS, a 
+			 * jump in time from the MS clock indicates 
+			 * a reset due to power and/or noise.
+			 */
+			if ((lastcount - ptr16[0] > 1) && \
+					(lastcount - ptr16[0] != 65535))
+			{
+				ms_reset_count++;
+				gdk_beep();
+			}
+			else
+				ms_goodread_count++;
+			lastcount = ptr16[0];
+			/* Feed raw buffer over to post_process()
+			 * as a void * and pass it a pointer to the new
+			 * area for the parsed data...
+			 */
+			process_rt_vars((void *)message->recv_buf);
 			break;
 		case MS2_BOOTLOADER:
 			printf("MS2_BOOTLOADER not written yet\n");

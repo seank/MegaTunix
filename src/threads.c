@@ -213,7 +213,7 @@ void *thread_dispatcher(gpointer data)
 void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, gboolean queue_update)
 {
 	extern Firmware_Details *firmware;
-	Output_Data *output = NULL;
+	OutputData *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending canID %i, page %i, offset %i, value %i \n",canID,page,offset,value));
@@ -231,22 +231,13 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 		default:
 			printf("ERROR!!! Size undefined for var at canID %i, page %i, offset %i\n",canID,page,offset);
 	}
-	output = g_new0(Output_Data, 1);
-	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-	g_object_ref(output->object);
-	gtk_object_sink(GTK_OBJECT(output->object));
+	output = initialize_outputdata();
 	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
 	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
 	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
 	OBJ_SET(output->object,"value", GINT_TO_POINTER(value));
 	OBJ_SET(output->object,"size", GINT_TO_POINTER(size));
 	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
-	output->canID = canID;
-	output->page = page;
-	output->offset = offset;
-	output->value = value;
-	output->size = size;
-	output->mode = MTX_SIMPLE_WRITE;
 	output->need_page_change = TRUE;
 	output->queue_update = queue_update;
 	io_cmd(firmware->write_command,output);
@@ -267,26 +258,17 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
 {
 	extern Firmware_Details *firmware;
-	Output_Data *output = NULL;
+	OutputData *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, len %i, data %p\n",page,offset,len,data));
-	output = g_new0(Output_Data, 1);
-	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
-	g_object_ref(output->object);
-	gtk_object_sink(GTK_OBJECT(output->object));
+	output = initialize_outputdata();
 	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
 	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
 	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
 	OBJ_SET(output->object,"len", GINT_TO_POINTER(len));
 	OBJ_SET(output->object,"data", (gpointer)data);
 	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CHUNK_WRITE));
-	output->canID = canID;
-	output->page = page;
-	output->offset = offset;
-	output->len = len;
-	output->data = data;
-	output->mode = MTX_CHUNK_WRITE;
 	output->need_page_change = TRUE;
 	output->queue_update = TRUE;
 	io_cmd(firmware->chunk_write_command,output);
@@ -464,12 +446,14 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 {
 	gint i = 0;
 	gint v = 0;
-	Output_Data *output = NULL;
+	gint len = 0;
+	OutputData *output = NULL;
 	PotentialArg * arg = NULL;
+	guint8 *sent_data = NULL;
 	DBlock *block = NULL;
 
 	if (data)
-		output = (Output_Data *)data;
+		output = (OutputData *)data;
 
 	message->sequence = g_array_new(FALSE,TRUE,sizeof(DBlock *));
 
@@ -508,27 +492,31 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 			case MTX_U08:
 			case MTX_S08:
 			case MTX_CHAR:
-				/*printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);*/
+//				printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
+//				printf("value %i\n",v);
 				block->data = g_new0(guint8,1);
 				block->data[0] = (guint8)v;
 				block->len = 1;
 				break;
 			case MTX_U16:
 			case MTX_S16:
-				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+//				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
+//				printf("value %i\n",v);
 				block->data = g_new0(guint8,2);
 				block->data[0] = (v & 0xff00) >> 8;
 				block->data[1] = (v & 0x00ff);
 				block->len = 2;
+				break;
 			case MTX_U32:
 			case MTX_S32:
-				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+//				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
+//				printf("value %i\n",v);
 				block->data = g_new0(guint8,4);
 				block->data[0] = (v & 0xff000000) >> 24;
 				block->data[1] = (v & 0xff0000) >> 16;
@@ -540,8 +528,10 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 				printf("arg %i, name \"%s\"\n",i,arg->internal_name);
 				if (!arg->internal_name)
 					printf("ERROR, MTX_UNDEF, donno what to do!!\n");
-				block->data = g_memdup(output->data,output->len);
-				block->len = output->len;
+				sent_data = (guint8 *)OBJ_GET(output->object,arg->internal_name);
+				len = (gint)OBJ_GET(output->object,"len");
+				block->data = g_memdup(sent_data,len);
+				block->len = len;
 		}
 		g_array_append_val(message->sequence,block);
 	}

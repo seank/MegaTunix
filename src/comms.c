@@ -132,43 +132,54 @@ gint comms_test()
  \brief update_write_status() checks the differences between the current ECU
  data snapshot and the last one, if there are any differences (things need to
  be burnt) then it turns all the widgets in the "burners" group to RED
- \param data (Output_Data *) pointer to data sent to ECU used to
+ \param data (OutputData *) pointer to data sent to ECU used to
  update other widgets that refer to that Page/Offset
  */
 EXPORT void update_write_status(void *data)
 {
 	Io_Message *message = (Io_Message *)data;
-	Output_Data *output = (Output_Data *)message->payload;
+	OutputData *output = (OutputData *)message->payload;
 	extern Firmware_Details *firmware;
 	guint8 **ecu_data = firmware->ecu_data;
 	guint8 **ecu_data_last = firmware->ecu_data_last;
 	gint i = 0;
+	gint page = 0;
+	gint offset = 0;
+	guint8 *sent_data = NULL;
+	WriteMode mode = MTX_CMD_WRITE;
 	extern GList ***ve_widgets;
 	extern gboolean paused_handlers;
 
 
-	if ((output->data) && (output->mode == MTX_CHUNK_WRITE))
+	if (!output)
+		return;
+
+	mode = (WriteMode)OBJ_GET(output->object,"mode");
+	if (mode == MTX_CHUNK_WRITE)
 	{
-		g_free(output->data);
+		sent_data = (guint8 *)OBJ_GET(output->object,"data");
+		if (sent_data)
+			g_free(sent_data);
 		return;
 	}
-
+	page = (gint)OBJ_GET(output->object,"page");
+	offset = (gint)OBJ_GET(output->object,"offset");
 	paused_handlers = TRUE;
 
 	/*printf ("page %i, offset %i\n",data->page,data->offset); */
-	for (i=0;i<g_list_length(ve_widgets[output->page][output->offset]);i++)
+	for (i=0;i<g_list_length(ve_widgets[page][offset]);i++)
 	{
-		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[output->page][output->offset],i),"dl_type") != DEFERRED)
+		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[page][offset],i),"dl_type") != DEFERRED)
 		{
-			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[output->page][output->offset],i))); */
-			update_widget(g_list_nth_data(ve_widgets[output->page][output->offset],i),NULL);
+			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i))); */
+			update_widget(g_list_nth_data(ve_widgets[page][offset],i),NULL);
 		}
 		/*	else
-		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[output->page][output->offset],i)));
+		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i)));
 		*/
 	}
 
-	update_ve3d_if_necessary(output->page,output->offset);
+	update_ve3d_if_necessary(page,offset);
 
 	paused_handlers = FALSE;
 	/* We check to see if the last burn copy of the VE/constants matches 
@@ -341,11 +352,19 @@ force_change:
 void write_data(Io_Message *message)
 {
 	extern gboolean connected;
-	Output_Data *output = message->payload;
+	OutputData *output = message->payload;
 
 	gint res = 0;
 	gchar * err_text = NULL;
 	gint i = 0;
+	gint canID = 0;
+	gint page = 0;
+	gint offset = 0;
+	DataSize size = MTX_U08;
+	gint value = 0;
+	WriteMode mode = MTX_CMD_WRITE;
+	guint8 *data = NULL;
+	gint len = 0;
 	DBlock *block = NULL;
 	/*gint j = 0;
 	gchar * tmpbuf = NULL;*/
@@ -357,18 +376,37 @@ void write_data(Io_Message *message)
 	g_static_mutex_lock(&serio_mutex);
 	g_static_mutex_lock(&mutex);
 	
+	if (output)
+	{
+		canID = (gint)OBJ_GET(output->object,"canID");
+		page = (gint)OBJ_GET(output->object,"page");
+		offset = (gint)OBJ_GET(output->object,"offset");
+		size = (DataSize)OBJ_GET(output->object,"size");
+		value = (gint)OBJ_GET(output->object,"value");
+		data = (guint8 *)OBJ_GET(output->object,"data");
+		len = (gint)OBJ_GET(output->object,"len");
+		mode = (WriteMode)OBJ_GET(output->object,"mode");
+
+		if ((firmware->multi_page ) && (output->need_page_change)) 
+		{
+			g_static_mutex_unlock(&serio_mutex);
+			set_ms_page(firmware->page_params[page]->truepgnum);
+			g_static_mutex_lock(&serio_mutex);
+		}
+	}
+
 	if (offline)
 	{
-		if (!output)
-			return;
-		//printf ("OFFLINE writing value at %i,%i [%i]\n",output->page,output->offset,output->value); 
-		switch (output->mode)
+		//printf ("OFFLINE writing value at %i,%i [%i]\n",page,offset,value); 
+		switch (mode)
 		{
 			case MTX_SIMPLE_WRITE:
-				set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
+				set_ecu_data(canID,page,offset,size,value);
 				break;
 			case MTX_CHUNK_WRITE:
-				store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+				store_new_block(canID,page,offset,data,len);
+				break;
+			case MTX_CMD_WRITE:
 				break;
 		}
 		g_static_mutex_unlock(&serio_mutex);
@@ -380,16 +418,6 @@ void write_data(Io_Message *message)
 		g_static_mutex_unlock(&serio_mutex);
 		g_static_mutex_unlock(&mutex);
 		return;		/* can't write anything if disconnected */
-	}
-
-	if (output)
-	{
-		if ((firmware->multi_page ) && (output->need_page_change)) 
-		{
-			g_static_mutex_unlock(&serio_mutex);
-			set_ms_page(firmware->page_params[output->page]->truepgnum);
-			g_static_mutex_lock(&serio_mutex);
-		}
 	}
 
 	for (i=0;i<message->sequence->len;i++)
@@ -411,6 +439,7 @@ void write_data(Io_Message *message)
 			   printf("Output string %s\n",tmpbuf);
 			   }
 			   */
+			//usleep(15000);
 			if (dbg_lvl & (SERIAL_WR))
 				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting block %i, \"%s\"\n",i,block->data));
 			res = write (serial_params->fd,block->data,block->len);	/* Send write command */
@@ -430,10 +459,10 @@ void write_data(Io_Message *message)
 	}
 	if (output)
 	{
-		if (output->mode == MTX_SIMPLE_WRITE)
-			set_ecu_data(output->canID,output->page,output->offset,output->size,output->value);
-		else if (output->mode == MTX_CHUNK_WRITE)
-			store_new_block(output->canID,output->page,output->offset,output->data,output->len);
+		if (mode == MTX_SIMPLE_WRITE)
+			set_ecu_data(canID,page,offset,size,value);
+		else if (mode == MTX_CHUNK_WRITE)
+			store_new_block(canID,page,offset,data,len);
 	}
 
 	g_static_mutex_unlock(&serio_mutex);

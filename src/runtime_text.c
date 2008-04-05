@@ -83,6 +83,13 @@ EXPORT void load_rt_text()
 		rtt_hash = g_hash_table_new_full(g_str_hash,g_str_equal,g_free,g_free);
 
 	filename = get_file(g_strconcat(RTTEXT_DATA_DIR,PSEP,firmware->rtt_map_file,NULL),g_strdup("rtt_conf"));
+	if (!filename)
+	{
+		if (dbg_lvl & (RTMLOADER|CRITICAL))
+			dbg_func(g_strdup_printf(__FILE__": load_runtime_text()\n\t File \"%s.rtt_conf\" not found!!, exiting function\n",firmware->rtt_map_file));
+		set_title(g_strdup("ERROR RTT Map file DOES NOT EXIST!!!"));
+		return; 
+	}
 	cfgfile = cfg_open_file(filename);
 	if (cfgfile)
 	{

@@ -160,16 +160,15 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	{
 		if (g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"))
 			iochannel = (GIOChannel *) OBJ_GET(g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"),"data");
-	}
 
-	if (iochannel)	
-	{
-		g_io_channel_shutdown(iochannel,TRUE,NULL);
-		g_io_channel_unref(iochannel);
+		if (iochannel)	
+		{
+			g_io_channel_shutdown(iochannel,TRUE,NULL);
+			g_io_channel_unref(iochannel);
+		}
+		if (dbg_lvl & CRITICAL)
+			dbg_func(g_strdup_printf(__FILE__": LEAVE() after iochannel\n"));
 	}
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after iochannel\n"));
-
 
 	/* Commits any pending data to ECU flash */
 	if (dbg_lvl & CRITICAL)
@@ -178,7 +177,6 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 		io_cmd(firmware->burn_command,NULL);
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
-
 
 	g_static_mutex_lock(&rtv_mutex);  /* <-- this makes us wait */
 	g_static_mutex_unlock(&rtv_mutex); /* now unlock */
@@ -427,7 +425,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	gint dl_type = -1;
 	gint handler = 0;
 	gint table_num = -1;
-	Output_Data *q_data = NULL;
+	OutputData *q_data = NULL;
 	gchar * swap_list = NULL;
 	gchar * set_labels = NULL;
 	gchar * table_2_update = NULL;
@@ -505,12 +503,12 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
-				q_data = g_new0(Output_Data, 1);
-				q_data->canID = canID;
-				q_data->page = page;
-				q_data->offset = offset;
-				q_data->value = dload_val;
-				q_data->size = MTX_U08;
+				q_data = initialize_outputdata();
+				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
+				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
 						q_data);
@@ -525,12 +523,12 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
-				q_data = g_new0(Output_Data, 1);
-				q_data->canID = canID;
-				q_data->page = page;
-				q_data->offset = offset;
-				q_data->value = dload_val;
-				q_data->size = MTX_U08;
+				q_data = initialize_outputdata();
+				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
+				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
 						q_data);
@@ -1059,7 +1057,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gfloat value = 0.0;
 	gchar *tmpbuf = NULL;
 	GtkWidget * tmpwidget = NULL;
-	Output_Data *q_data = NULL;
+	OutputData *q_data = NULL;
 	extern gint realtime_id;
 	Reqd_Fuel *reqd_fuel = NULL;
 	extern GHashTable *dynamic_widgets;
@@ -1174,12 +1172,12 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				dload_val = (gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
-				q_data = g_new0(Output_Data, 1);
-				q_data->canID = canID;
-				q_data->page = page;
-				q_data->offset = divider_offset;
-				q_data->value = dload_val;
-				q_data->size = MTX_U08;
+				q_data = initialize_outputdata();
+				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(divider_offset));
+				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
 						q_data);
@@ -1211,12 +1209,12 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = tmp | ((tmpi-1) << bitshift);
 				dload_val = tmp;
 				/*printf("new num_cyls is %i, new data is %i\n",tmpi,tmp);*/
-				q_data = g_new0(Output_Data, 1);
-				q_data->canID = canID;
-				q_data->page = page;
-				q_data->offset = offset;
-				q_data->value = dload_val;
-				q_data->size = MTX_U08;
+				q_data = initialize_outputdata();
+				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
+				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
 						q_data);
@@ -1225,12 +1223,12 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 					(gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
-				q_data = g_new0(Output_Data, 1);
-				q_data->canID = canID;
-				q_data->page = page;
-				q_data->offset = divider_offset;
-				q_data->value = dload_val;
-				q_data->size = MTX_U08;
+				q_data = initialize_outputdata();
+				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(divider_offset));
+				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
 						q_data);
@@ -1253,12 +1251,12 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			tmp = tmp | ((tmpi-1) << bitshift);
 			dload_val = tmp;
 
-			q_data = g_new0(Output_Data, 1);
-			q_data->canID = canID;
-			q_data->page = page;
-			q_data->offset = offset;
-			q_data->value = dload_val;
-			q_data->size = MTX_U08;
+			q_data = initialize_outputdata();
+			OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
+			OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
+			OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
+			OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
+			OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
 			g_hash_table_insert(interdep_vars[page],
 					GINT_TO_POINTER(offset),
 					q_data);

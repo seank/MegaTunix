@@ -22,7 +22,7 @@ typedef struct _Io_Message Io_Message;
 typedef struct _Text_Message Text_Message;
 typedef struct _QFunction QFunction;
 typedef struct _Widget_Update Widget_Update;
-typedef struct _Output_Data Output_Data;
+typedef struct _OutputData OutputData;
 
 
 /*
@@ -52,23 +52,14 @@ struct _Widget_Update
 
 
 /*! 
- \brief _Output_Data A simple wrapper struct to pass data to the output 
+ \brief _OutputData A simple wrapper struct to pass data to the output 
  function which makes the function a lot simpler.
  */
-struct _Output_Data
+struct _OutputData
 {
 	GObject *object;	/*! Opaque object for data storage */
-	gint canID;		/*! CAN Module ID (MS-II ONLY) */
-	gint page;		/*! Page in ECU */
-	gint offset;		/*! Offset in block */
-	gint value;		/*! Value to send */
-	gint truepgnum;		/*! True Page number */
-	gint need_page_change;	/*! Set to true to force page change */
-	DataSize size;		/*! Size of single write data */
-	gint len;		/*! Length of chunk write block */
-	guint8 *data;		/*! Block of data for chunk write */
+	gboolean need_page_change;	/*! Set to true to force page change */
 	gboolean queue_update;	/*! If true queues a member widget update */
-	WriteMode mode;		/*! Write mode enum */
 };
 
 

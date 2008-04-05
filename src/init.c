@@ -667,6 +667,17 @@ Io_Message * initialize_io_message()
 }
 
 
+OutputData * initialize_outputdata()
+{
+	OutputData *output = NULL;
+
+	output = g_new0(OutputData, 1);
+	output->object = g_object_new(GTK_TYPE_INVISIBLE,NULL);
+	g_object_ref(output->object);
+	gtk_object_sink(GTK_OBJECT(output->object));
+	return output;
+}
+
 /*!
  *  \brief initialize_page_params() creates and initializes the page_params
  *   datastructure to sane defaults and returns it
@@ -728,7 +739,7 @@ Table_Params * initialize_table_params(void)
  */
 void dealloc_message(Io_Message * message)
 {
-	Output_Data *data;
+	OutputData *data;
 	if (message->functions)
 		dealloc_array(message->functions, FUNCTIONS);
 	message->functions = NULL;
@@ -743,7 +754,7 @@ void dealloc_message(Io_Message * message)
 			g_free(message->command);
         if (message->payload)
 	{
-		data = (Output_Data *)message->payload;
+		data = (OutputData *)message->payload;
 		if (GTK_IS_OBJECT(data->object))
 			gtk_object_destroy(GTK_OBJECT(data->object));
                 g_free(message->payload);
