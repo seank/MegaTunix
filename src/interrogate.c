@@ -398,6 +398,12 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
 				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"MS2_RT_Page\" variable not found in interrogation profile, ERROR\n"));
 		}
+		if(!cfg_read_int(cfgfile,"parameters","InterCharDelay",
+					&firmware->interchardelay))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"InterCharDelay\" variable not found in interrogation profile, ERROR\n"));
+		}
 	}
 	if(!cfg_read_int(cfgfile,"parameters","RT_total_bytes",
 				&firmware->rtvars_size))

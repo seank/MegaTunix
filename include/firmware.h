@@ -68,6 +68,7 @@ struct _Firmware_Details
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
+	gint interchardelay;	/*! Inter char delay (MS-II mostly) */
 	gint canID;		/*! CanID for this firmware.. */
 	gint rtvars_size;       /*! Size of Realtime vars datablock */
 	gint ms2_rt_page;	/*! Page where the MS2 RT vars reside */

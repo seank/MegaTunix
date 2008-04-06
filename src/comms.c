@@ -439,7 +439,9 @@ void write_data(Io_Message *message)
 			   printf("Output string %s\n",tmpbuf);
 			   }
 			   */
-			//usleep(15000);
+			if (firmware->capabilities & MS2)
+				g_usleep(firmware->interchardelay*1000);
+
 			if (dbg_lvl & (SERIAL_WR))
 				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting block %i, \"%s\"\n",i,block->data));
 			res = write (serial_params->fd,block->data,block->len);	/* Send write command */
