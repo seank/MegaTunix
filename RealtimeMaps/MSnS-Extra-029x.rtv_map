@@ -5,7 +5,6 @@ minor=0
 [realtime_map]
 applicable_firmwares=MegaSquirtnSpark-Extra 029x,MegaSquirtnSpark-Extra 029yx
 applicable_signatures=MSnS-extra format 029q *********,MS1/Extra format 029y3 *********
-raw_total=39
 derived_total=54
 raw_list=raw_secl,baroadc,barovolt,barokpa,mapadc,mapvolt,mapkpa,matadc,matvolt,matdeg,cltadc,cltvolt,cltdeg,tpsadc,tpsvolt,tpspercent,battadc,battvolt,o2adc,o2volt,afr,egocorr,aircorr,warmcorr,raw_rpm,pw,tpsaccel,barocorr,gammae,vecurr,sparkangle
 

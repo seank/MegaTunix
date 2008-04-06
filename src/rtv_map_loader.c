@@ -50,7 +50,6 @@ EXPORT gboolean load_realtime_map(void )
 	extern Firmware_Details *firmware;
 	gchar * filename = NULL;
 	gchar *tmpbuf = NULL;
-	gint raw_total = 0;
 	gint derived_total = 0;
 	gint num_keys = 0;
 	gint num_keytypes = 0;
@@ -134,11 +133,6 @@ EXPORT gboolean load_realtime_map(void )
 	/* OK, basic checks passed,  start loading data into
 	 * the main mapping structures...
 	 */
-	if(!cfg_read_int(cfgfile,"realtime_map","raw_total",&raw_total))
-	{
-		if (dbg_lvl & (RTMLOADER|CRITICAL))
-			dbg_func(g_strdup(__FILE__": load_realtime_map()\n\tcan't find \"raw_total\" in the \"[realtime_map]\" section\n"));
-	}
 	if(!cfg_read_int(cfgfile,"realtime_map","derived_total",&derived_total))
 	{
 		if (dbg_lvl & (RTMLOADER|CRITICAL))
@@ -154,22 +148,14 @@ EXPORT gboolean load_realtime_map(void )
 		rtv_map->raw_list = parse_keys(tmpbuf,&num_keys,",");
 		g_free(tmpbuf);
 	}
-	rtv_map->rtv_array = g_array_sized_new(FALSE,TRUE,sizeof(GList *),raw_total);
+	rtv_map->offset_hash = g_hash_table_new(g_direct_hash,g_direct_equal);
 	rtv_map->rtv_list = g_array_new(FALSE,TRUE,sizeof(GObject *));
 	rtv_map->rtv_hash = g_hash_table_new(g_str_hash,g_str_equal);
-	rtv_map->raw_total = raw_total;
+	rtv_map->rtvars_size = firmware->rtvars_size;
 	rtv_map->derived_total = derived_total;
 	rtv_map->ts_array = g_array_sized_new(FALSE,TRUE, sizeof(GTimeVal),4096);
 
-	/* Populate the arrays with NULL pointers (GList's are assumed
-	 * to be NULL when they don't exist.  This ensures that there
-	 * are no funky memory errors... Same with the timestamp pointers
-	 * so we can handle it cleanly in rtv_processor.c
-	 */
-	list = NULL;
-	for (i=0;i<raw_total;i++)
-		g_array_insert_val(rtv_map->rtv_array,i,list);
-
+	/* Load em up.. */
 	for (i=0;i<derived_total;i++)
 	{
 		section = g_strdup_printf("derived_%i",i);
@@ -179,7 +165,7 @@ EXPORT gboolean load_realtime_map(void )
 			if (dbg_lvl & (RTMLOADER|CRITICAL))
 				dbg_func(g_strdup_printf(__FILE__": load_realtime_map()\n\tCan't find \"keys\" in the \"[%s]\" section, ABORTING!!!\n\n ",section));
 			g_free(section);
-		set_title(g_strdup("ERROR RT Map missing data problem!!!"));
+			set_title(g_strdup("ERROR RT Map missing data problem!!!"));
 			return FALSE;
 		}
 		else
@@ -319,10 +305,9 @@ EXPORT gboolean load_realtime_map(void )
 
 			}
 		}
-		list = g_array_index(rtv_map->rtv_array,GList *,offset);
-		rtv_map->rtv_array = g_array_remove_index(rtv_map->rtv_array,offset);
+		list = g_hash_table_lookup(rtv_map->offset_hash,GINT_TO_POINTER(offset));
 		list = g_list_prepend(list,(gpointer)object);
-		g_array_insert_val(rtv_map->rtv_array,offset,list);
+		g_hash_table_replace(rtv_map->offset_hash,GINT_TO_POINTER(offset),list);
 		g_array_append_val(rtv_map->rtv_list,object);
 
 		g_free(section);

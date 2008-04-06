@@ -1081,18 +1081,21 @@ GArray * validate_and_load_tests(GHashTable **tests_hash)
 			{
 				if (dbg_lvl & (INTERROGATOR|CRITICAL))
 					dbg_func(g_strdup_printf(__FILE__": validate_and_load_tests(),\n\ttest_name for %s is NULL\n",section));
+				g_free(section);
 				break;
 			}
 			if (!cfg_read_string(cfgfile,section,"actual_test",&test->actual_test))
 			{
 				if (dbg_lvl & (INTERROGATOR|CRITICAL))
 					dbg_func(g_strdup_printf(__FILE__": validate_and_load_tests(),\n\tactual_test for %s is NULL\n",section));
+				g_free(section);
 				break;
 			}
 			if (!cfg_read_string(cfgfile,section,"test_arg_types",&tmpbuf))
 			{
 				if (dbg_lvl & (INTERROGATOR|CRITICAL))
 					dbg_func(g_strdup_printf(__FILE__": validate_and_load_tests(),\n\ttest_arg_types for %s is NULL\n",section));
+				g_free(section);
 				break;
 			}
 
@@ -1300,6 +1303,7 @@ void free_tests_array(GArray *tests)
 		if (test->test_arg_types)
 			g_array_free(test->test_arg_types,TRUE);
 		g_free(test);
+		test = NULL;
 	}
 
 	g_array_free(tests,TRUE);

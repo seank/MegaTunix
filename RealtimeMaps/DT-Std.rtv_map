@@ -4,7 +4,6 @@ minor=0
 
 [realtime_map]
 applicable_firmwares=Dualtable v1.02,Dualtable v1.01,Dualtable v0.90-1.0
-raw_total=22
 derived_total=39
 
 [derived_0]

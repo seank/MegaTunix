@@ -4,7 +4,6 @@ minor=0
 
 [realtime_map]
 applicable_firmwares=Standard Bowling & Grippo v2.0-3.01,Old Bowling & Grippo v1.0,MS-3.0 Rover IAC v3.0.x,MS-Projection 0.81
-raw_total=22
 derived_total=38
 
 [derived_0]

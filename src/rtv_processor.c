@@ -91,10 +91,10 @@ void process_rt_vars(void *incoming)
 		thread_update_logbar("dlog_view",NULL,g_strdup_printf("Currently %i samples stored, Total Logged Time (HH:MM:SS) (%02i:%02i:%02i)\n",rtv_map->ts_array->len,hours,minutes,seconds),FALSE,FALSE);
 	}
 
-	for (i=0;i<rtv_map->raw_total;i++)
+	for (i=0;i<rtv_map->rtvars_size;i++)
 	{
 		/* Get list of derived vars for raw offset "i" */
-		list = g_array_index(rtv_map->rtv_array,GList *,i);
+		list = g_hash_table_lookup(rtv_map->offset_hash,GINT_TO_POINTER(i));
 		if (list == NULL) /* no derived vars for this variable */
 			continue;
 		list = g_list_first(list);
@@ -103,7 +103,7 @@ void process_rt_vars(void *incoming)
 			history = NULL;
 			special = NULL;
 			object=(GObject *)g_list_nth_data(list,j);
-			if (!object)
+			if (!GTK_IS_OBJECT(object))
 			{
 				if (dbg_lvl & (COMPLEX_EXPR|CRITICAL))
 					dbg_func(g_strdup_printf(__FILE__": rtv_processor()\n\t Object bound to list at offset %i is invalid!!!!\n",i));
@@ -504,7 +504,6 @@ gboolean lookup_previous_value(gchar *internal_name, gfloat *value)
  */
 void flush_rt_arrays()
 {
-	extern Firmware_Details *firmware;
 	extern Rtv_Map *rtv_map;
 	GArray *history = NULL;
 	gint i = 0;
@@ -517,18 +516,18 @@ void flush_rt_arrays()
 	g_array_free(rtv_map->ts_array,TRUE);
 	rtv_map->ts_array = g_array_sized_new(FALSE,TRUE,sizeof(GTimeVal),4096);
 
-	for(i=0;i<firmware->rtvars_size;i++)
+	for (i=0;i<rtv_map->rtvars_size;i++)
 	{
 		/* Get list of derived vars for raw offset "i" */
-		if (i > rtv_map->rtv_array->len-1)
-			break;
-		list = g_array_index(rtv_map->rtv_array,GList *,i);
+		list = g_hash_table_lookup(rtv_map->offset_hash,GINT_TO_POINTER(i));
 		if (list == NULL) /* no derived vars for this variable */
 			continue;
 		list = g_list_first(list);
 		for (j=0;j<g_list_length(list);j++)
 		{
 			object=(GObject *)g_list_nth_data(list,j);
+			if (!GTK_IS_OBJECT(object))
+				continue;
 			g_static_mutex_lock(&rtv_mutex);
 			history = (GArray *)OBJ_GET(object,"history");
 			current_index = (gint)OBJ_GET(object,"current_index");

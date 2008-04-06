@@ -28,11 +28,12 @@ typedef struct _Rtv_Map Rtv_Map;
 
 struct _Rtv_Map
 {
-	gint raw_total;		/*! Number of raw variables */
 	gint derived_total;	/*! Number of derived variables */
+	gint rtvars_size;	/*! total size of rtvars block */
 	gchar **raw_list;	/*! Char List of raw variables by name */
 	gchar *applicable_signatures;/*! Firmware signatures that use this map*/
-	GArray *rtv_array;	/*! Realtime Values array of lists.. */
+	GHashTable *offset_hash;/*! Hashtable of rtv dervied values indexed by
+				  it's raw offset in the RTV block */
 	GArray *ts_array;	/*! Timestamp array */
 	GArray *rtv_list;	/*! List of derived vars IN ORDER */
 	GHashTable *rtv_hash;	/*! Hashtable of rtv derived values indexed by
