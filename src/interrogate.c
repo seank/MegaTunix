@@ -544,7 +544,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			}
 			else
 			{
-				if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				if (dbg_lvl & (INTERROGATOR))
 					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t \"[lookuptables]\"\n\t section loading table %s, file %s\n",list[i],tmpbuf));
 				get_table(list[i],tmpbuf,NULL);
 				g_free(tmpbuf);
@@ -897,6 +897,12 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 				if (dbg_lvl & (INTERROGATOR|CRITICAL))
 					dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"truepgnum\" flag not found in interrogation profile, ERROR\n"));
 			}
+		if(!cfg_read_boolean(cfgfile,section,"dl_by_default",&firmware->page_params[i]->dl_by_default))
+		{
+			if (dbg_lvl & (INTERROGATOR|CRITICAL))
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"dl_by_Default\" flag not found in interrogation profile, assuming TRUE\n"));
+			firmware->page_params[i]->dl_by_default = TRUE;
+		}
 		if(!cfg_read_int(cfgfile,section,"length",&firmware->page_params[i]->length))
 		{
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))

@@ -185,6 +185,7 @@ struct _Page_Params
 {
 	gint length;		/*! How big this page is... */
 	gint truepgnum;		/*! True pagenumber to send */
+	gboolean dl_by_default;	/*! Download this page or not? */
 	gint is_spark;		/*! does this require alt write cmd? */
 	gint spconfig_offset;	/*! Where spconfig value is located */
 };

@@ -21,10 +21,10 @@ row=1
 source=battvolt
 
 [rt_slider_2]
-slider_name=o2_volts
+slider_name=afr1
 table=0
 row=2
-source=o2volt
+source=afr1
 
 [rt_slider_3]
 slider_name=rpm
@@ -45,10 +45,10 @@ row=5
 source=dcycle1
 
 [rt_slider_6]
-slider_name=tps_adc
+slider_name=tpspercent
 table=1
 row=0
-source=tpsadc
+source=tpspercent
 
 [rt_slider_7]
 slider_name=map
@@ -129,10 +129,10 @@ row=2
 source=tpsaccel
 
 [rt_slider_20]
-slider_name=idledc
+slider_name=iacstep
 table=3
 row=3
-source=idledc
+source=iacstep
 
 [ww_slider_0]
 slider_name=ww_clt
@@ -168,7 +168,7 @@ source=rpm
 slider_name=ve3d_afr
 table=0
 row=1
-source=afr
+source=afr1
 
 [ve3d_slider_2]
 slider_name=ve3d_map

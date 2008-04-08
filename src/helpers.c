@@ -86,9 +86,12 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			{
 				for (i=0;i<=firmware->ro_above;i++)
 				{
+					if (!firmware->page_params[i]->dl_by_default)
+						continue;
 					output = initialize_outputdata();
 					OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
 					OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
+					OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
 					output->need_page_change = TRUE;
 					io_cmd(firmware->ve_command,output);
 				}
@@ -101,8 +104,11 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			{
 				for (i=0;i<firmware->total_pages;i++)
 				{
+					if (!firmware->page_params[i]->dl_by_default)
+						continue;
 					output = initialize_outputdata();
 					OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
+					OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
 					OBJ_SET(output->object,"canID",GINT_TO_POINTER(firmware->canID));
 					OBJ_SET(output->object,"offset", GINT_TO_POINTER(0));
 					OBJ_SET(output->object,"num_bytes", GINT_TO_POINTER(firmware->page_params[i]->length));
@@ -300,6 +306,7 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
 					(lastcount - ptr16[0] != 65535))
 			{
 				ms_reset_count++;
+				printf("MS@ rtvars reset detected, lastcount %i, current %i\n",lastcount,ptr16[0]);
 				gdk_beep();
 			}
 			else

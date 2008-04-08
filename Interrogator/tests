@@ -1,4 +1,4 @@
-# How this works:
+ How this works:
 # Note, as of 8/1/2004 this is highly experimental and likely to change
 # over the coming weeks
 #
@@ -34,7 +34,7 @@ major=1
 minor=1
 
 [interrogation_tests]
-total_tests=10
+total_tests=8
 
 [test_00]
 test_name=MS-I_Clock
@@ -79,12 +79,6 @@ test_arg_types=_CHAR_
 test_desc=ECU Signature
 
 [test_07]
-test_name=MS-II_RTVars
-actual_test=a,0,6
-test_arg_types=_CHAR_,_U08_,_U08_
-test_desc=MS-II RTVars
-
-[test_08]
 test_name=MS_Textrev
 actual_test=T
 test_arg_types=_CHAR_

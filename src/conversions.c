@@ -297,6 +297,9 @@ gfloat convert_after_upload(GtkWidget * widget)
 	offset = (gint)OBJ_GET(widget,"offset");
 	size = (DataSize)OBJ_GET(widget,"size");
 	canID = (gint)OBJ_GET(widget,"canID");
+	if (size == 0)
+		printf("BIG ASS PROBLEM, size undefined!\n");
+
 	if (OBJ_GET(widget,"multi_expr_keys"))
 	{
 		if (!OBJ_GET(widget,"ul_eval_hash"))
@@ -376,7 +379,9 @@ gfloat convert_after_upload(GtkWidget * widget)
 		tmpi = lookup_data(G_OBJECT(widget),get_ecu_data(canID,page,offset,size));
 	else
 	{
+		//printf("getting data at canid %i, page %i, offset %i, size %i\n",canID,page,offset,size);
 		tmpi = get_ecu_data(canID,page,offset,size);
+		//printf("value is %i\n",tmpi);
 	}
 
 

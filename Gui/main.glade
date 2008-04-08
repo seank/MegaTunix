@@ -1348,10 +1348,6 @@
 					      <property name="fill">True</property>
 					    </packing>
 					  </child>
-
-					  <child>
-					    <placeholder/>
-					  </child>
 					</widget>
 				      </child>
 
@@ -1385,10 +1381,6 @@
 				  <property name="expand">True</property>
 				  <property name="fill">True</property>
 				</packing>
-			      </child>
-
-			      <child>
-				<placeholder/>
 			      </child>
 			    </widget>
 			  </child>

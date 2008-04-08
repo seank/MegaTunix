@@ -249,6 +249,7 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 
 	if(cfg_read_string(cfgfile,"global","groups",&tmpbuf))
 	{
+		printf("loading groups \"%s\", on file \"%s\"\n",tmpbuf, cfgfile->filename);
 		groupnames = parse_keys(tmpbuf,&num_groups,",");
 		if (dbg_lvl & TABLOADER)
 			dbg_func(g_strdup_printf(__FILE__": load_groups()\n\tNumber of groups to load settings for is %i\n",num_groups));
@@ -343,13 +344,14 @@ GHashTable * load_groups(ConfigFile *cfgfile)
  a group. (saves from having to duplicate a large number of keys.values for 
  a big group of widgets) This function will set the necessary data on the 
  Gui object.
+ \param cfgfile
  \param widget (GtkWidget *) the widget to bind the data to
  \param groups (GHashTable *) the hashtable that holds the  group common data
  \param groupname (gchar *) textual name of the group to get the data for to
  be bound to the widget
  \returns the page of the group
  */
-gint bind_group_data(GtkWidget *widget, GHashTable *groups, gchar *groupname)
+gint bind_group_data(ConfigFile *cfg, GtkWidget *widget, GHashTable *groups, gchar *groupname)
 {
 	gint i = 0;
 	gint tmpi = 0;
@@ -360,7 +362,7 @@ gint bind_group_data(GtkWidget *widget, GHashTable *groups, gchar *groupname)
 	if (!group)
 	{
 		if (dbg_lvl & (TABLOADER|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": bind_group_data()\n\t group \"%s\" not found in hashtable\n",groupname));
+			dbg_func(g_strdup_printf(__FILE__": bind_group_data()\n\t group \"%s\" not found in file %s\n",groupname,cfg->filename));
 		return -1;
 	}
 	/* Copy data from the group object to the */
@@ -504,20 +506,21 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	/* Bind the data in the "defaults" group per tab to EVERY var in that
 	 * tab
 	 */
-	bind_group_data(widget,groups,"defaults");
+	bind_group_data(cfgfile,widget,groups,"defaults");
 
 	if (cfg_read_string(cfgfile,section,"group",&tmpbuf))
 	{
-		page = bind_group_data(widget,groups,tmpbuf);
+		page = bind_group_data(cfgfile,widget,groups,tmpbuf);
 		g_free(tmpbuf);
 	}
 
-	if ((!cfg_read_int(cfgfile,section,"page",&page)) && (page == -1))
+/*	if ((!cfg_read_int(cfgfile,section,"page",&page)) && (page == -1))
 	{
 		if (dbg_lvl & (TABLOADER|CRITICAL))
 			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
 
 	}
+	*/
 	/* Bind widgets to lists if they have the bind_to_list flag set...
 	*/
 	tmpbuf = NULL;
@@ -622,8 +625,11 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		 * to single data offset in the ECU
 		 */
 		if (page < 0)
+		{
 			if (dbg_lvl & (TABLOADER|CRITICAL))
 				dbg_func(g_strdup_printf(__FILE__": bind_data()\n\t Attempting to append widget beyond bounds of Firmware Parameters,  there is a bug with this datamap widget %s, at offset %i...\n\n",section,offset));
+			return;
+		}
 		if (page < firmware->total_pages)
 		{
 			if (offset >= firmware->page_params[page]->length)

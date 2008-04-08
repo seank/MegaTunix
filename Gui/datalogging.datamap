@@ -1,5 +1,4 @@
 # Datalogging datamap speccific to lal firmware variants
-
 [global]
 description=Object data map for Datalogging for all firmwares
 tab_name=_DataLogging
@@ -9,7 +8,7 @@ groups=defaults
 #----- Groups ----------------------------------------------------------------
 
 [defaults]
-eys=page,size
+keys=page,size
 key_types=_INT_,_ENUM_
 page=0
 size=_U08_

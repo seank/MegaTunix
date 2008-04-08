@@ -28,13 +28,13 @@
 
       <child>
 	<widget class="GtkVBox" id="vbox1">
+	  <property name="border_width">5</property>
 	  <property name="visible">True</property>
 	  <property name="homogeneous">False</property>
 	  <property name="spacing">0</property>
 
 	  <child>
 	    <widget class="GtkScrolledWindow" id="scrolledwindow1">
-	      <property name="border_width">5</property>
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
@@ -806,7 +806,6 @@
 
 	  <child>
 	    <widget class="GtkFrame" id="runtime_commands_frame">
-	      <property name="border_width">5</property>
 	      <property name="visible">True</property>
 	      <property name="label_xalign">0</property>
 	      <property name="label_yalign">0.5</property>

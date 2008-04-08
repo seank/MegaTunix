@@ -102,6 +102,7 @@ void process_rt_vars(void *incoming)
 		{
 			history = NULL;
 			special = NULL;
+			hash = NULL;
 			object=(GObject *)g_list_nth_data(list,j);
 			if (!GTK_IS_OBJECT(object))
 			{
@@ -109,20 +110,19 @@ void process_rt_vars(void *incoming)
 					dbg_func(g_strdup_printf(__FILE__": rtv_processor()\n\t Object bound to list at offset %i is invalid!!!!\n",i));
 				continue;
 			}
-			temp_dep = (gboolean)OBJ_GET(object,"temp_dep");
 			special = (gchar *)OBJ_GET(object,"special");
 			if (special)
 			{
 				tmpf = handle_special(object,special);
 				goto store_it;
 			}
+			temp_dep = (gboolean)OBJ_GET(object,"temp_dep");
 			hash = (GHashTable *)OBJ_GET(object,"multi_expr_hash");
 			if (hash)
 			{
 				tmpf = handle_multi_expression(object,raw_realtime,hash);
 				goto store_it;
 			}
-
 			evaluator = (void *)OBJ_GET(object,"ul_evaluator");
 			if (!evaluator)
 			{
@@ -163,9 +163,7 @@ void process_rt_vars(void *incoming)
 				if (dbg_lvl & COMPLEX_EXPR)
 					dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\tNo Lookuptable needed for var using offset %i\n",offset));
 				x = _get_sized_data((guint8 *)incoming,0,offset,size);
-				/*x = raw_realtime[offset];*/
 			}
-
 
 			if (dbg_lvl & COMPLEX_EXPR)
 				dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\texpression is %s\n",evaluator_get_string(evaluator)));
@@ -173,8 +171,10 @@ void process_rt_vars(void *incoming)
 store_it:
 			if (temp_dep)
 			{
+				if (dbg_lvl & COMPLEX_EXPR)
+					dbg_func(g_strdup_printf(__FILE__": process_rt_vars()\n\tvar at offset %i is temp dependant.\n",offset));
 				if (temp_units == CELSIUS)
-					result = (tmpf-32)*(5.0/9.0);
+					result = (tmpf-32.0)*(5.0/9.0);
 				else
 					result = tmpf;
 			}

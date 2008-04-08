@@ -143,7 +143,7 @@ void rescale_table(GtkWidget *widget)
 					gtk_spin_button_set_value(GTK_SPIN_BUTTON(scaler),100.0);
 					if (use_color)
 					{
-						color = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
+						color = get_colors_from_hue(((gfloat)value/(float)raw_upper)*360.0,0.33, 1.0);
 						gtk_widget_modify_base(GTK_WIDGET(tmpwidget),GTK_STATE_NORMAL,&color);
 					}
 
