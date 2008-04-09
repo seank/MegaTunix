@@ -956,7 +956,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 		case READ_RAW_MEMORY:
 			if (offline)
 				break;
-			io_cmd(firmware->raw_mem_command,(gpointer)obj_data);
+			//io_cmd(firmware->raw_mem_command,(gpointer)obj_data);
 			break;
 		case BURN_MS_FLASH:
 			io_cmd(firmware->burn_command,NULL);

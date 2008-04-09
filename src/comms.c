@@ -364,7 +364,7 @@ void write_data(Io_Message *message)
 	gint value = 0;
 	WriteMode mode = MTX_CMD_WRITE;
 	guint8 *data = NULL;
-	gint len = 0;
+	gint num_bytes = 0;
 	DBlock *block = NULL;
 	/*gint j = 0;
 	gchar * tmpbuf = NULL;*/
@@ -384,7 +384,7 @@ void write_data(Io_Message *message)
 		size = (DataSize)OBJ_GET(output->object,"size");
 		value = (gint)OBJ_GET(output->object,"value");
 		data = (guint8 *)OBJ_GET(output->object,"data");
-		len = (gint)OBJ_GET(output->object,"len");
+		num_bytes = (gint)OBJ_GET(output->object,"num_bytes");
 		mode = (WriteMode)OBJ_GET(output->object,"mode");
 
 		if ((firmware->multi_page ) && (output->need_page_change)) 
@@ -404,7 +404,7 @@ void write_data(Io_Message *message)
 				set_ecu_data(canID,page,offset,size,value);
 				break;
 			case MTX_CHUNK_WRITE:
-				store_new_block(canID,page,offset,data,len);
+				store_new_block(canID,page,offset,data,num_bytes);
 				break;
 			case MTX_CMD_WRITE:
 				break;
@@ -464,7 +464,7 @@ void write_data(Io_Message *message)
 		if (mode == MTX_SIMPLE_WRITE)
 			set_ecu_data(canID,page,offset,size,value);
 		else if (mode == MTX_CHUNK_WRITE)
-			store_new_block(canID,page,offset,data,len);
+			store_new_block(canID,page,offset,data,num_bytes);
 	}
 
 	g_static_mutex_unlock(&serio_mutex);

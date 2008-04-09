@@ -11,6 +11,7 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
+#include <3d_vetable.h>
 #include <comms.h>
 #include <comms_gui.h>
 #include <config.h>
@@ -214,6 +215,7 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 {
 	extern Firmware_Details *firmware;
 	OutputData *output = NULL;
+	guint8 *data = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": send_to_ecu()\n\t Sending canID %i, page %i, offset %i, value %i \n",canID,page,offset,value));
@@ -234,10 +236,46 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 	output = initialize_outputdata();
 	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
 	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
+	OBJ_SET(output->object,"truepgnum", GINT_TO_POINTER(firmware->page_params[page]->truepgnum));
 	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
 	OBJ_SET(output->object,"value", GINT_TO_POINTER(value));
 	OBJ_SET(output->object,"size", GINT_TO_POINTER(size));
+	OBJ_SET(output->object,"num_bytes", GINT_TO_POINTER(get_multiplier(size)));
 	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
+	/* SPECIAL case for MS2,  as it's write always assume a "datablock"
+	 * and it doesn't have a simple easy write api due to it's use of 
+	 * different sized vars,  hence the extra complexity.
+	 */
+	if (firmware->capabilities & MS2)
+	{
+		/* Get memory */
+		data = g_new0(guint8,get_multiplier(size));
+		switch (size)
+		{
+			case MTX_CHAR:
+			case MTX_U08:
+				data[0] = (guint8)value;
+				break;
+			case MTX_S08:
+				data[0] = (gint8)value;
+				break;
+			case MTX_S16:
+			case MTX_U16:
+				data[1] = (guint8)value;
+				data[0] = (guint8)((guint16)value >> 8);
+				break;
+			case MTX_S32:
+			case MTX_U32:
+				data[3] = (guint8)value;
+				data[2] = (guint8)((guint32)value >> 8);
+				data[1] = (guint8)((guint32)value >> 16);
+				data[0] = (guint8)((guint32)value >> 24);
+				break;
+			default:
+				break;
+		}
+		OBJ_SET(output->object,"data", (gpointer)data);
+	}
 	output->need_page_change = TRUE;
 	output->queue_update = queue_update;
 	io_cmd(firmware->write_command,output);
@@ -252,21 +290,23 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
  \param offset (gint) offset from the beginning of the page that this data
  refers to.
  \param len (gint) length of block to sent
- \param data (guint8) the block of data to be sent
+ \param data (guint8) the block of data to be sent which better damn well be
+ int ECU byte order if there is an endianness thing..
  a horrible stall when doing an ECU restore or batch load...
  */
-void chunk_write(gint canID, gint page, gint offset, gint len, guint8 * data)
+void chunk_write(gint canID, gint page, gint offset, gint num_bytes, guint8 * data)
 {
 	extern Firmware_Details *firmware;
 	OutputData *output = NULL;
 
 	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, len %i, data %p\n",page,offset,len,data));
+		dbg_func(g_strdup_printf(__FILE__": chunk_write()\n\t Sending page %i, offset %i, num_bytes %i, data %p\n",page,offset,num_bytes,data));
 	output = initialize_outputdata();
 	OBJ_SET(output->object,"canID", GINT_TO_POINTER(canID));
 	OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
+	OBJ_SET(output->object,"truepgnum", GINT_TO_POINTER(firmware->page_params[page]->truepgnum));
 	OBJ_SET(output->object,"offset", GINT_TO_POINTER(offset));
-	OBJ_SET(output->object,"len", GINT_TO_POINTER(len));
+	OBJ_SET(output->object,"num_bytes", GINT_TO_POINTER(num_bytes));
 	OBJ_SET(output->object,"data", (gpointer)data);
 	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CHUNK_WRITE));
 	output->need_page_change = TRUE;
@@ -492,20 +532,20 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 			case MTX_U08:
 			case MTX_S08:
 			case MTX_CHAR:
-//				printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+				printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-//				printf("value %i\n",v);
+				printf("value %i\n",v);
 				block->data = g_new0(guint8,1);
 				block->data[0] = (guint8)v;
 				block->len = 1;
 				break;
 			case MTX_U16:
 			case MTX_S16:
-//				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-//				printf("value %i\n",v);
+				printf("value %i\n",v);
 				block->data = g_new0(guint8,2);
 				block->data[0] = (v & 0xff00) >> 8;
 				block->data[1] = (v & 0x00ff);
@@ -513,10 +553,10 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 				break;
 			case MTX_U32:
 			case MTX_S32:
-//				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-//				printf("value %i\n",v);
+				printf("value %i\n",v);
 				block->data = g_new0(guint8,4);
 				block->data[0] = (v & 0xff000000) >> 24;
 				block->data[1] = (v & 0xff0000) >> 16;
@@ -529,7 +569,7 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 				if (!arg->internal_name)
 					printf("ERROR, MTX_UNDEF, donno what to do!!\n");
 				sent_data = (guint8 *)OBJ_GET(output->object,arg->internal_name);
-				len = (gint)OBJ_GET(output->object,"len");
+				len = (gint)OBJ_GET(output->object,"num_bytes");
 				block->data = g_memdup(sent_data,len);
 				block->len = len;
 		}
