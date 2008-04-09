@@ -643,6 +643,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	gboolean is_float = FALSE;
 	gboolean use_color = FALSE;
 	DataSize size = 0;
+	gint upper = 0;
 	GdkColor color;
 	extern Firmware_Details *firmware;
 
@@ -667,6 +668,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 		base = (gint)OBJ_GET(widget,"base");
 	precision = (gint)OBJ_GET(widget,"precision");
 	is_float = (gboolean)OBJ_GET(widget,"is_float");
+	upper = (gint)OBJ_GET(widget,"raw_upper");
 	use_color = (gboolean)OBJ_GET(widget,"use_color");
 
 	text = gtk_editable_get_chars(GTK_EDITABLE(widget),0,-1);
@@ -839,7 +841,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 
 	if (use_color)
 	{
-		color = get_colors_from_hue(((gfloat)dload_val/256.0)*360.0,0.33, 1.0);
+		color = get_colors_from_hue(((gfloat)dload_val/upper)*360.0,0.33, 1.0);
 		gtk_widget_modify_base(GTK_WIDGET(widget),GTK_STATE_NORMAL,&color);	
 	}
 
@@ -1605,6 +1607,7 @@ void update_widget(gpointer object, gpointer user_data)
 	gint precision = -1;
 	gint spconfig_offset = 0;
 	gint oddfire_bit_offset = 0;
+	gint upper = 0;
 	gboolean cur_state = FALSE;
 	gboolean new_state = FALSE;
 	gint algo = -0;
@@ -1656,6 +1659,7 @@ void update_widget(gpointer object, gpointer user_data)
 	offset = (gint)OBJ_GET(widget,"offset");
 	canID = (gint)OBJ_GET(widget,"canID");
 	size = (DataSize)OBJ_GET(widget,"size");
+	upper = (gint)OBJ_GET(widget,"raw_upper");
 	bitval = (gint)OBJ_GET(widget,"bitval");
 	bitshift = (gint)OBJ_GET(widget,"bitshift");
 	bitmask = (gint)OBJ_GET(widget,"bitmask");
@@ -1790,7 +1794,7 @@ void update_widget(gpointer object, gpointer user_data)
 
 			if ((use_color) && (update_color))
 			{
-				color = get_colors_from_hue(((gfloat)get_ecu_data(canID,page,offset,size)/256.0)*360.0,0.33, 1.0);
+				color = get_colors_from_hue(((gfloat)get_ecu_data(canID,page,offset,size)/upper)*360.0,0.33, 1.0);
 				gtk_widget_modify_base(GTK_WIDGET(widget),GTK_STATE_NORMAL,&color);	
 			}
 			if (update_color)
@@ -1851,7 +1855,7 @@ void update_widget(gpointer object, gpointer user_data)
 				gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget),value);
 				if (use_color)
 				{
-					color = get_colors_from_hue(((gfloat)get_ecu_data(canID,page,offset,size)/256.0)*360.0,0.33, 1.0);
+					color = get_colors_from_hue(((gfloat)get_ecu_data(canID,page,offset,size)/upper)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(widget),GTK_STATE_NORMAL,&color);	
 				}
 			}

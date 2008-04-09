@@ -249,7 +249,6 @@ GHashTable * load_groups(ConfigFile *cfgfile)
 
 	if(cfg_read_string(cfgfile,"global","groups",&tmpbuf))
 	{
-		printf("loading groups \"%s\", on file \"%s\"\n",tmpbuf, cfgfile->filename);
 		groupnames = parse_keys(tmpbuf,&num_groups,",");
 		if (dbg_lvl & TABLOADER)
 			dbg_func(g_strdup_printf(__FILE__": load_groups()\n\tNumber of groups to load settings for is %i\n",num_groups));

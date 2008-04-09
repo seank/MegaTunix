@@ -695,7 +695,8 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
 				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"y_bincount\" variable not found in interrogation profile, ERROR\n"));
 		}
-		if(cfg_read_boolean(cfgfile,section,"x_multi_source",&firmware->table_params[i]->x_multi_source))
+		cfg_read_boolean(cfgfile,section,"x_multi_source",&firmware->table_params[i]->x_multi_source);
+		if (firmware->table_params[i]->x_multi_source)
 		{
 			/* READ multi-source stuff, but do NOT create
 			 * evaluators,  we do that in the final copy
@@ -755,7 +756,8 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t\"x_precision\" variable not found in interrogation profile for table %i, ERROR\n",i));
 			}
 		}
-		if(cfg_read_boolean(cfgfile,section,"y_multi_source",&firmware->table_params[i]->y_multi_source))
+		cfg_read_boolean(cfgfile,section,"y_multi_source",&firmware->table_params[i]->y_multi_source);
+		if (firmware->table_params[i]->y_multi_source)
 		{
 			/* READ multi-source stuff, but do NOT create
 			 * evaluators,  we do that in the final copy
@@ -816,7 +818,8 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 					dbg_func(g_strdup_printf(__FILE__": load_profile_details()\n\t\"y_precision\" variable not found in interrogation profile for table %i, ERROR\n",i));
 			}
 		}
-		if(cfg_read_boolean(cfgfile,section,"z_multi_source",&firmware->table_params[i]->z_multi_source))
+		cfg_read_boolean(cfgfile,section,"z_multi_source",&firmware->table_params[i]->z_multi_source);
+		if(firmware->table_params[i]->z_multi_source)
 		{
 			/* READ multi-source stuff, but do NOT create
 			 * evaluators,  we do that in the final copy

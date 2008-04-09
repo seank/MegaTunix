@@ -294,7 +294,7 @@ void reqfuel_rescale_table(GtkWidget *widget)
 						gtk_widget_modify_text(tmpwidget,GTK_STATE_NORMAL,&black);
 						if (use_color)
 						{
-							color = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
+							color = get_colors_from_hue(((gfloat)value/raw_upper)*360.0,0.33, 1.0);
 							gtk_widget_modify_base(GTK_WIDGET(tmpwidget),GTK_STATE_NORMAL,&color);
 						}
 
@@ -310,8 +310,6 @@ void reqfuel_rescale_table(GtkWidget *widget)
 	color_changed = TRUE;
 	forced_update = TRUE;
 }
-
-
 
 
 void draw_ve_marker()
@@ -334,6 +332,7 @@ void draw_ve_marker()
 	DataSize size = 0;
 	gint z_bin[4] = {0,0,0,0};
 	gint bin[4] = {0,0,0,0};
+	gint mult = 0;
 	gfloat left_w = 0.0;
 	gfloat right_w = 0.0;
 	gfloat top_w = 0.0;
@@ -398,7 +397,6 @@ void draw_ve_marker()
 
 	if (firmware->table_params[table]->x_multi_source)
 	{
-		printf("x_multi_source for table %i\n",table);
 		hash = firmware->table_params[table]->x_multi_hash;
 		key = firmware->table_params[table]->x_source_key;
 		hash_key = g_hash_table_lookup(sources_hash,key);
@@ -464,11 +462,17 @@ void draw_ve_marker()
 		lookup_current_value(firmware->table_params[table]->y_source,&y_source);
 	}
 	/* Find bin corresponding to current rpm  */
+	page = firmware->table_params[table]->x_page;
+	base = firmware->table_params[table]->x_base;
+	size = firmware->table_params[table]->x_size;
+	if ((size == MTX_U16) || (size == MTX_S16))
+		mult = 2;
+	else if ((size == MTX_U32) || (size == MTX_S32))
+		mult = 4;
+	else
+		mult = 1;
 	for (i=0;i<firmware->table_params[table]->x_bincount-1;i++)
 	{
-		page = firmware->table_params[table]->x_page;
-		base = firmware->table_params[table]->x_base;
-		size = firmware->table_params[table]->x_size;
 		if (evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base,size)) >= x_source)
 		{
 			bin[0] = -1;
@@ -477,8 +481,8 @@ void draw_ve_marker()
 			right_w = 1;
 			break;
 		}
-		left = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+i,size));
-		right = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+i+1,size));
+		left = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+(i*mult),size));
+		right = evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base+((i+1)*mult),size));
 
 		if ((x_source > left) && (x_source <= right))
 		{
@@ -500,11 +504,17 @@ void draw_ve_marker()
 	}
 	/*printf("left bin %i, right bin %i, left_weight %f, right_weight %f\n",bin[0],bin[1],left_w,right_w);*/
 
+	page = firmware->table_params[table]->y_page;
+	base = firmware->table_params[table]->y_base;
+	size = firmware->table_params[table]->y_size;
+	if ((size == MTX_U16) || (size == MTX_S16))
+		mult = 2;
+	else if ((size == MTX_U32) || (size == MTX_S32))
+		mult = 4;
+	else
+		mult = 1;
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
-		page = firmware->table_params[table]->y_page;
-		base = firmware->table_params[table]->y_base;
-		size = firmware->table_params[table]->y_size;
 		if (evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base,size)) >= y_source)
 		{
 			bin[2] = -1;
@@ -513,8 +523,8 @@ void draw_ve_marker()
 			bottom_w = 0;
 			break;
 		}
-		bottom = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+i,size));
-		top = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+i+1,size));
+		bottom = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+(i*mult),size));
+		top = evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base+((i+1)*mult),size));
 
 		if ((y_source > bottom) && (y_source <= top))
 		{
@@ -582,7 +592,13 @@ redraw:
 				if (color_changed)
 				{
 					size = firmware->table_params[table]->z_size;
-					value = get_ecu_data(canID,firmware->table_params[table]->z_page,firmware->table_params[table]->z_base+z_bin[i],size);
+					if ((size == MTX_U16) || (size == MTX_S16))
+						mult = 2;
+					else if ((size == MTX_U32) || (size == MTX_S32))
+						mult = 4;
+					else
+						mult = 1;
+					value = get_ecu_data(canID,firmware->table_params[table]->z_page,firmware->table_params[table]->z_base+(z_bin[i]*mult),size);
 					newcolor = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(last_widgets[table][last[table][i]]),GTK_STATE_NORMAL,&newcolor);
 				}
