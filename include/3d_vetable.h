@@ -71,6 +71,9 @@ struct _Ve_View_3D
 	gint x_precision;
 	gint y_precision;
 	gint z_precision;
+	gint x_mult;
+	gint y_mult;
+	gint z_mult;
 	/* Simple sources*/
 	gchar *x_source;
 	gchar *x_suffix;
@@ -167,6 +170,7 @@ void free_current_values(Cur_Vals *);
 gboolean set_tracking_focus(GtkWidget *, gpointer );
 gboolean set_scaling_mode(GtkWidget *, gpointer );
 gfloat get_fixed_pos(Ve_View_3D *, void *,gfloat, Axis);
+gint get_multiplier(DataSize );
 
 /* Prototypes */
 

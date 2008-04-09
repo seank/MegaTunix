@@ -165,15 +165,18 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	ve_view->z_page = firmware->table_params[table_num]->z_page;
 	ve_view->z_base = firmware->table_params[table_num]->z_base;
 	ve_view->z_size = firmware->table_params[table_num]->z_size;
+	ve_view->z_mult = get_multiplier(ve_view->z_size);
 
 	ve_view->x_page = firmware->table_params[table_num]->x_page;
 	ve_view->x_base = firmware->table_params[table_num]->x_base;
 	ve_view->x_size = firmware->table_params[table_num]->x_size;
 	ve_view->x_bincount = firmware->table_params[table_num]->x_bincount;
+	ve_view->x_mult = get_multiplier(ve_view->x_size);
 
 	ve_view->y_page = firmware->table_params[table_num]->y_page;
 	ve_view->y_base = firmware->table_params[table_num]->y_base;
 	ve_view->y_size = firmware->table_params[table_num]->y_size;
+	ve_view->y_mult = get_multiplier(ve_view->y_size);
 	ve_view->y_bincount = firmware->table_params[table_num]->y_bincount; 
 
 	ve_view->table_name = 
@@ -781,6 +784,9 @@ void ve3d_calculate_scaling(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	gint x_base = 0;
 	gint y_base = 0;
 	gint z_base = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
+	gint z_mult = 0;
 	gint canID = firmware->canID;
 	gfloat min = 0.0;
 	gfloat max = 0.0;
@@ -797,12 +803,16 @@ void ve3d_calculate_scaling(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	y_page = ve_view->y_page;
 	z_page = ve_view->z_page;
 
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+	z_mult = ve_view->z_mult;
+
 	min = 65535;
 	max = 0;
 
 	for (i=0;i<ve_view->x_bincount;i++) 
 	{
-		tmpf = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+i,ve_view->x_size));
+		tmpf = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(i*x_mult),ve_view->x_size));
 		if (tmpf > max) 
 			max = tmpf;
 		if (tmpf < min) 
@@ -815,7 +825,7 @@ void ve3d_calculate_scaling(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	max = 0;
 	for (i=0;i<ve_view->y_bincount;i++) 
 	{
-		tmpf = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+i,ve_view->y_size));
+		tmpf = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(i*y_mult),ve_view->y_size));
 		if (tmpf > max) 
 			max = tmpf;
 		if (tmpf < min) 
@@ -829,7 +839,7 @@ void ve3d_calculate_scaling(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 	for (i=0;i<(ve_view->x_bincount*ve_view->y_bincount);i++) 
 	{
-		tmpf = evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+i,ve_view->z_size));
+		tmpf = evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(i*z_mult),ve_view->z_size));
 		if (tmpf > max) 
 			max = tmpf;
 		if (tmpf < min) 
@@ -852,6 +862,15 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	GdkColor color;
 	gint x = 0;
 	gint y = 0;
+	gint x_page = 0;
+	gint y_page = 0;
+	gint z_page = 0;
+	gint x_base = 0;
+	gint y_base = 0;
+	gint z_base = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
+	gint z_mult = 0;
 	gint canID = firmware->canID;
 	gfloat tmpf1 = 0.0;
 	gfloat tmpf2 = 0.0;
@@ -861,6 +880,18 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_draw_ve_grid() \n"));
+
+	x_base = ve_view->x_base;
+	y_base = ve_view->y_base;
+	z_base = ve_view->z_base;
+
+	x_page = ve_view->x_page;
+	y_page = ve_view->y_page;
+	z_page = ve_view->z_page;
+
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+	z_mult = ve_view->z_mult;
 
 
 	glColor3f(1.0, 1.0, 1.0);
@@ -878,17 +909,17 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 			{
 				tmpf1 = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
 				tmpf2 = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
-				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,(z_base+((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 			}
 			else
 			{
-				tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+x,ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
 
-				tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+y,ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
 
-				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 			}
-			color = get_colors_from_hue(((gfloat)get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+			color = get_colors_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((y*ve_view->y_bincount)+x)*z_mult,ve_view->z_size)/256.0)*360.0,0.33, 1.0);
 			glColor3us (color.red, color.green, color.blue);
 			glVertex3f(tmpf1,tmpf2,tmpf3);
 
@@ -906,18 +937,19 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 			{
 				tmpf1 = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
 				tmpf2 = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
-				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 			}
 			else
 			{
-				tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+x,ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
 
-				tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+y,ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
 
-				tmpf3 = ((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale);
+				tmpf3 = ((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale);
 			}
 
-			color = get_colors_from_hue(((gfloat)get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(y*ve_view->y_bincount)+x,ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+			/* FIXME!! /256.0 is incorrect for anything other than 8 bit unsigned tables!! */
+			color = get_colors_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
 			glColor3us (color.red, color.green, color.blue);
 			glVertex3f(tmpf1,tmpf2,tmpf3);
 		}
@@ -1165,6 +1197,12 @@ void ve3d_draw_axis(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	gint canID = firmware->canID;
 	gint x_bincount = 0;
 	gint y_bincount = 0;
+	gint x_base = 0;
+	gint y_base = 0;
+	gint x_page = 0;
+	gint y_page = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
 	extern GHashTable *dynamic_widgets;
 
 	if (dbg_lvl & OPENGL)
@@ -1172,6 +1210,16 @@ void ve3d_draw_axis(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 	x_bincount = ve_view->x_bincount;
 	y_bincount = ve_view->y_bincount;
+
+	x_base = ve_view->x_base;
+	y_base = ve_view->y_base;
+
+	x_page = ve_view->x_page;
+	y_page = ve_view->y_page;
+
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+
 
 	/* Set line thickness and color */
 	glLineWidth(1.0);
@@ -1196,7 +1244,7 @@ void ve3d_draw_axis(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 		if (ve_view->fixed_scale)
 			tmpf2 = (gfloat)i/((gfloat)y_bincount-1.0);
 		else
-			tmpf2 = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+i,ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
+			tmpf2 = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(i*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
 
 		glVertex3f(1,tmpf2,0);
 		glVertex3f(1,tmpf2,1);
@@ -1211,7 +1259,7 @@ void ve3d_draw_axis(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 		if (ve_view->fixed_scale)
 			tmpf1 = (gfloat)i/((gfloat)x_bincount-1.0);
 		else
-			tmpf1 = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+i,ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
+			tmpf1 = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(i*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
 		glVertex3f(tmpf1,1,0);
 
 		glVertex3f(tmpf1,1,1);
@@ -1346,6 +1394,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gint y_base = 0;
 	gint x_base = 0;
 	gint z_base = 0;
+	gint z_mult = 0;
 	DataSize z_size = 0;
 	gint dload_val = 0;
 	gint canID = 0;
@@ -1370,6 +1419,8 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	x_page = ve_view->x_page;
 	y_page = ve_view->y_page;
 	z_page = ve_view->z_page;
+
+	z_mult = ve_view->z_mult;
 
 	z_size = ve_view->z_size;
 
@@ -1418,7 +1469,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"Page Up\"\n"));
 
-			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
+			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
 			if (get_ecu_data(canID,z_page,offset,z_size) <= 245)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
@@ -1434,7 +1485,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"PLUS\"\n"));
 
-			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
+			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
 			if (get_ecu_data(canID,z_page,offset,z_size) < 255)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
@@ -1445,7 +1496,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"Page Down\"\n"));
 
-			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
+			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
 			if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
@@ -1461,7 +1512,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"MINUS\"\n"));
 
-			offset = z_base+(ve_view->active_y*y_bincount)+ve_view->active_x;
+			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
 			if (get_ecu_data(canID,z_page,offset,z_size) > 0)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
@@ -1547,6 +1598,9 @@ Ve_View_3D * initialize_ve3d_view()
 	ve_view->x_base = 0;
 	ve_view->y_base = 0;
 	ve_view->z_base = 0;
+	ve_view->x_mult = 0;
+	ve_view->y_mult = 0;
+	ve_view->z_mult = 0;
 	ve_view->x_bincount = 0;
 	ve_view->y_bincount = 0;
 	ve_view->table_name = NULL;
@@ -1625,6 +1679,11 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	gint table = 0;
 	gint page = 0;
 	gint base = 0;
+	DataSize size = 0;
+	gint mult = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
+	gint z_mult = 0;
 	gint bin[4] = {0,0,0,0};
 	gfloat left_w = 0.0;
 	gfloat right_w = 0.0;
@@ -1639,12 +1698,17 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	gint canID = firmware->canID;
 
 	table = ve_view->table_num;
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+	z_mult = ve_view->z_mult;
 
 	/* Find bin corresponding to current rpm  */
+	page = firmware->table_params[table]->x_page;
+	base = firmware->table_params[table]->x_base;
+	size = firmware->table_params[table]->x_size;
+	mult = get_multiplier(size);
 	for (i=0;i<firmware->table_params[table]->x_bincount-1;i++)
 	{
-		page = firmware->table_params[table]->x_page;
-		base = firmware->table_params[table]->x_base;
 		if (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base,ve_view->x_size)) >= cur_val->x_val)
 		{
 			bin[0] = -1;
@@ -1653,8 +1717,8 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 			right_w = 1;
 			break;
 		}
-		left = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base+i,ve_view->x_size));
-		right = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base+i+1,ve_view->x_size));
+		left = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base+(i*mult),ve_view->x_size));
+		right = evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base+((i+1)*mult),ve_view->x_size));
 
 		if ((cur_val->x_val > left) && (cur_val->x_val <= right))
 		{
@@ -1675,10 +1739,12 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 		}
 	}
 
+	page = firmware->table_params[table]->y_page;
+	base = firmware->table_params[table]->y_base;
+	size = firmware->table_params[table]->y_size;
+	mult = get_multiplier(size);
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
-		page = firmware->table_params[table]->y_page;
-		base = firmware->table_params[table]->y_base;
 		if (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base,ve_view->y_size)) >= cur_val->y_val)
 		{
 			bin[2] = -1;
@@ -1687,8 +1753,8 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 			bottom_w = 1;
 			break;
 		}
-		bottom = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base+i,ve_view->y_size));
-		top = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base+i+1,ve_view->y_size));
+		bottom = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base+(i*mult),ve_view->y_size));
+		top = evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base+((i+1)*mult),ve_view->y_size));
 
 		if ((cur_val->y_val > bottom) && (cur_val->y_val <= top))
 		{
@@ -1734,10 +1800,10 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	}
 	else
 	{
-		tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+bin[0],ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale); 
-		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+bin[2],ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
+		tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+(bin[0]*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale); 
+		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(bin[2]*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
 	}
-	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(bin[2]*ve_view->y_bincount)+bin[0],ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((bin[2]*ve_view->y_bincount)+bin[0])*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 	glVertex3f(tmpf1,tmpf2,tmpf3);
 	if ((ve_view->tracking_focus) && (heaviest == 0))
 	{
@@ -1751,9 +1817,9 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	if (ve_view->fixed_scale)
 		tmpf2 = (gfloat)bin[3]/((gfloat)ve_view->y_bincount-1.0);
 	else
-		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+bin[3],ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
+		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(bin[3]*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
 
-	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(bin[3]*ve_view->y_bincount)+bin[0],ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((bin[3]*ve_view->y_bincount)+bin[0])*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 	glVertex3f(tmpf1,tmpf2,tmpf3);
 	if ((ve_view->tracking_focus) && (heaviest == 1))
 	{
@@ -1771,10 +1837,10 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	}
 	else
 	{
-		tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+bin[1],ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale); 
-		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+bin[2],ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
+		tmpf1 = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+(bin[1]*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale); 
+		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(bin[2]*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
 	}
-	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(bin[2]*ve_view->y_bincount)+bin[1],ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((bin[2]*ve_view->y_bincount)+bin[1])*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 	glVertex3f(tmpf1,tmpf2,tmpf3);
 	if ((ve_view->tracking_focus) && (heaviest == 2))
 	{
@@ -1788,8 +1854,8 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	if (ve_view->fixed_scale)
 		tmpf2 = (gfloat)bin[3]/((gfloat)ve_view->y_bincount-1.0);
 	else
-		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+bin[3],ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
-	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(bin[3]*ve_view->y_bincount)+bin[1],ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+		tmpf2 = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(bin[3]*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale); 
+	tmpf3 = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((bin[3]*ve_view->y_bincount)+bin[1])*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
 	glVertex3f(tmpf1,tmpf2,tmpf3);
 	if ((ve_view->tracking_focus) && (heaviest == 3))
 	{
@@ -1815,6 +1881,9 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 	gfloat x_val = 0.0;
 	gfloat y_val = 0.0;
 	gfloat z_val = 0.0;
+	gint x_mult = 0;
+	gint y_mult = 0;
+	gint z_mult = 0;
 	gfloat tmp = 0.0;
 	extern gint *algorithm;
 	extern GHashTable *sources_hash;
@@ -1827,6 +1896,9 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 	cur_val = g_new0(Cur_Vals, 1);
 	gint canID = firmware->canID;
 
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+	z_mult = ve_view->z_mult;
 	/* X */
 	if (ve_view->x_multi_source)
 	{
@@ -1856,7 +1928,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 		cur_val->x_eval = multi->evaluator;
 
 		/* Edit value */
-		cur_val->x_edit_value = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+ve_view->active_x,ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
+		cur_val->x_edit_value = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+(ve_view->active_x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
 		tmp = (cur_val->x_edit_value/ve_view->x_scale)+ve_view->x_trans;
 		cur_val->x_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,multi->precision,multi->suffix);
 
@@ -1869,7 +1941,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 	{
 		cur_val->x_eval = ve_view->x_eval;
 		/* Edit value */
-		cur_val->x_edit_value = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+ve_view->active_x,ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
+		cur_val->x_edit_value = (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,ve_view->x_page,ve_view->x_base+(ve_view->active_x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale;
 		tmp = (cur_val->x_edit_value/ve_view->x_scale)+ve_view->x_trans;
 		cur_val->x_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,ve_view->x_precision,ve_view->x_suffix);
 		/* Runtime value */
@@ -1906,7 +1978,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 			printf("multi is null!!\n");
 		cur_val->y_eval = multi->evaluator;
 		/* Edit value */
-		cur_val->y_edit_value = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+ve_view->active_y,ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
+		cur_val->y_edit_value = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(ve_view->active_y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
 		tmp = (cur_val->y_edit_value/ve_view->y_scale)+ve_view->y_trans;
 		cur_val->y_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,multi->precision,multi->suffix);
 		/* runtime value */
@@ -1918,7 +1990,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 	{
 		cur_val->y_eval = ve_view->y_eval;
 		/* Edit value */
-		cur_val->y_edit_value = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+ve_view->active_y,ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
+		cur_val->y_edit_value = (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,ve_view->y_page,ve_view->y_base+(ve_view->active_y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale;
 		tmp = (cur_val->y_edit_value/ve_view->y_scale)+ve_view->y_trans;
 		cur_val->y_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,ve_view->y_precision,ve_view->y_suffix);
 		/* runtime value */
@@ -1955,7 +2027,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 			printf("multi is null!!\n");
 		cur_val->z_eval = multi->evaluator;
 		/* Edit value */
-		cur_val->z_edit_value = (evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(ve_view->active_y*ve_view->y_bincount)+ve_view->active_x,ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale;
+		cur_val->z_edit_value = (evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((ve_view->active_y*ve_view->y_bincount)+ve_view->active_x)*z_mult),ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale;
 		tmp = (cur_val->z_edit_value/ve_view->z_scale)+ve_view->z_trans;
 		cur_val->z_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,multi->precision,multi->suffix);
 		/* runtime value */
@@ -1967,7 +2039,7 @@ Cur_Vals * get_current_values(Ve_View_3D *ve_view)
 	{
 		cur_val->z_eval = ve_view->z_eval;
 		/* Edit value */
-		cur_val->z_edit_value = (evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(ve_view->active_y*ve_view->y_bincount)+ve_view->active_x,ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale;
+		cur_val->z_edit_value = (evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,ve_view->z_page,ve_view->z_base+(((ve_view->active_y*ve_view->y_bincount)+ve_view->active_x)*z_mult),ve_view->z_size))-ve_view->z_trans)*ve_view->z_scale;
 		tmp = (cur_val->z_edit_value/ve_view->z_scale)+ve_view->z_trans;
 		cur_val->z_edit_text = g_strdup_printf("%1$.*2$f %3$s",tmp,ve_view->z_precision,ve_view->z_suffix);
 		/* runtime value */
@@ -2040,6 +2112,7 @@ gfloat get_fixed_pos(Ve_View_3D *ve_view,void * eval,gfloat value,Axis axis)
 	gint page = 0;
 	gint count = 0;
 	gint base = 0;
+	gint mult = 0;
 	extern Firmware_Details *firmware;
 	DataSize size = 0;
 	gint canID = firmware->canID;
@@ -2052,18 +2125,21 @@ gfloat get_fixed_pos(Ve_View_3D *ve_view,void * eval,gfloat value,Axis axis)
 			count = ve_view->x_bincount;
 			base = ve_view->x_base;
 			size = ve_view->x_size;
+			mult = ve_view->x_mult;
 			break;
 		case _Y_:
 			page = ve_view->y_page;
 			count = ve_view->y_bincount;
 			base = ve_view->y_base;
 			size = ve_view->y_size;
+			mult = ve_view->y_mult;
 			break;
 		case _Z_:
 			page = ve_view->z_page;
 			count = ve_view->x_bincount*ve_view->y_bincount;
 			base = ve_view->z_base;
 			size = ve_view->z_size;
+			mult = ve_view->z_mult;
 			break;
 		default:
 			printf(__FILE__": Error, defautl case, should NOT have ran\n");
@@ -2072,8 +2148,8 @@ gfloat get_fixed_pos(Ve_View_3D *ve_view,void * eval,gfloat value,Axis axis)
 	}
 	for (i=0;i<count-1;i++)
 	{
-		tmp1 = evaluator_evaluate_x(eval,get_ecu_data(canID,page,base+i,size));
-		tmp2 = evaluator_evaluate_x(eval,get_ecu_data(canID,page,base+i+1,size));
+		tmp1 = evaluator_evaluate_x(eval,get_ecu_data(canID,page,base+(i*mult),size));
+		tmp2 = evaluator_evaluate_x(eval,get_ecu_data(canID,page,base+((i+1)*mult),size));
 		if ((tmp1 <= value) && (tmp2 >= value))
 			break;
 	}
@@ -2084,3 +2160,28 @@ gfloat get_fixed_pos(Ve_View_3D *ve_view,void * eval,gfloat value,Axis axis)
 
 }
 
+
+gint get_multiplier(DataSize size)
+{
+	gint mult = 0;
+
+	switch (size)
+	{
+		case MTX_CHAR:
+		case MTX_U08:
+		case MTX_S08:
+			mult = 1;
+			break;
+		case MTX_U16:
+		case MTX_S16:
+			mult = 2;
+			break;
+		case MTX_U32:
+		case MTX_S32:
+			mult = 2;
+			break;
+		default:
+			break;
+	}
+	return mult;
+}
