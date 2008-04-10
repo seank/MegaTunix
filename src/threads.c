@@ -61,12 +61,10 @@ void io_cmd(gchar *io_cmd_name, void *data)
 {
 	Io_Message *message = NULL;
 	GHashTable *commands_hash = NULL;
-	GHashTable *args_hash = NULL;
 	Command *command = NULL;
 	extern GAsyncQueue *io_queue;
 
 	commands_hash = OBJ_GET(global_data,"commands_hash");
-	args_hash = OBJ_GET(global_data,"arguments_hash");
 
 	/* Fringe case for FUNC_CALL helpers that need to trigger 
 	 * post_functions AFTER all their subhandlers have ran.  We

@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <firmware.h>
 #include <gui_handlers.h>
+#include <init.h>
 #include <notifications.h>
 #include <serialio.h>
 #include <stdlib.h>
@@ -208,55 +209,25 @@ EXPORT void update_write_status(void *data)
  */
 void burn_ms1_ecu_flash()
 {
-	gint res = 0;
-	gint i = 0;
-	gchar * err_text = NULL;
+	Io_Message *message = NULL;
+	Command *command = NULL;
+	GHashTable *commands_hash = NULL;
 	extern Firmware_Details * firmware;
-	extern Serial_Params *serial_params;
 	extern volatile gboolean offline;
-	extern gboolean connected;
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
-
-	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&mutex);
+	extern GAsyncQueue *pf_dispatch_queue;
 
 	if (offline)
-		goto copyover;
-
-	if (!connected)
-	{
-		if (dbg_lvl & (SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup(__FILE__": burn_ms_flahs()\n\t NOT connected, can't burn flash, returning immediately\n"));
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
 		return;
-	}
-	g_static_mutex_unlock(&serio_mutex);
-	flush_serial(serial_params->fd, TCIOFLUSH);
-	g_static_mutex_lock(&serio_mutex);
-	/* THIS IS BROKEN!!!
-	res = write (serial_params->fd,firmware->burn_command,1);  /* Send Burn command */
-	if (res != 1)
-	{
-		err_text = (gchar *)g_strerror(errno);
-		if (dbg_lvl & (SERIAL_WR|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": burn_ecu_flash()\n\tBurn Failure, ERROR \"%s\"\n",err_text));
-	}
-	g_usleep(250000);
+	commands_hash = OBJ_GET(global_data,"commands_hash");
+	command = g_hash_table_lookup(commands_hash,firmware->burn_command);
+	message = initialize_io_message();
+	message->command = command;
+	build_output_string(message,command,NULL);
+	write_data(message);
+	g_async_queue_ref(pf_dispatch_queue);
+	g_async_queue_push(pf_dispatch_queue,(gpointer)message);
+	g_async_queue_unref(pf_dispatch_queue);
 
-	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup(__FILE__": burn_ecu_flash()\n\tBurn to Flash\n"));
-	g_static_mutex_unlock(&serio_mutex);
-	flush_serial(serial_params->fd, TCIOFLUSH);
-	g_static_mutex_lock(&serio_mutex);
-copyover:
-	/* sync temp buffer with current burned settings */
-	for (i=0;i<firmware->total_pages;i++)
-		backup_current_data(firmware->canID,i);
-
-	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&mutex);
-	return;
 }
 
 
@@ -373,10 +344,10 @@ void write_data(Io_Message *message)
 	extern Serial_Params *serial_params;
 	extern Firmware_Details *firmware;
 	extern volatile gboolean offline;
-	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
+	//static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
-	g_static_mutex_lock(&serio_mutex);
-	g_static_mutex_lock(&mutex);
+	//g_static_mutex_lock(&serio_mutex);
+	//g_static_mutex_lock(&mutex);
 	
 	if (output)
 	{
@@ -393,9 +364,9 @@ void write_data(Io_Message *message)
 				(output->need_page_change) && 
 				(!(firmware->capabilities & MS2))) 
 		{
-			g_static_mutex_unlock(&serio_mutex);
+//			g_static_mutex_unlock(&serio_mutex);
 			set_ms_page(firmware->page_params[page]->truepgnum);
-			g_static_mutex_lock(&serio_mutex);
+//			g_static_mutex_lock(&serio_mutex);
 		}
 	}
 
@@ -413,14 +384,14 @@ void write_data(Io_Message *message)
 			case MTX_CMD_WRITE:
 				break;
 		}
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
+//		g_static_mutex_unlock(&serio_mutex);
+//		g_static_mutex_unlock(&mutex);
 		return;		/* can't write anything if offline */
 	}
 	if (!connected)
 	{
-		g_static_mutex_unlock(&serio_mutex);
-		g_static_mutex_unlock(&mutex);
+//		g_static_mutex_unlock(&serio_mutex);
+//		g_static_mutex_unlock(&mutex);
 		return;		/* can't write anything if disconnected */
 	}
 
@@ -459,8 +430,8 @@ void write_data(Io_Message *message)
 			store_new_block(canID,page,offset,data,num_bytes);
 	}
 
-	g_static_mutex_unlock(&serio_mutex);
-	g_static_mutex_unlock(&mutex);
+//	g_static_mutex_unlock(&serio_mutex);
+//	g_static_mutex_unlock(&mutex);
 	return;
 }
 

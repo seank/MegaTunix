@@ -388,8 +388,6 @@ EXPORT void post_burn_cb()
 	gint i = 0;
 	extern Firmware_Details * firmware;
 
-	//g_usleep(250000);
-
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup(__FILE__": post_burn_cb()\n\tBurn to Flash Completed\n"));
 
