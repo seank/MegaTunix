@@ -505,7 +505,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	/* Bind the data in the "defaults" group per tab to EVERY var in that
 	 * tab
 	 */
-	bind_group_data(cfgfile,widget,groups,"defaults");
+	page = bind_group_data(cfgfile,widget,groups,"defaults");
 
 	if (cfg_read_string(cfgfile,section,"group",&tmpbuf))
 	{
@@ -513,13 +513,15 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		g_free(tmpbuf);
 	}
 
-/*	if ((!cfg_read_int(cfgfile,section,"page",&page)) && (page == -1))
+	if (page == -1)
 	{
-		if (dbg_lvl & (TABLOADER|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
+		if (!cfg_read_int(cfgfile,section,"page",&page)) 
+		{
+			if (dbg_lvl & (TABLOADER|CRITICAL))
+				dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
 
+		}
 	}
-	*/
 	/* Bind widgets to lists if they have the bind_to_list flag set...
 	*/
 	tmpbuf = NULL;
@@ -626,7 +628,7 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		if (page < 0)
 		{
 			if (dbg_lvl & (TABLOADER|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": bind_data()\n\t Attempting to append widget beyond bounds of Firmware Parameters,  there is a bug with this datamap widget %s, at offset %i...\n\n",section,offset));
+				dbg_func(g_strdup_printf(__FILE__": bind_data()\n\t Attempting to append widget beyond bounds of Firmware Parameters,  there is a bug with this datamap widget %s, page %i, at offset %i...\n\n",section,page,offset));
 			return;
 		}
 		if (page < firmware->total_pages)

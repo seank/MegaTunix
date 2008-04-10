@@ -66,6 +66,8 @@ EXPORT void finish_raweditor(void)
 
 	for (i=0;i<firmware->total_pages;i++)
 	{
+		if (!firmware->page_params[i]->dl_by_default)
+			continue;
 		tmpstr=g_strdup_printf("Page %i",i);
 		label = gtk_label_new(tmpstr);
 		g_free(tmpstr);

@@ -1189,6 +1189,8 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 	/* Backup the ALL pages of data first... */
 	for (i=0;i<firmware->total_pages;i++)
 	{
+		if (!firmware->page_params[i]->dl_by_default)
+			continue;
 		memset((void *)ecu_data_backup[i], 0, firmware->page_params[i]->length);
 		memcpy(ecu_data_backup[i], ecu_data[i],firmware->page_params[i]->length);
 	}
@@ -1291,6 +1293,8 @@ void revert_to_previous_data()
 
 	for (page=0;page<firmware->total_pages;page++)
 	{
+		if (!firmware->page_params[page]->dl_by_default)
+			continue;
 		if (firmware->chunk_support)
 		{
 			total = firmware->page_params[page]->length;

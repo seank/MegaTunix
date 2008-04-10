@@ -21,8 +21,8 @@ Capabilities=_MS1_,_MSNS_E_
 Page_Cmd=P
 MultiPage=TRUE
 ChunkWriteSupport=TRUE
-TotalTables=11
 ReadOnlyAbove=8
+TotalTables=11
 # Since the first page is 0, 10 is the "eleventh" page
 ToothmonPage=9
 # Since the first page is 0, 9 is the "tenth" page
@@ -368,54 +368,67 @@ z_conv_expr=(x*(352/1000))-10
 z_precision=1
 
 [page_0]
+dl_by_default=TRUE
 truepgnum=0
 length=189
 
 [page_1]
+dl_by_default=TRUE
 truepgnum=1
 length=189
 
 [page_2]
+dl_by_default=TRUE
 truepgnum=2
 length=189
 
 [page_3]
+dl_by_default=TRUE
 truepgnum=3
 length=189
 
 [page_4]
+dl_by_default=TRUE
 truepgnum=4
 length=189
 
 [page_5]
+dl_by_default=TRUE
 truepgnum=5
 length=189
 
 [page_6]
+dl_by_default=TRUE
 truepgnum=6
 length=189
 
 [page_7]
+dl_by_default=TRUE
 truepgnum=7
 length=189
 
 [page_8]
+dl_by_default=TRUE
 truepgnum=8
 length=189
 
 [page_9]
+dl_by_default=FALSE
 truepgnum=240
 length=189
 
 [page_10]
+dl_by_default=FALSE
 truepgnum=241
 length=189
 
 [page_11]
+dl_by_default=FALSE
 truepgnum=242
 length=256
 
 [page_12]
+dl_by_default=FALSE
 truepgnum=243
 length=256
 

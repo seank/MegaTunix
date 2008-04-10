@@ -7,10 +7,11 @@ groups=defaults,load_1,load_2,rpm,afrtable1,afrtable2
 #----- Groups ----------------------------------------------------------------
 
 [defaults]
-keys=page,size
-key_types=_INT_,_ENUM_
+keys=page,size,raw_upper
+key_types=_INT_,_ENUM_,_INT_
 page=6
 size=_U08_
+raw_upper=255
 
 [load_1]
 keys=page,dl_type,handler,is_float,raw_lower,raw_upper,table_num,source_key,multi_expr_keys,dl_conv_exprs,ul_conv_exprs,use_color,bind_to_list,tooltip

@@ -70,6 +70,7 @@ struct _Firmware_Details
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */
 	gint interchardelay;	/*! Inter char delay (MS-II mostly) */
+	gint ro_above;		/*! read only above this page */
 	gint canID;		/*! CanID for this firmware.. */
 	gint rtvars_size;       /*! Size of Realtime vars datablock */
 	gint ms2_rt_page;	/*! Page where the MS2 RT vars reside */
@@ -80,7 +81,6 @@ struct _Firmware_Details
 	gboolean can_capable;	/*! Supports CAnbus and sub modules */
 	gint total_pages;	/*! How many pages do we handle? */
 	gint total_tables;	/*! How many tables do we handle? */
-	gint ro_above;		/*! Read Only debug pages above this one */
 	gint trigmon_page;	/*! Trigger Monitor RO Page */
 	gint toothmon_page;	/*! Tooth Monitor RO Page */
 	Page_Params **page_params;/*! special vars per page */

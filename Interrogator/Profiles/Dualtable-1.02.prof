@@ -19,9 +19,9 @@ Write_Command=ms1_generic_write
 Capabilities=_MS1_,_DUALTABLE_
 Page_Cmd=P
 MultiPage=TRUE
-ReadOnlyAbove=1
 ChunkWriteSupport=FALSE
 TotalTables=2
+ReadOnlyAbove=1
 TotalPages=2
 
 [table_0]
@@ -97,10 +97,12 @@ z_conv_expr=x*1
 z_precision=0
 
 [page_0]
+dl_by_default=TRUE
 truepgnum=0
 length=128
 
 [page_1]
+dl_by_default=TRUE
 truepgnum=1
 length=128
 

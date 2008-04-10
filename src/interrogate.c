@@ -909,7 +909,7 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if(!cfg_read_boolean(cfgfile,section,"dl_by_default",&firmware->page_params[i]->dl_by_default))
 		{
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
-				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"dl_by_Default\" flag not found in interrogation profile, assuming TRUE\n"));
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"dl_by_default\" flag not found in interrogation profile, assuming TRUE\n"));
 			firmware->page_params[i]->dl_by_default = TRUE;
 		}
 		if(!cfg_read_int(cfgfile,section,"length",&firmware->page_params[i]->length))

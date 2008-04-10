@@ -190,6 +190,8 @@ EXPORT void update_write_status(void *data)
 
 	for (i=0;i<firmware->total_pages;i++)
 	{
+		if (!firmware->page_params[i]->dl_by_default)
+			continue;
 
 		if(memcmp(ecu_data_last[i],ecu_data[i],firmware->page_params[i]->length) != 0)
 		{
@@ -261,6 +263,9 @@ void set_ms_page(guint8 ms_page)
 	if (last_page == -1)
 		goto force_change;
 
+	/* If current page is NOT a dl_by_default page, and last page WAS,
+	 * then force a burn, otherwise data will be lost. 
+	 */
 	if ((ms_page > firmware->ro_above) && (last_page <= firmware->ro_above))
 	{
 		g_static_mutex_unlock(&serio_mutex);
@@ -268,6 +273,9 @@ void set_ms_page(guint8 ms_page)
 		g_static_mutex_lock(&serio_mutex);
 		goto force_change;
 	}
+	/* If current OR last page is NOT a dl_by_default page,  then
+	 * skip burning and move on. 
+	 */
 	if ((ms_page > firmware->ro_above) || (last_page > firmware->ro_above))
 		goto skip_change;
 

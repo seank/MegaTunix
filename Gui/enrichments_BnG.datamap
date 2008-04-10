@@ -8,10 +8,11 @@ groups=defaults,warmup_bins
 #----- Groups ----------------------------------------------------------------
 
 [defaults]
-keys=page,size
-key_types=_INT_,_ENUM_
+keys=page,size,raw_upper
+key_types=_INT_,_ENUM_,_INT_
 page=0
 size=_U08_
+raw_upper=255
 
 [warmup_bins]
 keys=page,use_color,dl_type,handler

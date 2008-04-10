@@ -114,7 +114,7 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 
 			if (!offline)
 			{
-				for (i=0;i<=firmware->ro_above;i++)
+				for (i=0;i<firmware->total_pages;i++)
 				{
 					if (!firmware->page_params[i]->dl_by_default)
 						continue;
@@ -393,7 +393,11 @@ EXPORT void post_burn_cb()
 
 	/* sync temp buffer with current burned settings */
 	for (i=0;i<firmware->total_pages;i++)
+	{
+		if (!firmware->page_params[i]->dl_by_default)
+			continue;
 		backup_current_data(firmware->canID,i);
+	}
 
 	return;
 }

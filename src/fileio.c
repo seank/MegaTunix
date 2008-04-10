@@ -136,6 +136,8 @@ void backup_all_ecu_settings(gchar *filename)
 	cfg_write_string(cfgfile,"Firmware","name",firmware->name);
 	for(i=0;i<firmware->total_pages;i++)
 	{
+		if (!firmware->page_params[i]->dl_by_default)
+			continue;
 		string = g_string_sized_new(64);
 		section = g_strdup_printf("page_%i",i);
 		cfg_write_int(cfgfile,section,"num_variables",firmware->page_params[i]->length);
@@ -214,8 +216,8 @@ void restore_all_ecu_settings(gchar *filename)
 		set_title(g_strdup("Restoring ECU settings from File"));
 		for (page=0;page<firmware->total_pages;page++)
 		{
-			if ((firmware->ro_above > 0 ) && (page > firmware->ro_above))
-				break;
+			if (!(firmware->page_params[page]->dl_by_default))
+				continue;
 
 			section = g_strdup_printf("page_%i",page);
 			if(cfg_read_int(cfgfile,section,"num_variables",&tmpi))
