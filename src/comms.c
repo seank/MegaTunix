@@ -357,6 +357,7 @@ void write_data(Io_Message *message)
 	gint res = 0;
 	gchar * err_text = NULL;
 	gint i = 0;
+	gint j = 0;
 	gint canID = 0;
 	gint page = 0;
 	gint offset = 0;
@@ -430,31 +431,21 @@ void write_data(Io_Message *message)
 		}
 		else if (block->type == DATA)
 		{
-			/*
-			   if (dbg_lvl & (SERIAL_WR))
-			   {
-			   tmpbuf = g_strdup("");
-			   for (j=0;j<block->len;j++)
-			   g_sprintf(tmpbuf,"%i",block->data[j]);
-			   printf("Output string %s\n",tmpbuf);
-			   }
-			   */
-			if (firmware->capabilities & MS2)
-				g_usleep(firmware->interchardelay*1000);
-
 			if (dbg_lvl & (SERIAL_WR))
-				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting block %i, \"%s\"\n",i,block->data));
-			res = write (serial_params->fd,block->data,block->len);	/* Send write command */
-			if (res != block->len )
+				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j,block->len,block->data[j]));
+			for (j=0;j<block->len;j++)
 			{
-				err_text = (gchar *)g_strerror(errno);
-				if (dbg_lvl & (SERIAL_WR|CRITICAL))
-					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tError writing block %i, ERROR \"%s\"!!!\n",i,err_text));
-			}
-			else
-			{
-				if (dbg_lvl & SERIAL_WR)
-					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWrite of block %i to ECU succeeded\n",i));
+//				printf("comms.c data[%i] is %i\n",j,block->data[j]);
+				if (dbg_lvl & (SERIAL_WR))
+					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j+1,block->len,block->data[j]));
+//				printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j+1,block->len,block->data[j]);
+				res = write (serial_params->fd,&(block->data[j]),1);	/* Send write command */
+				if (res != 1)
+					if (dbg_lvl & (SERIAL_WR|CRITICAL))
+						dbg_func(g_strdup_printf(__FILE__": write_data()\n\tError writing block  offset %i, value %i ERROR \"%s\"!!!\n",j,block->data[j],err_text));
+				if (firmware->capabilities & MS2)
+					g_usleep(firmware->interchardelay*1000);
+
 			}
 		}
 

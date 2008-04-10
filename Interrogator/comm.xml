@@ -159,6 +159,7 @@
 				<arg>MS2_TABLE_INDEX</arg>
 				<arg>MS2_OFFSET</arg>
 				<arg>MS2_NUM_BYTES</arg>
+				<arg>DATACHUNK</arg>
 			</args>
 		</cmd>
 		<cmd>

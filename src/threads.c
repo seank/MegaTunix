@@ -261,11 +261,13 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 				break;
 			case MTX_S16:
 			case MTX_U16:
+				printf("ms2 16 bit, %i\n",value);
 				data[1] = (guint8)value;
 				data[0] = (guint8)((guint16)value >> 8);
 				break;
 			case MTX_S32:
 			case MTX_U32:
+				printf("ms2 32 bit, %i\n",value);
 				data[3] = (guint8)value;
 				data[2] = (guint8)((guint32)value >> 8);
 				data[1] = (guint8)((guint32)value >> 16);
@@ -485,6 +487,7 @@ void *restore_update(gpointer data)
 void build_output_string(Io_Message *message, Command *command, gpointer data)
 {
 	gint i = 0;
+	gint j = 0;
 	gint v = 0;
 	gint len = 0;
 	OutputData *output = NULL;
@@ -532,20 +535,20 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 			case MTX_U08:
 			case MTX_S08:
 			case MTX_CHAR:
-				printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+				/*printf("8 bit arg %i, name \"%s\"\n",i,arg->internal_name);*/
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-				printf("value %i\n",v);
+				/*printf("value %i\n",v);*/
 				block->data = g_new0(guint8,1);
 				block->data[0] = (guint8)v;
 				block->len = 1;
 				break;
 			case MTX_U16:
 			case MTX_S16:
-				printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+				/*printf("16 bit arg %i, name \"%s\"\n",i,arg->internal_name);*/
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-				printf("value %i\n",v);
+				/*printf("value %i\n",v);*/
 				block->data = g_new0(guint8,2);
 				block->data[0] = (v & 0xff00) >> 8;
 				block->data[1] = (v & 0x00ff);
@@ -553,10 +556,10 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 				break;
 			case MTX_U32:
 			case MTX_S32:
-				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);
+/*				printf("32 bit arg %i, name \"%s\"\n",i,arg->internal_name);*/
 				block->type = DATA;
 				v = (gint)OBJ_GET(output->object,arg->internal_name);
-				printf("value %i\n",v);
+/*				printf("value %i\n",v); */
 				block->data = g_new0(guint8,4);
 				block->data[0] = (v & 0xff000000) >> 24;
 				block->data[1] = (v & 0xff0000) >> 16;
@@ -565,13 +568,22 @@ void build_output_string(Io_Message *message, Command *command, gpointer data)
 				block->len = 4;
 				break;
 			case MTX_UNDEF:
-				printf("arg %i, name \"%s\"\n",i,arg->internal_name);
+				/*printf("arg %i, name \"%s\"\n",i,arg->internal_name);*/
+				block->type = DATA;
 				if (!arg->internal_name)
 					printf("ERROR, MTX_UNDEF, donno what to do!!\n");
 				sent_data = (guint8 *)OBJ_GET(output->object,arg->internal_name);
 				len = (gint)OBJ_GET(output->object,"num_bytes");
 				block->data = g_memdup(sent_data,len);
 				block->len = len;
+				/*
+				for (j=0;j<len;j++)
+				{
+					printf("sent_data[%i] is %i\n",j,sent_data[j]);
+					printf("block->data[%i] is %i\n",j,block->data[j]);
+				}
+				*/
+
 		}
 		g_array_append_val(message->sequence,block);
 	}
