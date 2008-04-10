@@ -174,7 +174,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() before burn\n"));
 	if ((connected) && (interrogated) && (!offline))
-		io_cmd(firmware->burn_command,NULL);
+		io_cmd(firmware->burn_all_command,NULL);
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
@@ -959,7 +959,7 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			//io_cmd(firmware->raw_mem_command,(gpointer)obj_data);
 			break;
 		case BURN_MS_FLASH:
-			io_cmd(firmware->burn_command,NULL);
+			io_cmd(firmware->burn_all_command,NULL);
 			break;
 		case DLOG_SELECT_ALL:
 			dlog_select_all();

@@ -30,7 +30,8 @@ void enable_3d_buttons_cb(void);
 void disable_burner_buttons_cb(void);
 void reset_temps_cb(void);
 void simple_read_cb(void *, XmlCmdType);
-gboolean read_ve_const(XmlCmdType);
+gboolean read_ve_const(void *, XmlCmdType);
+gboolean ms2_burn_all_helper(void *, XmlCmdType);
 /* Prototypes */
 
 #endif

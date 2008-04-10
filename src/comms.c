@@ -234,6 +234,7 @@ void burn_ms1_ecu_flash()
 	g_static_mutex_unlock(&serio_mutex);
 	flush_serial(serial_params->fd, TCIOFLUSH);
 	g_static_mutex_lock(&serio_mutex);
+	/* THIS IS BROKEN!!!
 	res = write (serial_params->fd,firmware->burn_command,1);  /* Send Burn command */
 	if (res != 1)
 	{
@@ -388,7 +389,9 @@ void write_data(Io_Message *message)
 		num_bytes = (gint)OBJ_GET(output->object,"num_bytes");
 		mode = (WriteMode)OBJ_GET(output->object,"mode");
 
-		if ((firmware->multi_page ) && (output->need_page_change)) 
+		if ((firmware->multi_page ) && 
+				(output->need_page_change) && 
+				(!(firmware->capabilities & MS2))) 
 		{
 			g_static_mutex_unlock(&serio_mutex);
 			set_ms_page(firmware->page_params[page]->truepgnum);
@@ -431,8 +434,6 @@ void write_data(Io_Message *message)
 		}
 		else if (block->type == DATA)
 		{
-			if (dbg_lvl & (SERIAL_WR))
-				dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j,block->len,block->data[j]));
 			for (j=0;j<block->len;j++)
 			{
 //				printf("comms.c data[%i] is %i\n",j,block->data[j]);

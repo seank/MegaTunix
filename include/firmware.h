@@ -62,6 +62,7 @@ struct _Firmware_Details
 	gchar *ve_command;	/*! New VE Command string */
 	gchar *write_command;	/*! New Write Command string */
 	gchar *chunk_write_command;	/*! New Chunk Write Command string */
+	gchar *burn_all_command;/*! New burn all command string */
 	gchar *burn_command;	/*! New burn command string */
 	gchar *raw_mem_command;	/*! New raw_mem command string */
 	gchar *page_cmd;	/*! Command to send to change pages ... */

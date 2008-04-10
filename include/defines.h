@@ -44,7 +44,7 @@
 
 
 /* For datalogging and Logviewer */
-#define TABLE_COLS 5
+#define TABLE_COLS 6
 
 /* Multitherm */
 #define IAT 0

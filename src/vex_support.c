@@ -1263,7 +1263,7 @@ void feed_import_data_to_ecu(Vex_Import *vex)
 				send_to_ecu(canID,page,base+i,size,vex->tbl_bins[i], TRUE);
 		}
 	}
-	io_cmd(firmware->burn_command,NULL);
+	io_cmd(firmware->burn_all_command,NULL);
 
 	update_logbar("tools_view",NULL,g_strdup_printf("VEX Import: VEtable on page %i updated with data from the VEX file\n",vex->page),FALSE,FALSE);
 }
@@ -1327,5 +1327,5 @@ void revert_to_previous_data()
 
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"tools_undo_vex_button"),FALSE);
 	update_logbar("tools_view","warning",g_strdup("Reverting to previous settings....\n"),FALSE,FALSE);
-	io_cmd(firmware->burn_command,NULL);
+	io_cmd(firmware->burn_all_command,NULL);
 }

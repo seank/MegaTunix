@@ -254,6 +254,18 @@
 			</post_functions>
 		</cmd>
 		<cmd>
+			<name>ms2_burn_all</name>
+			<desc>Calls a function to burn ALL applicable ms2 pages to flash</desc>
+			<type>_FUNC_CALL_</type>
+			<func_call_name>ms2_burn_all_helper</func_call_name>
+			<func_call_arg>_MS2_STD_</func_call_arg>
+			<defer_post_functions>TRUE</defer_post_functions>
+			<post_functions>
+				<function>post_burn_cb</function>
+				<function>set_store_black_cb</function>
+			</post_functions>
+		</cmd>
+		<cmd>
 			<name>ms2_burn</name>
 			<desc>burns the passed can_id and table_index from ram to flash</desc>
 			<type>_WRITE_CMD_</type>
@@ -261,13 +273,8 @@
 			<args>
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
-				<arg>PAUSE_50MS</arg>
+				<arg>PAUSE_500MS</arg>
 			</args>
-			<defer_post_functions>FALSE</defer_post_functions>
-			<post_functions>
-				<function>post_burn_cb</function>
-				<function>set_store_black_cb</function>
-			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_table_reflash</name>

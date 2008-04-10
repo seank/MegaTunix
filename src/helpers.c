@@ -69,6 +69,36 @@ EXPORT void spawn_read_ve_const_cb(void)
 	io_cmd(firmware->get_all_command,NULL);
 }
 
+
+EXPORT gboolean ms2_burn_all_helper(void *data, XmlCmdType type)
+{
+	extern Firmware_Details *firmware;
+	extern volatile gboolean offline;
+	OutputData *output = NULL;
+	Command *command = NULL;
+	gint i = 0;
+	if (type != MS2_STD)
+		return FALSE;
+	if (!offline)
+	{
+		for (i=0;i<firmware->total_pages;i++)
+		{
+			if (!firmware->page_params[i]->dl_by_default)
+				continue;
+			output = initialize_outputdata();
+			OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
+			OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
+			OBJ_SET(output->object,"canID",GINT_TO_POINTER(firmware->canID));
+			OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
+			output->need_page_change = FALSE;
+			io_cmd(firmware->burn_command,output);
+		}
+	}
+	command = (Command *)data;
+	io_cmd(NULL,command->post_functions);
+	return TRUE;
+}
+
 EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 {
 	extern Firmware_Details *firmware;

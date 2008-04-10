@@ -435,6 +435,12 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Burn_Command\" variable not found in interrogation profile, ERROR\n"));
 	}
+	if(!cfg_read_string(cfgfile,"parameters","Burn_All_Command",
+					&firmware->burn_all_command))
+	{
+		if (dbg_lvl & (INTERROGATOR|CRITICAL))
+			dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Burn_All_Command\" variable not found in interrogation profile, ERROR\n"));
+	}
 	if(!cfg_read_boolean(cfgfile,"parameters","MultiPage",
 				&firmware->multi_page))
 	{

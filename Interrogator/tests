@@ -1,4 +1,4 @@
- How this works:
+# How this works:
 # Note, as of 8/1/2004 this is highly experimental and likely to change
 # over the coming weeks
 #
@@ -31,7 +31,7 @@
 
 [API]
 major=1
-minor=1
+minor=2
 
 [interrogation_tests]
 total_tests=8

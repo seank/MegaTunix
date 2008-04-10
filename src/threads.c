@@ -261,13 +261,11 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 				break;
 			case MTX_S16:
 			case MTX_U16:
-				printf("ms2 16 bit, %i\n",value);
 				data[1] = (guint8)value;
 				data[0] = (guint8)((guint16)value >> 8);
 				break;
 			case MTX_S32:
 			case MTX_U32:
-				printf("ms2 32 bit, %i\n",value);
 				data[3] = (guint8)value;
 				data[2] = (guint8)((guint32)value >> 8);
 				data[1] = (guint8)((guint32)value >> 16);
@@ -487,7 +485,6 @@ void *restore_update(gpointer data)
 void build_output_string(Io_Message *message, Command *command, gpointer data)
 {
 	gint i = 0;
-	gint j = 0;
 	gint v = 0;
 	gint len = 0;
 	OutputData *output = NULL;
