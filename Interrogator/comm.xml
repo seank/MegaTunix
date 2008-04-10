@@ -273,7 +273,7 @@
 			<args>
 				<arg>MS2_CAN_ID</arg>
 				<arg>MS2_TABLE_INDEX</arg>
-				<arg>PAUSE_50MS</arg>
+				<arg>PAUSE_500MS</arg>
 			</args>
 		</cmd>
 		<cmd>

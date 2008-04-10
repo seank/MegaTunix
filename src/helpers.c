@@ -303,7 +303,7 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
 			 * a reset due to power and/or noise.
 			 */
 			if ((lastcount - ptr8[0] > 1) && \
-					(lastcount - ptr8[0] != 255))
+					(lastcount - ptr8[0] > 255))
 			{
 				ms_reset_count++;
 				gdk_beep();
@@ -333,10 +333,10 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
 			 * a reset due to power and/or noise.
 			 */
 			if ((lastcount - ptr16[0] > 1) && \
-					(lastcount - ptr16[0] != 65535))
+					(lastcount - ptr16[0] > 65535))
 			{
 				ms_reset_count++;
-				printf("MS@ rtvars reset detected, lastcount %i, current %i\n",lastcount,ptr16[0]);
+				printf("MS2 rtvars reset detected, lastcount %i, current %i\n",lastcount,ptr16[0]);
 				gdk_beep();
 			}
 			else
