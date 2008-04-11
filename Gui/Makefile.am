@@ -64,6 +64,8 @@ gui_files = 	README \
 		runtime.datamap \
 		sparktable_12x12x2-029x.datamap \
 		sparktable_12x12x2.glade \
+		sparktable_12x12x1-MS-II.datamap \
+		sparktable_12x12x1.glade \
 		sparktable_8x8e.glade \
 		sparktable_8x8e-EDIS.datamap \
 		sparktable_8x8e-Std.datamap \

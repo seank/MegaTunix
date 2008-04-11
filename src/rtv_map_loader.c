@@ -54,9 +54,11 @@ EXPORT gboolean load_realtime_map(void )
 	gint num_keys = 0;
 	gint num_keytypes = 0;
 	gchar ** keys = NULL;
+	gchar **vector = NULL;
 	gint *keytypes = NULL;
 	gint i = 0;
 	gint j = 0;
+	gint k = 0;
 	gint tmpi = 0;
 	gint major = 0;
 	gint minor = 0;
@@ -290,8 +292,13 @@ EXPORT gboolean load_realtime_map(void )
 						OBJ_SET(object,
 								keys[j],
 								g_strdup(tmpbuf));
-						if (strstr(keys[j],"internal_name") != NULL)
-							g_hash_table_insert(rtv_map->rtv_hash,g_strdup(tmpbuf),(gpointer)object);
+						if (strstr(keys[j],"internal_names") != NULL)
+						{
+							vector = g_strsplit(tmpbuf,",",-1); 
+							for(k=0;k<g_strv_length(vector);k++) 
+								g_hash_table_insert(rtv_map->rtv_hash,g_strdup(vector[k]),(gpointer)object);
+							g_strfreev(vector);
+						}
 						g_free(tmpbuf);
 					}
 					else

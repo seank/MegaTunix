@@ -13,8 +13,8 @@ page=4
 size=_U08_
 
 [load_1]
-keys=page,dl_type,handler,raw_lower,raw_upper,size,table_num,dl_conv_expr,ul_conv_expr,use_color,tooltip
-key_types=_INT_,_ENUM_,_ENUM_,_INT_,_INT_,_ENUM_,_STRING_,_STRING_,_STRING_,_BOOL_,_STRING_
+keys=page,dl_type,handler,raw_lower,raw_upper,size,table_num,dl_conv_expr,ul_conv_expr,use_color,is_float,precision,tooltip
+key_types=_INT_,_ENUM_,_ENUM_,_INT_,_INT_,_ENUM_,_STRING_,_STRING_,_STRING_,_BOOL_,_BOOL_,_INT_,_STRING_
 page=4
 dl_type=_IMMEDIATE_
 handler=_GENERIC_
@@ -25,6 +25,8 @@ table_num=0
 dl_conv_expr=x*10
 ul_conv_expr=x/10
 use_color=TRUE
+is_float=TRUE
+precision=1
 tooltip=The LOAD (whether they be MAP or TPS) bins in combination with the RPM bins on the bottom of the VEtable define the vertexes (points on the VE map).  The ECU will interpolate between vertexes providing a smooth transition between vertexes on the Map.  The 3D view shows this graphically.  NOTE: The ECU does NOT extrapolate beyond the edge of the table. The values are clamped at the borders.  Editing is accomplished by either +/-, PgUp/PgDn, or by typing in a value over the existing value.  The value will turn red during an edit and WILL NOT BE SENT until you hit enter.  Hitting escape will cancel an edit and return to the previous value.
 
 [rpm_1]
@@ -54,18 +56,20 @@ use_color=TRUE
 tooltip=The VE Entries control how much fuel is injected into the engine. They refer to Volumetric efficiency of the engine.  If the Req_Fuel variable is scaled appropriately the engine should be at 100% VE at max torque.   These entries are all relative and can be scaled upwards for a low Req_Fuel or downwards with a high Req_Fuel.  Editing is accomplished by either +/-, PgUp/PgDn, or by typing in a value over the existing value.  The value will turn red during an edit and WILL NOT BE SENT until you hit enter.  Hitting escape will cancel an edit and return to the previous value.
 
 [load_2]
-keys=page,dl_type,handler,raw_lower,raw_upper,size,table_num,dl_conv_expr,ul_conv_expr,use_color,tooltip
-key_types=_INT_,_ENUM_,_ENUM_,_INT_,_INT_,_ENUM_,_STRING_,_STRING_,_STRING_,_BOOL_,_STRING_
+keys=page,dl_type,handler,raw_lower,raw_upper,size,table_num,dl_conv_expr,ul_conv_expr,use_color,is_float,precision,tooltip
+key_types=_INT_,_ENUM_,_ENUM_,_INT_,_INT_,_ENUM_,_STRING_,_STRING_,_STRING_,_BOOL_,_BOOL_,_INT_,_STRING_
 page=4
 dl_type=_IMMEDIATE_
 handler=_GENERIC_
 size=_S16_
 raw_lower=0
 raw_upper=4000
-table_num=0
+table_num=1
 dl_conv_expr=x*10
 ul_conv_expr=x/10
 use_color=TRUE
+is_float=TRUE
+precision=1
 tooltip=The LOAD (whether they be MAP or TPS) bins in combination with the RPM bins on the bottom of the VEtable define the vertexes (points on the VE map).  The ECU will interpolate between vertexes providing a smooth transition between vertexes on the Map.  The 3D view shows this graphically.  NOTE: The ECU does NOT extrapolate beyond the edge of the table. The values are clamped at the borders.  Editing is accomplished by either +/-, PgUp/PgDn, or by typing in a value over the existing value.  The value will turn red during an edit and WILL NOT BE SENT until you hit enter.  Hitting escape will cancel an edit and return to the previous value.
 
 [rpm_2]
@@ -422,11 +426,6 @@ table_num=0
 keys=table_num
 key_types=_STRING_
 table_num=1
-
-[VE2_rescale_spinner]
-keys=table_num
-key_types=_STRING_
-table_num=2
 
 #----- MAIN VETable Container ---------------------------------------------
 

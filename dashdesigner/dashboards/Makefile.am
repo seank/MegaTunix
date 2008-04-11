@@ -9,7 +9,8 @@ dashes_files = 	\
 		Cobalt_Dash_degC.xml \
 		Impact_Dash.xml \
 		Impact_Dash_degC.xml \
-		Gemini.xml \
+		Gemini_Dash.xml \
+		Gemini_Dash_degC.xml \
 		Honda_Dash.xml \
 		Honda_Dash_degC.xml 
 

@@ -333,6 +333,8 @@ void draw_ve_marker()
 	gint z_bin[4] = {0,0,0,0};
 	gint bin[4] = {0,0,0,0};
 	gint mult = 0;
+	gint z_mult = 0;
+	gint raw_upper = 0;
 	gfloat left_w = 0.0;
 	gfloat right_w = 0.0;
 	gfloat top_w = 0.0;
@@ -465,12 +467,8 @@ void draw_ve_marker()
 	page = firmware->table_params[table]->x_page;
 	base = firmware->table_params[table]->x_base;
 	size = firmware->table_params[table]->x_size;
-	if ((size == MTX_U16) || (size == MTX_S16))
-		mult = 2;
-	else if ((size == MTX_U32) || (size == MTX_S32))
-		mult = 4;
-	else
-		mult = 1;
+	mult = get_multiplier(size);
+	z_mult = get_multiplier(firmware->table_params[table]->z_size);
 	for (i=0;i<firmware->table_params[table]->x_bincount-1;i++)
 	{
 		if (evaluator_evaluate_x(eval[table][_X_],get_ecu_data(canID,page,base,size)) >= x_source)
@@ -507,12 +505,8 @@ void draw_ve_marker()
 	page = firmware->table_params[table]->y_page;
 	base = firmware->table_params[table]->y_base;
 	size = firmware->table_params[table]->y_size;
-	if ((size == MTX_U16) || (size == MTX_S16))
-		mult = 2;
-	else if ((size == MTX_U32) || (size == MTX_S32))
-		mult = 4;
-	else
-		mult = 1;
+	mult = get_multiplier(size);
+	z_mult = get_multiplier(firmware->table_params[table]->z_size);
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
 		if (evaluator_evaluate_x(eval[table][_Y_],get_ecu_data(canID,page,base,size)) >= y_source)
@@ -592,14 +586,9 @@ redraw:
 				if (color_changed)
 				{
 					size = firmware->table_params[table]->z_size;
-					if ((size == MTX_U16) || (size == MTX_S16))
-						mult = 2;
-					else if ((size == MTX_U32) || (size == MTX_S32))
-						mult = 4;
-					else
-						mult = 1;
-					value = get_ecu_data(canID,firmware->table_params[table]->z_page,firmware->table_params[table]->z_base+(z_bin[i]*mult),size);
-					newcolor = get_colors_from_hue(((gfloat)value/256.0)*360.0,0.33, 1.0);
+					raw_upper = (gint)OBJ_GET(last_widgets[table][last[table][i]],"raw_upper");
+					value = get_ecu_data(canID,firmware->table_params[table]->z_page,firmware->table_params[table]->z_base+(z_bin[i]*z_mult),size);
+					newcolor = get_colors_from_hue(((gfloat)value/raw_upper)*360.0,0.33, 1.0);
 					gtk_widget_modify_base(GTK_WIDGET(last_widgets[table][last[table][i]]),GTK_STATE_NORMAL,&newcolor);
 				}
 				else
@@ -629,7 +618,7 @@ redraw:
 	{
 		if (z_bin[i] == -1)
 			continue;
-		list = ve_widgets[firmware->table_params[table]->z_page][firmware->table_params[table]->z_base+z_bin[i]];
+		list = ve_widgets[firmware->table_params[table]->z_page][firmware->table_params[table]->z_base+(z_bin[i]*z_mult)];
 		widget = g_list_nth_data(list,0);
 
 		if ((i == heaviest) && (tracking_focus[table]) && (widget != last_widgets[table][z_bin[i]]))

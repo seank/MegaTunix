@@ -3,9 +3,9 @@ major=1
 minor=0
 
 [global]
-description=Runtime Slider definitions for DualTable firmwares (GH&EF)
-rt_total_sliders=21
-ww_total_sliders=4
+description=Runtime Slider definitions for MSnS-Extra firmwares 
+rt_total_sliders=22
+ww_total_sliders=0
 ve3d_total_sliders=4
 
 [rt_slider_0]
@@ -21,10 +21,10 @@ row=1
 source=battvolt
 
 [rt_slider_2]
-slider_name=afr1
+slider_name=afr
 table=0
 row=2
-source=afr1
+source=afr
 
 [rt_slider_3]
 slider_name=rpm
@@ -81,10 +81,10 @@ row=5
 source=dcycle2
 
 [rt_slider_12]
-slider_name=vecurr1
+slider_name=gammae
 table=2
 row=0
-source=vecurr1
+source=gammae
 
 [rt_slider_13]
 slider_name=aircorr
@@ -111,16 +111,16 @@ row=4
 source=barocorr
 
 [rt_slider_17]
-slider_name=vecurr2
+slider_name=vecurr1
 table=3
 row=0
-source=vecurr2
+source=vecurr1
 
 [rt_slider_18]
-slider_name=gammae
+slider_name=vecurr2
 table=3
 row=1
-source=gammae
+source=vecurr2
 
 [rt_slider_19]
 slider_name=tpsaccel
@@ -129,10 +129,16 @@ row=2
 source=tpsaccel
 
 [rt_slider_20]
-slider_name=iacstep
+slider_name=idledc
 table=3
 row=3
-source=iacstep
+source=idledc
+
+[rt_slider_21]
+slider_name=sparkangle
+table=3
+row=4
+source=sparkangle
 
 [ww_slider_0]
 slider_name=ww_clt
@@ -168,7 +174,7 @@ source=rpm
 slider_name=ve3d_afr
 table=0
 row=1
-source=afr1
+source=afr
 
 [ve3d_slider_2]
 slider_name=ve3d_map

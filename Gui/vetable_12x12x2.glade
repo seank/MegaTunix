@@ -103,12 +103,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -131,12 +131,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -159,12 +159,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -187,12 +187,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -215,12 +215,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -243,12 +243,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -271,12 +271,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -299,12 +299,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -327,12 +327,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -355,12 +355,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -383,12 +383,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -411,12 +411,12 @@
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6059,12 +6059,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6087,12 +6087,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6115,12 +6115,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6143,12 +6143,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6171,12 +6171,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6199,12 +6199,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6227,12 +6227,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6255,12 +6255,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6283,12 +6283,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6311,12 +6311,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6339,12 +6339,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>
@@ -6367,12 +6367,12 @@ maintain same PW</property>
 					      <property name="can_focus">True</property>
 					      <property name="editable">True</property>
 					      <property name="visibility">True</property>
-					      <property name="max_length">3</property>
+					      <property name="max_length">5</property>
 					      <property name="text" translatable="yes">0</property>
 					      <property name="has_frame">True</property>
 					      <property name="invisible_char">*</property>
 					      <property name="activates_default">False</property>
-					      <property name="width_chars">4</property>
+					      <property name="width_chars">5</property>
 					      <signal name="activate" handler="std_entry_handler" last_modification_time="Mon, 30 Aug 2004 18:37:03 GMT"/>
 					      <signal name="focus_out_event" handler="focus_out_handler" last_modification_time="Sun, 05 Sep 2004 15:23:24 GMT"/>
 					      <signal name="changed" handler="entry_changed_handler" last_modification_time="Mon, 31 Jan 2005 18:17:48 GMT"/>

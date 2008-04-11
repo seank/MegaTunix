@@ -32,12 +32,12 @@
     <blue>0</blue>
   </gradient_end_color>
   <precision>0</precision>
-  <width>310</width>
-  <height>325</height>
+  <width>151</width>
+  <height>163</height>
   <main_start_angle>135.000000</main_start_angle>
   <main_sweep_angle>270.000000</main_sweep_angle>
-  <lbound>15.000000</lbound>
-  <ubound>215.000000</ubound>
+  <lbound>-10.000000</lbound>
+  <ubound>100.000000</ubound>
   <value_font>Lucida Handwriting</value_font>
   <value_font_scale>0.200000</value_font_scale>
   <value_str_xpos>0.000000</value_str_xpos>
@@ -45,8 +45,8 @@
   <antialias>1</antialias>
   <show_value>1</show_value>
   <alert_range>
-    <lowpoint>122.000000</lowpoint>
-    <highpoint>140.000000</highpoint>
+    <lowpoint>50.000000</lowpoint>
+    <highpoint>60.000000</highpoint>
     <lwidth>0.100000</lwidth>
     <inset>1.000000</inset>
     <color>
@@ -56,8 +56,8 @@
     </color>
   </alert_range>
   <alert_range>
-    <lowpoint>140.000000</lowpoint>
-    <highpoint>215.000000</highpoint>
+    <lowpoint>60.000000</lowpoint>
+    <highpoint>100.000000</highpoint>
     <lwidth>0.100000</lwidth>
     <inset>1.000000</inset>
     <color>
@@ -67,8 +67,8 @@
     </color>
   </alert_range>
   <alert_range>
-    <lowpoint>25.000000</lowpoint>
-    <highpoint>32.000000</highpoint>
+    <lowpoint>-5.000000</lowpoint>
+    <highpoint>0.000000</highpoint>
     <lwidth>0.100000</lwidth>
     <inset>1.000000</inset>
     <color>
@@ -79,7 +79,7 @@
   </alert_range>
   <alert_range>
     <lowpoint>-10.000000</lowpoint>
-    <highpoint>25.000000</highpoint>
+    <highpoint>-5.000000</highpoint>
     <lwidth>0.100000</lwidth>
     <inset>1.000000</inset>
     <color>
@@ -89,8 +89,8 @@
     </color>
   </alert_range>
   <color_range>
-    <lowpoint>122.000000</lowpoint>
-    <highpoint>140.000000</highpoint>
+    <lowpoint>50.000000</lowpoint>
+    <highpoint>60.000000</highpoint>
     <lwidth>0.080000</lwidth>
     <inset>0.800000</inset>
     <color>
@@ -100,8 +100,8 @@
     </color>
   </color_range>
   <color_range>
-    <lowpoint>140.000000</lowpoint>
-    <highpoint>215.000000</highpoint>
+    <lowpoint>60.000000</lowpoint>
+    <highpoint>100.000000</highpoint>
     <lwidth>0.080000</lwidth>
     <inset>0.800000</inset>
     <color>
@@ -111,8 +111,8 @@
     </color>
   </color_range>
   <color_range>
-    <lowpoint>25.000000</lowpoint>
-    <highpoint>32.000000</highpoint>
+    <lowpoint>-5.000000</lowpoint>
+    <highpoint>0.000000</highpoint>
     <lwidth>0.080000</lwidth>
     <inset>0.800000</inset>
     <color>
@@ -122,8 +122,8 @@
     </color>
   </color_range>
   <color_range>
-    <lowpoint>15.000000</lowpoint>
-    <highpoint>25.000000</highpoint>
+    <lowpoint>-10.000000</lowpoint>
+    <highpoint>-5.000000</highpoint>
     <lwidth>0.080000</lwidth>
     <inset>0.800000</inset>
     <color>
@@ -146,7 +146,7 @@
   </text_block>
   <text_block>
     <font>Lucida Handwriting</font>
-    <text>°F</text>
+    <text>°C</text>
     <font_scale>0.110000</font_scale>
     <x_pos>0.000000</x_pos>
     <y_pos>0.772000</y_pos>
@@ -171,14 +171,14 @@
   <tick_group>
     <font>Lucida Handwriting</font>
     <font_scale>0.135000</font_scale>
-    <text>15,35,55,75,95,115,135,155,175,195,215</text>
+    <text>-10,0,10,20,30,40,50,60,70,80,90,100</text>
     <text_inset>0.280000</text_inset>
     <text_color>
       <red>0</red>
       <green>0</green>
       <blue>0</blue>
     </text_color>
-    <num_maj_ticks>11</num_maj_ticks>
+    <num_maj_ticks>12</num_maj_ticks>
     <maj_tick_color>
       <red>0</red>
       <green>0</green>

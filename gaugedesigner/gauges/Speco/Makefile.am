@@ -6,8 +6,10 @@ gauges_files = 	\
 		Gemini_AFR_Lambda2.xml \
 		Gemini_AFR_Lambda.xml \
 		Gemini_CLT_Gauge.xml \
+		Gemini_CLT_degC_Gauge.xml \
 		Gemini_MAP_Gauge.xml \
 		Gemini_MAT_Gauge.xml \
+		Gemini_MAT_degC_Gauge.xml \
 		Gemini_BoostDC.xml \
 		Gemini_EGOcorr.xml \
 		Gemini_IdleDC.xml \
