@@ -5,6 +5,8 @@ gui_files = 	README \
 		template.glade \
 		afrtable_8x8x2.glade \
 		afrtable_8x8x2-029x.datamap \
+		afrtable_12x12x2.glade \
+		afrtable_12x12x2-MS-II.datamap \
 		boost_6x6x3-029x.datamap \
 		boost_6x6x3.glade \
 		B_n_G_constants.glade \
