@@ -40,6 +40,8 @@ void load_rtvars(gchar **files, struct Rtv_Data *rtv_data)
 	gpointer orig = NULL;
 	gpointer value = NULL;
 	gchar * tmpbuf = NULL;
+	gchar * section = NULL;
+	gchar ** vector = NULL;
 	gchar *dlog_name = NULL;
 	gchar *int_name = NULL;
 	gchar *element = NULL;
@@ -48,6 +50,8 @@ void load_rtvars(gchar **files, struct Rtv_Data *rtv_data)
 	gint tmpi = 0;
 	gint i = 0;
 	gint j = 0;
+	gint k = 0;
+
 	while (files[i])
 	{
 		cfgfile = cfg_open_file(files[i]);
@@ -56,23 +60,32 @@ void load_rtvars(gchar **files, struct Rtv_Data *rtv_data)
 			cfg_read_int(cfgfile,"realtime_map", "derived_total",&total);
 			for (j=0;j<total;j++)
 			{
-				tmpbuf = g_strdup_printf("derived_%i",j);
-				cfg_read_string(cfgfile,tmpbuf,"dlog_gui_name",&dlog_name);
-				cfg_read_string(cfgfile,tmpbuf,"internal_name",&int_name);
-				if (g_hash_table_lookup_extended(rtv_data->rtv_hash,int_name,&orig,&value))
+				section = g_strdup_printf("derived_%i",j);
+				cfg_read_string(cfgfile,section,"dlog_gui_name",&dlog_name);
+				if(cfg_read_string(cfgfile,section,"internal_names",&tmpbuf))
 				{
-					tmpi = (gint)value + 1;
-					/*printf("Value on pre-existing var %s is %i\n",(gchar *)orig,(gint)value);*/
-					g_hash_table_replace(rtv_data->rtv_hash,g_strdup(int_name),GINT_TO_POINTER(tmpi));
+					vector = g_strsplit(tmpbuf,",",-1);
+					g_free(tmpbuf);
+					for (k=0;k<g_strv_length(vector);k++)
+					{
+
+						if (g_hash_table_lookup_extended(rtv_data->rtv_hash,vector[k],&orig,&value))
+						{
+							tmpi = (gint)value + 1;
+							/*printf("Value on pre-existing var %s is %i\n",(gchar *)orig,(gint)value);*/
+							g_hash_table_replace(rtv_data->rtv_hash,g_strdup(vector[k]),GINT_TO_POINTER(tmpi));
+						}
+						else
+						{
+							/*printf("inserting var %s with value %i\n",int_name,1);*/
+							g_hash_table_insert(rtv_data->rtv_hash,g_strdup(vector[k]),GINT_TO_POINTER(1));
+							g_hash_table_insert(rtv_data->int_ext_hash,g_strdup(dlog_name),g_strdup(vector[k]));
+							rtv_data->rtv_list = g_list_prepend(rtv_data->rtv_list,g_strdup(dlog_name));
+						}
+					}
+					g_strfreev(vector);
 				}
-				else
-				{
-					/*printf("inserting var %s with value %i\n",int_name,1);*/
-					g_hash_table_insert(rtv_data->rtv_hash,g_strdup(int_name),GINT_TO_POINTER(1));
-					g_hash_table_insert(rtv_data->int_ext_hash,g_strdup(dlog_name),g_strdup(int_name));
-					rtv_data->rtv_list = g_list_prepend(rtv_data->rtv_list,g_strdup(dlog_name));
-				}
-				g_free(tmpbuf);
+				g_free(section);
 				g_free(dlog_name);
 				g_free(int_name);
 			}

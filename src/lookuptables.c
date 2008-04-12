@@ -283,7 +283,7 @@ gint direct_reverse_lookup(gchar *table, gint value)
  associated with the passed object and offset
  \param object (GObject *) container of parameters we need to do the lookup
  \param offset (gint) offset into lookuptable
- \returns the value at that offset of the lokuptable
+ \returns the value at that offset of the lookuptable
  */
 gfloat lookup_data(GObject *object, gint offset)
 {
@@ -321,7 +321,7 @@ gfloat lookup_data(GObject *object, gint offset)
 	if (!lookuptable)
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup_printf(__FILE__": lookup_data()\n\t Lookuptable is NULL for control %s\n",(gchar *) OBJ_GET(object,"internal_name")));
+			dbg_func(g_strdup_printf(__FILE__": lookup_data()\n\t Lookuptable is NULL for control %s\n",(gchar *) OBJ_GET(object,"internal_names")));
 		return 0.0;
 	}
 	return lookuptable->array[offset];

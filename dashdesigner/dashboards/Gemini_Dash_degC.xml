@@ -2,8 +2,8 @@
 <!DOCTYPE dashboard SYSTEM "mtxdashboard.dtd">
 <dashboard>
   <dash_geometry>
-    <width>1024</width>
-    <height>663</height>
+    <width>744</width>
+    <height>636</height>
   </dash_geometry>
   <gauge>
     <width>190</width>
@@ -18,7 +18,7 @@
     <height>164</height>
     <x_offset>399</x_offset>
     <y_offset>260</y_offset>
-    <gauge_xml_name>Speco/Gemini_CLT_Gauge.xml</gauge_xml_name>
+    <gauge_xml_name>Speco/Gemini_CLT_degC_Gauge.xml</gauge_xml_name>
     <datasource>cltdeg</datasource>
   </gauge>
   <gauge>
@@ -34,7 +34,7 @@
     <height>164</height>
     <x_offset>185</x_offset>
     <y_offset>42</y_offset>
-    <gauge_xml_name>Speco/Gemini_MAT_Gauge.xml</gauge_xml_name>
+    <gauge_xml_name>Speco/Gemini_MAT_degC_Gauge.xml</gauge_xml_name>
     <datasource>matdeg</datasource>
   </gauge>
   <gauge>
@@ -79,10 +79,10 @@
   </gauge>
   <gauge>
     <width>124</width>
-    <height>123</height>
-    <x_offset>619</x_offset>
-    <y_offset>255</y_offset>
-    <gauge_xml_name>Speco/Gemini_TPS.xml</gauge_xml_name>
-    <datasource>tpsadc</datasource>
+    <height>124</height>
+    <x_offset>620</x_offset>
+    <y_offset>253</y_offset>
+    <gauge_xml_name>Speco/Gemini_TPS_percentage.xml</gauge_xml_name>
+    <datasource>tpspercent</datasource>
   </gauge>
 </dashboard>
