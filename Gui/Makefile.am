@@ -25,6 +25,8 @@ gui_files = 	README \
 		logviewer.datamap \
 		memviewer.glade \
 		memviewer.datamap \
+		ms2-warmup.glade \
+		ms2-warmup.datamap \
 		msns-e-accelwizard.glade \
 		msns-e-accelwizard-029x.datamap \
 		msns-e-advanced.glade \
