@@ -49,8 +49,8 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	gint page = -1;
 	gint offset = -1;
 	DataSize size = MTX_U08;
-	signed long int lower = -1;
-	signed long int upper = -1;
+	float lower = 0.0;
+	float upper = 0.0;
 	gint i = 0;
 	GHashTable *hash = NULL;
 	gchar *key_list = NULL;
@@ -68,33 +68,15 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 
 	g_static_mutex_lock(&mutex);
 
+	page = (gint)OBJ_GET(widget,"page");
+	offset = (gint)OBJ_GET(widget,"offset");
+
+	if (!OBJ_GET(widget,"size"))
+		printf(__FILE__": convert_before_download, FATAL ERROR, size undefined for widget at page %i, offset %i!! \n",page,offset);
+
 	size = (DataSize)OBJ_GET(widget,"size");
 
-	if (NULL == OBJ_GET(widget,"raw_lower"))
-	{
-		switch (size)
-		{
-			case MTX_U08:
-			case MTX_U16:
-			case MTX_U32:
-				lower = 0;
-				break;
-			case MTX_CHAR:
-			case MTX_S08:
-				lower = -128;
-				break;
-			case MTX_S16:
-				lower = -32768;
-				break;
-			case MTX_S32:
-				lower = -2147483648;
-				break;
-			default:
-				break;	
-		}
-	}
-	else
-		lower = (gint)OBJ_GET(widget,"raw_lower");
+	lower = (gfloat)(gint)OBJ_GET(widget,"raw_lower");
 
 	if (NULL == OBJ_GET(widget,"raw_upper"))
 	{
@@ -124,10 +106,8 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 		}
 	}
 	else
-		upper = (gint)OBJ_GET(widget,"raw_upper");
+		upper = (gfloat)(gint)OBJ_GET(widget,"raw_upper");
 
-	page = (gint)OBJ_GET(widget,"page");
-	offset = (gint)OBJ_GET(widget,"offset");
 	if (OBJ_GET(widget,"multi_expr_keys"))
 	{
 		if (!OBJ_GET(widget,"dl_eval_hash"))
@@ -219,12 +199,11 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 				dbg_func(g_strdup(__FILE__": convert_before_download()\n\t WARNING value clamped at 0 (no eval)!!\n"));
 			value = lower;
 		}
-		return_value = value;
+		return_value = (gint)value;
 	}
 	else
 	{
-		/*return_value = evaluator_evaluate_x(evaluator,value)+0.001; */
-		return_value = evaluator_evaluate_x(evaluator,value);
+		return_value = evaluator_evaluate_x(evaluator,value)+0.001; 
 
 		if (dbg_lvl & CONVERSIONS)
 			dbg_func(g_strdup_printf(__FILE__": convert_before_dl():\n\tpage %i, offset %i, raw %.2f, sent %i\n",page, offset,value,return_value));
@@ -245,7 +224,7 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 
 	tmpi = return_value;
 	 if (OBJ_GET(widget,"lookuptable"))
-		return_value = reverse_lookup(G_OBJECT(widget),tmpi);
+		return_value = (gint)reverse_lookup(G_OBJECT(widget),tmpi);
 
 	g_static_mutex_unlock(&mutex);
 	return (return_value);

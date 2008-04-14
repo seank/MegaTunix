@@ -76,5 +76,6 @@ tooltip="Write internal log to disk" is a new feature.  By default megatunix wil
 keys=page,create_tags
 key_types=_INT_,_STRING_
 page=0
-create_tags=warning
+create_tags=warning,info
 warning=foreground,red
+info=foreground,dark green

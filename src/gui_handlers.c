@@ -643,6 +643,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	gboolean is_float = FALSE;
 	gboolean use_color = FALSE;
 	DataSize size = 0;
+	gint raw_lower = 0;
 	gint raw_upper = 0;
 	GdkColor color;
 	extern Firmware_Details *firmware;
@@ -668,6 +669,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 		base = (gint)OBJ_GET(widget,"base");
 	precision = (gint)OBJ_GET(widget,"precision");
 	is_float = (gboolean)OBJ_GET(widget,"is_float");
+	raw_lower = (gint)OBJ_GET(widget,"raw_lower");
 	raw_upper = (gint)OBJ_GET(widget,"raw_upper");
 	use_color = (gboolean)OBJ_GET(widget,"use_color");
 
@@ -2063,10 +2065,10 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 			}
 			retval = TRUE;
 			break;
-		case GDK_minus:
+	//	case GDK_minus:
 		case GDK_W:
 		case GDK_w:
-		case GDK_KP_Subtract:
+	//	case GDK_KP_Subtract:
 			if (reverse_keys)
 			{
 				if (value <= (upper-1))

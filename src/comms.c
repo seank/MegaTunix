@@ -110,7 +110,7 @@ gint comms_test()
 			dbg_func(g_strdup(__FILE__": comms_test()\n\tECU Comms Test Successfull\n"));
 		queue_function(g_strdup("kill_conn_warning"));
 		thread_update_widget(g_strdup("titlebar"),MTX_TITLE,g_strdup("ECU Connected..."));
-		thread_update_logbar("comms_view",NULL,g_strdup_printf("ECU Comms Test Successfull\n"),FALSE,FALSE);
+		thread_update_logbar("comms_view","info",g_strdup_printf("ECU Comms Test Successfull\n"),FALSE,FALSE);
 
 	}
 	else

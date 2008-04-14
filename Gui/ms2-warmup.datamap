@@ -131,24 +131,27 @@ tooltip=The Cold Advance Table adds This amount of ignition advance (-10<->10 is
 
 #----- Widgets ---------------------------------------------------------------
 
+[baro_twopoint_frame]
+keys=bind_to_list
+key_types=_STRING_
+bind_to_list=twopoint_controls
+
+[prime_twopoint_frame]
+keys=bind_to_list
+key_types=_STRING_
+bind_to_list=twopoint_controls
+
 [ase_twopoint_table]
-keys=page,bind_to_list
-key_types=_INT_,_STRING_
-page=4
+keys=bind_to_list
+key_types=_STRING_
 bind_to_list=twopoint_controls
 
 [warmup_tables_frame]
-keys=page,bind_to_list
-key_types=_INT_,_STRING_
-page=4
+keys=bind_to_list
+key_types=_STRING_
 bind_to_list=table_controls
 
 #----- Labels ----------------------------------------------------------------
-
-[topframe]
-keys=tab_ident
-key_types=_ENUM_
-tab_ident=_WARMUPTABLES_TAB_
 
 [topframe_title]
 keys=set_label
@@ -730,4 +733,48 @@ key_types=_INT_,_ENUM_
 size=_S16_
 offset=580
 
+[cold_prime_entry]
+keys=offset,size,is_float,precision,raw_lower,raw_upper,dl_conv_expr,ul_conv_expr
+key_types=_INT_,_ENUM_,_BOOL_,_INT_,_INT_,_INT_,_STRING_,_STRING_
+offset=566
+size=_S16_
+raw_lower=0
+raw_upper=650
+is_float=TRUE
+precision=1
+dl_conv_expr=x*10
+ul_conv_expr=x/10
+
+[hot_prime_entry]
+keys=offset,size,is_float,precision,raw_lower,raw_upper,dl_conv_expr,ul_conv_expr
+key_types=_INT_,_ENUM_,_BOOL_,_INT_,_INT_,_INT_,_STRING_,_STRING_
+offset=568
+size=_S16_
+raw_lower=0
+raw_upper=650
+is_float=TRUE
+precision=1
+dl_conv_expr=x*10
+ul_conv_expr=x/10
+
+[prime_delay_entry]
+keys=offset
+key_types=_INT_
+offset=909
+
+[baro_total_vac_entry]
+keys=offset,size,raw_lower,raw_upper
+key_types=_INT_,_ENUM_,_INT_,_INT_
+offset=534
+size=_S16_
+raw_lower=-3276
+raw_upper=3276
+
+[baro_rate_entry]
+keys=offset,size,raw_lower,raw_upper
+key_types=_INT_,_ENUM_,_INT_,_INT_
+offset=536
+size=_S16_
+raw_lower=-200
+raw_upper=200
 

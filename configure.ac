@@ -197,6 +197,7 @@ gaugedesigner/gauges/UltraLite/Makefile
 gaugedesigner/gauges/Cobalt/Makefile
 gaugedesigner/gauges/Impact/Makefile
 gaugedesigner/gauges/Honda/Makefile
+gaugedesigner/gauges/Ghost/Makefile
 src/resources.rc
 widgets/Makefile
 dashdesigner/Makefile

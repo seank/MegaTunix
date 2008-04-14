@@ -347,4 +347,8 @@ void finalize_core_gui(GladeXML * xml)
 			"warning",
 			"foreground",
 			"red", NULL);
+	gtk_text_buffer_create_tag(textbuffer,
+			"info",
+			"foreground",
+			"dark green", NULL);
 }

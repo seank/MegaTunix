@@ -469,7 +469,7 @@ void *restore_update(gpointer data)
 		}
 
 	}
-	thread_update_logbar("tools_view","warning",g_strdup_printf("All Transactions complete\n"),FALSE,FALSE);
+	thread_update_logbar("tools_view","info",g_strdup_printf("All Transactions complete\n"),FALSE,FALSE);
 
 	return NULL;
 }
