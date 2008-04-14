@@ -203,7 +203,7 @@ gint convert_before_download(GtkWidget *widget, gfloat value)
 	}
 	else
 	{
-		return_value = evaluator_evaluate_x(evaluator,value)+0.001; 
+		return_value = evaluator_evaluate_x(evaluator,value)+0.00001; 
 
 		if (dbg_lvl & CONVERSIONS)
 			dbg_func(g_strdup_printf(__FILE__": convert_before_dl():\n\tpage %i, offset %i, raw %.2f, sent %i\n",page, offset,value,return_value));
