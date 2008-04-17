@@ -476,9 +476,9 @@ MS_Signature=_SUBMATCH_,MS2/Extra 2.0RC2b
 
 [gui]
 RealtimeMapFile=MS2-Extra
-SliderMapFile=MS2-Std-firmware
-RuntimeTextMapFile=MS2-Std-firmware
-StatusMapFile=MS2-Std-firmware
+SliderMapFile=MS2-Extra-firmware
+RuntimeTextMapFile=MS2-Extra-firmware
+StatusMapFile=MS2-Extra-firmware
 
 #LoadTabs=runtime,datalogging,logviewer,tools,ms2-warmup,vetable_12x12x3,sparktable_12x12x1,afrtable_12x12x2
 #TabConfs=runtime,datalogging,logviewer,tools,ms2-warmup,vetable_12x12x3-MS-II-Extra,sparktable_12x12x1-MS-II,afrtable_12x12x2-MS-II-Extra
