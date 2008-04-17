@@ -3,9 +3,9 @@ major=1
 minor=1
 
 [realtime_map]
-applicable_firmwares=MS-II V2.88
-applicable_signatures=** V2.88Embedded Code by B&G **
-derived_total=65
+applicable_firmwares=MS-II V2.0 RC2
+applicable_signatures=MS2/Extra 2.0RC2b
+derived_total=68
 raw_list=raw_secl
 #raw_list=raw_secl,baroadc,barovolt,barokpa,mapadc,mapvolt,mapkpa,matadc,matvolt,matdeg,cltadc,cltvolt,cltdeg,tpsadc,tpsvolt,tpspercent,battadc,battvolt,o2adc,o2volt,afr,egocorr,aircorr,warmcorr,raw_rpm,pw,tpsaccel,barocorr,gammae,vecurr,sparkangle
 
@@ -49,8 +49,8 @@ offset=2
 size=_U16_
 lower_limit=0
 upper_limit=65
-dl_conv_expr=x*1000
-ul_conv_expr=x/1000
+dl_conv_expr=x/0.000666
+ul_conv_expr=x*0.000666
 is_float=TRUE
 tooltip="PW" is the pulsewidth for injector channel 1. Resolution of 1 us.
 log_by_default=TRUE
@@ -65,8 +65,8 @@ offset=4
 size=_U16_
 lower_limit=0
 upper_limit=65
-dl_conv_expr=x*1000
-ul_conv_expr=x/1000
+dl_conv_expr=x/0.000666
+ul_conv_expr=x*0.000666
 is_float=TRUE
 tooltip="PW2" is the pulsewidth for injector channel 2. Resolution of 1 us.
 log_by_default=TRUE
@@ -1098,3 +1098,46 @@ ul_conv_expr=(x-100)*1.587
 is_float=TRUE
 tooltip="Fuel Comp." is composition factor based on how much ethanol is in the fuel.
 log_by_default=TRUE
+
+[derived_66]
+keys=internal_names,dlog_gui_name,dlog_field_name,offset,complex_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
+key_types=_STRING_,_STRING_,_STRING_,_INT_,_BOOL_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
+internal_names=afr_err_l
+dlog_gui_name=AFR Error Left
+dlog_field_name=AfrErrL
+offset=12
+lower_limit=-25
+upper_limit=25
+complex_expr=TRUE
+ul_conv_expr=(afr/10)-(afrtgt/10)
+expr_symbols=afr,afrtgt
+expr_types=_RAW_VAR_,_RAW_VAR_
+afr_offset=28
+afr_size=_S16_
+afrtgt_offset=12
+afttgt_size=_U08_
+is_float=TRUE
+tooltip="AFR Error Left" is the difference between target AFR and actual AFR for the first O2 channel
+log_by_default=TRUE
+
+[derived_67]
+keys=internal_names,dlog_gui_name,dlog_field_name,offset,complex_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
+key_types=_STRING_,_STRING_,_STRING_,_INT_,_BOOL_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
+internal_names=afr_err_r
+dlog_gui_name=AFR Error right
+dlog_field_name=AfrErrR
+offset=13
+lower_limit=-25
+upper_limit=25
+complex_expr=TRUE
+ul_conv_expr=(afr/10)-(afrtgt/10)
+expr_symbols=afr,afrtgt
+expr_types=_RAW_VAR_,_RAW_VAR_
+afr_offset=30
+afr_size=_S16_
+afrtgt_offset=13
+afttgt_size=_U08_
+is_float=TRUE
+tooltip="AFR Error Right" is the difference between target AFR and actual AFR for the second O2 channel.
+log_by_default=TRUE
+

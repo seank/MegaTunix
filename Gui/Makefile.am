@@ -7,6 +7,7 @@ gui_files = 	README \
 		afrtable_8x8x2-029x.datamap \
 		afrtable_12x12x2.glade \
 		afrtable_12x12x2-MS-II.datamap \
+		afrtable_12x12x2-MS-II-Extra.datamap \
 		boost_6x6x3-029x.datamap \
 		boost_6x6x3.glade \
 		B_n_G_constants.glade \
@@ -66,10 +67,12 @@ gui_files = 	README \
 		rotary-trail.glade \
 		runtime.glade \
 		runtime.datamap \
-		sparktable_12x12x2-029x.datamap \
-		sparktable_12x12x2.glade \
-		sparktable_12x12x1-MS-II.datamap \
 		sparktable_12x12x1.glade \
+		sparktable_12x12x1-MS-II.datamap \
+		sparktable_12x12x2.glade \
+		sparktable_12x12x2-029x.datamap \
+		sparktable_12x12x3.glade \
+		sparktable_12x12x3-MS-II-Extra.datamap \
 		sparktable_8x8e.glade \
 		sparktable_8x8e-EDIS.datamap \
 		sparktable_8x8e-Std.datamap \
