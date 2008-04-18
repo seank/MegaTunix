@@ -33,7 +33,7 @@ rpmk_offset=98
 cfg11_offset=116
 cfg12_offset=117
 cfg13_offset=118
-x_page=4
+x_page=0
 x_base_offset=374
 x_bincount=12
 x_size=_U16_
@@ -41,7 +41,7 @@ x_source=rpm
 x_suffix=RPM
 x_conv_expr=x*1
 x_precision=0
-y_page=4
+y_page=0
 y_base_offset=422
 y_bincount=12
 y_size=_S16_
@@ -56,7 +56,7 @@ y_precision=1
 #y_suffixes=TPS %,KPa,KPa
 #y_conv_exprs=x/10,x/10,x/10
 #y_precisions=0,0,0
-z_page=5
+z_page=1
 z_base_offset=0
 z_size=_U08_
 z_source=vecurr1
@@ -73,7 +73,7 @@ rpmk_offset=98
 cfg11_offset=116
 cfg12_offset=117
 cfg13_offset=118
-x_page=4
+x_page=0
 x_base_offset=374
 x_bincount=12
 x_size=_U16_
@@ -81,7 +81,7 @@ x_source=rpm
 x_suffix=RPM
 x_conv_expr=x*1
 x_precision=0
-y_page=4
+y_page=0
 y_base_offset=422
 y_bincount=12
 y_size=_S16_
@@ -96,7 +96,7 @@ y_precision=1
 #y_suffixes=TPS %,KPa,KPa
 #y_conv_exprs=x/10,x/10,x/10
 #y_precisions=0,0,0
-z_page=5
+z_page=1
 z_base_offset=144
 z_size=_U08_
 z_source=vecurr1
@@ -107,7 +107,7 @@ z_precision=0
 [table_2]
 table_name=Spark Advance Table 1, MS-II STD
 is_fuel=FALSE
-x_page=4
+x_page=0
 x_base_offset=398
 x_bincount=12
 x_size=_U16_
@@ -115,7 +115,7 @@ x_source=rpm
 x_suffix=RPM
 x_conv_expr=x*1
 x_precision=0
-y_page=4
+y_page=0
 y_base_offset=446
 y_bincount=12
 y_size=_S16_
@@ -130,7 +130,7 @@ y_precision=1
 #y_suffixes=TPS %,KPa,KPa
 #y_conv_exprs=x/10,x/10,x/10
 #y_precisions=0,0,0
-z_page=5
+z_page=1
 z_base_offset=288
 z_size=_S16_
 z_source=sparkangle
@@ -141,7 +141,7 @@ z_precision=1
 [table_3]
 table_name=AFR Table 1
 is_fuel=FALSE
-x_page=4
+x_page=0
 x_base_offset=374
 x_bincount=12
 x_size=_U16_
@@ -149,7 +149,7 @@ x_source=rpm
 x_suffix=RPM
 x_conv_expr=x*1
 x_precision=0
-y_page=4
+y_page=0
 y_base_offset=422
 y_bincount=12
 y_size=_S16_
@@ -164,7 +164,7 @@ y_precision=1
 #y_suffixes=TPS %,KPa,KPa
 #y_conv_exprs=x/10,x/10,x/10
 #y_precisions=0,0,0
-z_page=4
+z_page=0
 z_base_offset=48
 z_size=_U08_
 z_source=afr1
@@ -175,7 +175,7 @@ z_precision=1
 [table_4]
 table_name=AFR Table 2
 is_fuel=FALSE
-x_page=4
+x_page=0
 x_base_offset=374
 x_bincount=12
 x_size=_U16_
@@ -183,7 +183,7 @@ x_source=rpm
 x_suffix=RPM
 x_conv_expr=x*1
 x_precision=0
-y_page=4
+y_page=0
 y_base_offset=422
 y_bincount=12
 y_size=_S16_
@@ -198,7 +198,7 @@ y_precision=1
 #y_suffixes=TPS %,KPa,KPa
 #y_conv_exprs=x/10,x/10,x/10
 #y_precisions=0,0,0
-z_page=4
+z_page=0
 z_base_offset=192
 z_size=_U08_
 z_source=afr2
@@ -207,33 +207,33 @@ z_conv_expr=x/10
 z_precision=1
 
 [page_0]
-dl_by_default=FALSE
-truepgnum=0
-length=2048
-
-[page_1]
-dl_by_default=FALSE
-truepgnum=1
-length=2048
-
-[page_2]
-dl_by_default=FALSE
-truepgnum=2
-length=2048
-
-[page_3]
-dl_by_default=FALSE
-truepgnum=3
-length=2048
-
-[page_4]
 dl_by_default=TRUE
 truepgnum=4
 length=994
 
-[page_5]
+[page_1]
 dl_by_default=TRUE
 truepgnum=5
+length=946
+
+[page_2]
+dl_by_default=FALSE
+truepgnum=0
+length=2048
+
+[page_3]
+dl_by_default=FALSE
+truepgnum=1
+length=2048
+
+[page_4]
+dl_by_default=FALSE
+truepgnum=2
+length=2048
+
+[page_5]
+dl_by_default=FALSE
+truepgnum=3
 length=946
 
 [page_6]
