@@ -835,6 +835,9 @@ EXPORT gboolean rt_update_logview_traces(gboolean force_redraw)
 
 	if (!((connected) && (interrogated)))
 		return FALSE;
+	
+	if (!lv_data)
+		return FALSE;
 
 	if ((lv_data->traces) && (g_list_length(lv_data->tlist) > 0))
 	{

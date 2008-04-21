@@ -161,7 +161,7 @@ void ve3d_draw_runtime_indicator(Ve_View_3D *, Cur_Vals *);
 void ve3d_draw_axis(Ve_View_3D *, Cur_Vals *);
 void ve3d_draw_active_vertexes_marker(Ve_View_3D *, Cur_Vals *);
 void ve3d_draw_text(gchar * text, gfloat x, gfloat y, gfloat z);
-void ve3d_load_font_metrics(void);
+void ve3d_load_font_metrics(GtkWidget *);
 void reset_3d_view(GtkWidget *);
 Ve_View_3D * initialize_ve3d_view();
 void update_ve3d_if_necessary(int , int );

@@ -762,7 +762,7 @@ void ve3d_realize (GtkWidget *widget, gpointer data)
 	glHint (GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	ve3d_load_font_metrics();
+	ve3d_load_font_metrics(widget);
 
 	gdk_gl_drawable_gl_end (gldrawable);
 	/*** OpenGL END ***/
@@ -1342,25 +1342,25 @@ void ve3d_draw_text(char* text, gfloat x, gfloat y, gfloat z)
 the 
  fonts needed by OpenGL for rendering the text
  */
-void ve3d_load_font_metrics(void)
+void ve3d_load_font_metrics(GtkWidget *widget)
 {
 	PangoFontDescription *font_desc;
 	PangoFont *font;
 	PangoFontMetrics *font_metrics;
-	gchar font_string[] = "sans 10";
+	
 	gint font_height;
+	font_desc = widget->style->font_desc;
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_load_font_metrics()\n"));
 
 	font_list_base = (GLuint) glGenLists (128);
-	font_desc = pango_font_description_from_string (font_string);
 	font = gdk_gl_font_use_pango_font (font_desc, 0, 128, 
 			(int)font_list_base);
 	if (font == NULL)
 	{
 		if (dbg_lvl & (OPENGL|CRITICAL))
-			dbg_func(g_strdup_printf(__FILE__": ve3d_load_font_metrics()\n\tCan't load font '%s' CRITICAL FAILURE\n",font_string));
+			dbg_func(g_strdup_printf(__FILE__": ve3d_load_font_metrics()\n\tCan't load font CRITICAL FAILURE\n"));
 
 		exit (-1);
 	}
