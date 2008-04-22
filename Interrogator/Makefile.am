@@ -8,4 +8,4 @@ tests = README \
 
 tests_DATA = $(tests)
 
-EXTRA_DIST = tests
+EXTRA_DIST = tests comm.xml README
