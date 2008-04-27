@@ -275,6 +275,9 @@
 				<arg>MS2_TABLE_INDEX</arg>
 				<arg>PAUSE_500MS</arg>
 			</args>
+			<post_functions>
+				<function_w_arg>post_single_burn_cb</function_w_arg>
+			</post_functions>
 		</cmd>
 		<cmd>
 			<name>ms2_table_reflash</name>

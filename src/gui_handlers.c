@@ -121,6 +121,14 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	/* Message to trigger serial repair queue to exit immediately */
 	g_async_queue_push(serial_repair_queue,&tmp);
 
+	/* Commits any pending data to ECU flash */
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() before burn\n"));
+	if ((connected) && (interrogated) && (!offline))
+		io_cmd(firmware->burn_all_command,NULL);
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
+
 	if (dbg_lvl & CRITICAL)
 	{
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() configuration saved\n"));
@@ -170,13 +178,6 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 			dbg_func(g_strdup_printf(__FILE__": LEAVE() after iochannel\n"));
 	}
 
-	/* Commits any pending data to ECU flash */
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() before burn\n"));
-	if ((connected) && (interrogated) && (!offline))
-		io_cmd(firmware->burn_all_command,NULL);
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after burn\n"));
 
 	g_static_mutex_lock(&rtv_mutex);  /* <-- this makes us wait */
 	g_static_mutex_unlock(&rtv_mutex); /* now unlock */

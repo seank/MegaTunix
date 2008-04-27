@@ -90,7 +90,7 @@ EXPORT gboolean ms2_burn_all_helper(void *data, XmlCmdType type)
 			OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
 			OBJ_SET(output->object,"canID",GINT_TO_POINTER(firmware->canID));
 			OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
-			output->need_page_change = FALSE;
+			output->need_page_change = TRUE;
 			io_cmd(firmware->burn_command,output);
 		}
 	}
@@ -398,6 +398,24 @@ EXPORT void post_burn_cb()
 			continue;
 		backup_current_data(firmware->canID,i);
 	}
+
+	return;
+}
+
+EXPORT void post_single_burn_cb(void *data)
+{
+	Io_Message *message = (Io_Message *)data;
+	OutputData *output = (OutputData *)message->payload;
+	extern Firmware_Details * firmware;
+	gint page = (gint)OBJ_GET(output->object,"page");
+
+	if (dbg_lvl & SERIAL_WR)
+		dbg_func(g_strdup(__FILE__": post_burn_cb()\n\tBurn to Flash Completed\n"));
+
+	/* sync temp buffer with current burned settings */
+	if (!firmware->page_params[page]->dl_by_default)
+		return;
+	backup_current_data(firmware->canID,page);
 
 	return;
 }

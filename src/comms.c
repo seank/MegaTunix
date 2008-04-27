@@ -209,17 +209,52 @@ EXPORT void update_write_status(void *data)
  \brief burn_ecu_flash() issues the commands to the ECU to burn the contents
  of RAM to flash.
  */
+void burn_ecu_flash(gint page)
+{
+	extern Firmware_Details * firmware;
+	extern volatile gboolean offline;
+	Io_Message *message = NULL;
+	Command *command = NULL;
+	OutputData *output = NULL;
+	GHashTable *commands_hash = NULL;
+	extern GAsyncQueue *pf_dispatch_queue;
+
+
+	if (offline)
+		return;
+
+	if (firmware->capabilities & MS1)
+		burn_ms1_ecu_flash();
+	else if (firmware->capabilities & MS2_EXTRA)
+	{
+
+		commands_hash = OBJ_GET(global_data,"commands_hash");
+		command = g_hash_table_lookup(commands_hash,firmware->burn_command);
+		message = initialize_io_message();
+		message->command = command;
+		output = initialize_outputdata();
+		OBJ_SET(output->object,"canID", GINT_TO_POINTER(firmware->canID));
+		OBJ_SET(output->object,"page", GINT_TO_POINTER(page));
+	        OBJ_SET(output->object,"truepgnum", GINT_TO_POINTER(firmware->page_params[page]->truepgnum));
+		message->payload = output;
+		build_output_string(message,command,output);
+		write_data(message);
+		g_async_queue_ref(pf_dispatch_queue);
+		g_async_queue_push(pf_dispatch_queue,(gpointer)message);
+		g_async_queue_unref(pf_dispatch_queue);
+	}
+
+}
+
+
 void burn_ms1_ecu_flash()
 {
 	Io_Message *message = NULL;
 	Command *command = NULL;
 	GHashTable *commands_hash = NULL;
 	extern Firmware_Details * firmware;
-	extern volatile gboolean offline;
 	extern GAsyncQueue *pf_dispatch_queue;
 
-	if (offline)
-		return;
 	commands_hash = OBJ_GET(global_data,"commands_hash");
 	command = g_hash_table_lookup(commands_hash,firmware->burn_command);
 	message = initialize_io_message();
@@ -253,7 +288,8 @@ void set_ms_page(guint8 ms_page)
 	gchar * err_text = NULL;
 	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 
-	/*printf("fed_page %i, last_page %i\n",ms_page,last_page); */
+
+//	printf("fed_page %i, last_page %i\n",ms_page,last_page); 
 	g_static_mutex_lock(&serio_mutex);
 	g_static_mutex_lock(&mutex);
 
@@ -266,23 +302,27 @@ void set_ms_page(guint8 ms_page)
 	/* If current page is NOT a dl_by_default page, and last page WAS,
 	 * then force a burn, otherwise data will be lost. 
 	 */
-	if ((ms_page > firmware->ro_above) && (last_page <= firmware->ro_above))
+	//if ((ms_page > firmware->ro_above) && (last_page <= firmware->ro_above))
+	if ((!firmware->page_params[ms_page]->dl_by_default) && (firmware->page_params[last_page]->dl_by_default))
 	{
+//		printf("current not dl by default, but last was,  burning!!\n");
 		g_static_mutex_unlock(&serio_mutex);
-		burn_ms1_ecu_flash();
+		burn_ecu_flash(last_page);
 		g_static_mutex_lock(&serio_mutex);
 		goto force_change;
 	}
 	/* If current OR last page is NOT a dl_by_default page,  then
 	 * skip burning and move on. 
 	 */
-	if ((ms_page > firmware->ro_above) || (last_page > firmware->ro_above))
+	//if ((ms_page > firmware->ro_above) || (last_page > firmware->ro_above))
+	if ((!firmware->page_params[ms_page]->dl_by_default) || (!firmware->page_params[last_page]->dl_by_default))
 		goto skip_change;
 
 	if (((ms_page != last_page) && (((memcmp(ecu_data_last[last_page],ecu_data[last_page],firmware->page_params[last_page]->length) != 0)) || ((memcmp(ecu_data_last[ms_page],ecu_data[ms_page],firmware->page_params[ms_page]->length) != 0)))))
 	{
+//		printf("data not burnt yet in page %i burning!!\n",last_page);
 		g_static_mutex_unlock(&serio_mutex);
-		burn_ms1_ecu_flash();
+		burn_ecu_flash(last_page);
 		g_static_mutex_lock(&serio_mutex);
 	}
 skip_change:
@@ -295,6 +335,16 @@ skip_change:
 	}
 
 force_change:
+	/* MS2 page changing is diffent and handled elsewhere.. */
+	if (firmware->capabilities & MS2)
+	{
+//		printf("ms2 page change not cared about\n");
+		g_static_mutex_unlock(&serio_mutex);
+		g_static_mutex_unlock(&mutex);
+		force_page_change = FALSE;
+		last_page = ms_page;
+		return;
+	}
 	if (dbg_lvl & SERIAL_WR)
 		dbg_func(g_strdup_printf(__FILE__": set_ms_page()\n\tSetting Page to \"%i\" with \"%s\" command...\n",ms_page,firmware->page_cmd));
 
@@ -370,12 +420,9 @@ void write_data(Io_Message *message)
 
 		if ((firmware->multi_page ) && 
 				(output->need_page_change) && 
-				(!(firmware->capabilities & MS2))) 
-		{
-//			g_static_mutex_unlock(&serio_mutex);
-			set_ms_page(firmware->page_params[page]->truepgnum);
-//			g_static_mutex_lock(&serio_mutex);
-		}
+				((firmware->capabilities & MS2_EXTRA) ||
+				 (firmware->capabilities & MS1 )))
+			set_ms_page(page);
 	}
 
 	if (offline)

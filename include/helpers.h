@@ -32,6 +32,8 @@ void reset_temps_cb(void);
 void simple_read_cb(void *, XmlCmdType);
 gboolean read_ve_const(void *, XmlCmdType);
 gboolean ms2_burn_all_helper(void *, XmlCmdType);
+void post_single_burn_cb(void *data);
+void post_burn_cb(void);
 /* Prototypes */
 
 #endif

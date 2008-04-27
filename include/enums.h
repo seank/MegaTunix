@@ -148,7 +148,9 @@ typedef enum
 typedef enum
 {	
 	RED=0xc0,
-	BLACK
+	BLACK,
+	GREEN,
+	BLUE
 }GuiColor;
 
 typedef enum

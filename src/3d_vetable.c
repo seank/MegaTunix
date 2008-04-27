@@ -50,6 +50,7 @@
 static GLuint font_list_base;
 extern gint dbg_lvl;
 extern GObject *global_data;
+extern GdkColor black;
 
 
 #define DEFAULT_WIDTH  640
@@ -322,6 +323,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)RED);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("x_active_label_%i",table_num);
@@ -331,6 +333,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)RED);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("y_active_label_%i",table_num);
@@ -340,6 +343,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)RED);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("z_active_label_%i",table_num);
@@ -354,6 +358,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("x_runtime_label_%i",table_num);
@@ -363,6 +368,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("y_runtime_label_%i",table_num);
@@ -372,6 +378,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
+	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("z_runtime_label_%i",table_num);

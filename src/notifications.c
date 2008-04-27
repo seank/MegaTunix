@@ -24,6 +24,7 @@
 
 extern GdkColor red;
 extern GdkColor black;
+extern GdkColor green;
 static gboolean warning_present = FALSE;
 static GtkWidget *warning_dialog;
 extern gint dbg_lvl;
@@ -64,7 +65,7 @@ void set_reqfuel_color(GuiColor color, gint table_num)
  \brief set_widget_color() sets all the widgets in the passed group to 
  the color passed.
  \param widget (gpointer) the widget to  change color
- \param color (gpointer) enumeration of the color to switch to..
+ \param color (GuiColor) enumeration of the color to switch to..
  */
 void set_widget_color(gpointer widget, gpointer color)
 {
@@ -115,6 +116,31 @@ void set_widget_color(gpointer widget, gpointer color)
 				gtk_widget_modify_text(GTK_WIDGET(widget),
 						GTK_STATE_INSENSITIVE,&black);
 			}
+			break;
+		case GREEN:
+			if (GTK_IS_BUTTON(widget))
+			{
+				gtk_widget_modify_fg(GTK_BIN(widget)->child,
+						GTK_STATE_NORMAL,&green);
+				gtk_widget_modify_fg(GTK_BIN(widget)->child,
+						GTK_STATE_PRELIGHT,&green);
+			}
+			else if (GTK_IS_LABEL(widget))
+			{
+				gtk_widget_modify_fg(widget,
+						GTK_STATE_NORMAL,&green);
+				gtk_widget_modify_fg(widget,
+						GTK_STATE_PRELIGHT,&green);
+			}
+			else
+			{	
+				gtk_widget_modify_text(GTK_WIDGET(widget),
+						GTK_STATE_NORMAL,&green);
+				gtk_widget_modify_text(GTK_WIDGET(widget),
+						GTK_STATE_INSENSITIVE,&green);
+			}
+			break;
+		default:
 			break;
 	}
 }
