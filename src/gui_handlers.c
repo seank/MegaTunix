@@ -14,6 +14,7 @@
 #include <3d_vetable.h>
 #include <args.h>
 #include <config.h>
+#include <combo_loader.h>
 #include <conversions.h>
 #include <datamgmt.h>
 #include <datalogging_gui.h>
@@ -1024,6 +1025,64 @@ EXPORT gboolean std_button_handler(GtkWidget *widget, gpointer data)
 			if (dbg_lvl & CRITICAL)
 				dbg_func(g_strdup(__FILE__": std_button_handler()\n\t Standard button not handled properly, BUG detected\n"));
 	}		
+	return TRUE;
+}
+
+
+/*!
+ \brief std_combo_handler() handles all combo boxes
+ \param widget (GtkWidget *) the widget being modified
+ \param data (gpointer) not used
+ \returns TRUE
+ */
+EXPORT gboolean std_combo_handler(GtkWidget *widget, gpointer data)
+{
+	GtkTreeIter iter;
+	GtkTreeModel *model = NULL;
+	gboolean state = FALSE;
+	guint8 bitmask = 0;
+	guint8 bitshift = 0;
+	guint8 bitval = 0;
+	gint page = 0;
+	gint offset = 0;
+	gint canID = 0;
+	DataSize size = MTX_U08;
+	gchar * choice = NULL;
+	guint8 tmp = 0;
+	gint dload_val = 0;
+	gint dl_type = 0;
+
+	page = (gint) OBJ_GET(widget,"page");
+	offset = (gint) OBJ_GET(widget,"offset");
+	dl_type = (gint) OBJ_GET(widget,"dl_type");
+	canID = (gint)OBJ_GET(widget,"canID");
+	bitmask = (gint)OBJ_GET(widget,"bitmask");
+	bitshift = (gint)OBJ_GET(widget,"bitshift");
+	size = (DataSize)OBJ_GET(widget,"size");
+
+	state = gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget),&iter);
+	model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+        gtk_tree_model_get(model,&iter,CHOICE_COL,&choice,-1);
+	bitval = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+	printf("choice %s, bitmask %i, bitshift %i bitval %i\n",choice,bitmask,bitshift, bitval );
+
+	tmp = get_ecu_data(canID,page,offset,size);
+	tmp = tmp & ~bitmask;	/*clears bits */
+	tmp = tmp | (bitval << bitshift);
+	dload_val = tmp;
+	if (dload_val == get_ecu_data(canID,page,offset,size))
+	{
+		printf("dload val matched ecu settings, not changing\n");
+		return FALSE;
+	}
+
+	if (dl_type == IMMEDIATE)
+	{
+		dload_val = convert_before_download(widget,dload_val);
+		send_to_ecu(canID, page, offset, size, dload_val, TRUE);
+	}
+	else
+		printf("dl_type is not immediate, skipping\n");
 	return TRUE;
 }
 

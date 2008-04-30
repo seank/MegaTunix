@@ -13,6 +13,7 @@
 
 #include <config.h>
 #include <configfile.h>
+#include <combo_loader.h>
 #include <defines.h>
 #include <debugging.h>
 #include <dep_loader.h>
@@ -583,6 +584,14 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 	if (cfg_read_string(cfgfile,section,"temp_dep",&tmpbuf))
 	{
 		OBJ_SET(widget,"widget_temp",OBJ_GET(global_data,"temp_units"));
+		g_free(tmpbuf);
+	}
+
+	/* If this widget has the "choices" key (combobox)
+	*/
+	if (cfg_read_string(cfgfile,section,"choices",&tmpbuf))
+	{
+		combo_setup(G_OBJECT(widget),cfgfile,section);
 		g_free(tmpbuf);
 	}
 

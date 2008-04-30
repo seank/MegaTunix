@@ -8,6 +8,7 @@ headers = \
 	binreloc.h \
 	comms.h \
         comms_gui.h \
+        combo_loader.h \
         configfile.h \
         conversions.h \
         core_gui.h \

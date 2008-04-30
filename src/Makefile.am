@@ -17,6 +17,7 @@ megatunix_SOURCES = \
 	args.c \
 	comms.c \
 	comms_gui.c \
+	combo_loader.c \
 	conversions.c \
 	core_gui.c \
 	dashboard.c \
