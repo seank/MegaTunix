@@ -1065,7 +1065,7 @@ EXPORT gboolean std_combo_handler(GtkWidget *widget, gpointer data)
 	model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
         gtk_tree_model_get(model,&iter,CHOICE_COL,&choice,-1);
 	bitval = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-	printf("choice %s, bitmask %i, bitshift %i bitval %i\n",choice,bitmask,bitshift, bitval );
+//	printf("choice %s, bitmask %i, bitshift %i bitval %i\n",choice,bitmask,bitshift, bitval );
 
 	tmp = get_ecu_data(canID,page,offset,size);
 	tmp = tmp & ~bitmask;	/*clears bits */
@@ -1073,7 +1073,7 @@ EXPORT gboolean std_combo_handler(GtkWidget *widget, gpointer data)
 	dload_val = tmp;
 	if (dload_val == get_ecu_data(canID,page,offset,size))
 	{
-		printf("dload val matched ecu settings, not changing\n");
+//		printf("dload val matched ecu settings, not changing\n");
 		return FALSE;
 	}
 
@@ -1082,8 +1082,6 @@ EXPORT gboolean std_combo_handler(GtkWidget *widget, gpointer data)
 		dload_val = convert_before_download(widget,dload_val);
 		send_to_ecu(canID, page, offset, size, dload_val, TRUE);
 	}
-	else
-		printf("dl_type is not immediate, skipping\n");
 	return TRUE;
 }
 
@@ -1671,6 +1669,8 @@ void update_widget(gpointer object, gpointer user_data)
 	gint bitval = -1;
 	gint bitshift = -1;
 	gint bitmask = -1;
+	gint bits = 0;
+	gint highbit = 0;
 	gint base = -1;
 	gint precision = -1;
 	gint spconfig_offset = 0;
@@ -1936,10 +1936,17 @@ void update_widget(gpointer object, gpointer user_data)
 	}
 	else if (GTK_IS_COMBO_BOX(widget))
 	{
-		printf("Combo at page %i, offset %i, bitmask %i, bitshift %i, value %i\n",page,offset,bitmask,bitshift,(gint)value);
+//		printf("Combo at page %i, offset %i, bitmask %i, bitshift %i, value %i\n",page,offset,bitmask,bitshift,(gint)value);
 		tmpbuf = OBJ_GET(widget,"choices");
 		choices = parse_keys(tmpbuf,&num_choices,",");
-		tmpi = (gint)pow(2,(double)(bitmask >> bitshift));
+		g_strfreev(choices);
+		bits = bitmask >> bitshift;
+		for (i=0;i<8;i++)
+		{
+			if (bits & (gint)(pow(2,i)))
+				highbit = i+1;
+		}
+		tmpi = (gint)pow(2,(double)highbit);
 
 		if (tmpi != num_choices)
 		{
