@@ -464,7 +464,12 @@ void write_data(Io_Message *message)
 			{
 //				printf("comms.c data[%i] is %i\n",j,block->data[j]);
 				if (dbg_lvl & (SERIAL_WR))
-					dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j+1,block->len,block->data[j]));
+				{
+					if (i == 0)
+						dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\", (\"%c\")\n",i,j+1,block->len,block->data[j], (gchar)block->data[j]));
+					else
+						dbg_func(g_strdup_printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j+1,block->len,block->data[j]));
+				}
 //				printf(__FILE__": write_data()\n\tWriting argument %i byte %i of %i, \"%i\"\n",i,j+1,block->len,block->data[j]);
 				res = write (serial_params->fd,&(block->data[j]),1);	/* Send write command */
 				if (res != 1)

@@ -34,6 +34,7 @@
 #include <logviewer_events.h>
 #include <logviewer_gui.h>
 /*#include <multitherm.h>*/
+#include <math.h>
 #include <offline.h>
 #include <mode_select.h>
 #include <notifications.h>
@@ -1685,6 +1686,11 @@ void update_widget(gpointer object, gpointer user_data)
 	gchar **vector = NULL;
 	gchar * widget_text = NULL;
 	gchar * group_2_update = NULL;
+	gchar **choices = NULL;
+	gint num_choices = 0;
+	GtkTreeIter iter;
+	GtkTreeModel *model = NULL;
+	gchar * path = NULL;
 	gdouble spin_value = 0.0; 
 	gboolean update_color = TRUE;
 	GdkColor color;
@@ -1927,6 +1933,31 @@ void update_widget(gpointer object, gpointer user_data)
 				}
 			}
 		}
+	}
+	else if (GTK_IS_COMBO_BOX(widget))
+	{
+		printf("Combo at page %i, offset %i, bitmask %i, bitshift %i, value %i\n",page,offset,bitmask,bitshift,(gint)value);
+		tmpbuf = OBJ_GET(widget,"choices");
+		choices = parse_keys(tmpbuf,&num_choices,",");
+		tmpi = (gint)pow(2,(double)(bitmask >> bitshift));
+
+		if (tmpi != num_choices)
+		{
+			printf("BIG PROBLEM, combobox choices %i and bits %i don't match up\n",num_choices,tmpi);
+		}
+		tmpi = ((gint)value & bitmask) >> bitshift;
+		if (tmpi > num_choices)
+			printf("BIG PROBLEM, combobox data exceeds bounds of combobox offset %i, bitmask %i, bitshift %i, value %i\n",offset,bitmask,bitshift,tmpi);
+
+		model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+		path = g_strdup_printf("%i",tmpi);
+		gtk_tree_model_get_iter_from_string (model, &iter, path);
+		g_free(path);
+		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget),&iter);
+
+
+
+
 	}
 	else if (GTK_IS_CHECK_BUTTON(widget))
 	{

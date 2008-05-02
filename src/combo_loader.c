@@ -32,7 +32,6 @@ extern GObject *global_data;
 void combo_setup(GObject *object, ConfigFile *cfgfile, gchar * section)
 {
 	gchar *tmpbuf = NULL;
-	gchar *key = NULL;
 	gchar ** choices = NULL;
 	gint num_choices = 0;
 	gint i = 0;
@@ -44,8 +43,6 @@ void combo_setup(GObject *object, ConfigFile *cfgfile, gchar * section)
 	GtkTreeIter iter;
         GtkCellRenderer *renderer;
 
-
-
 	cfg_read_string(cfgfile,section,"choices",&tmpbuf);
 	choices = parse_keys(tmpbuf,&num_choices,",");
 	g_free(tmpbuf);
@@ -53,15 +50,13 @@ void combo_setup(GObject *object, ConfigFile *cfgfile, gchar * section)
 	cfg_read_int(cfgfile,section,"bitmask",&bitmask);
 	cfg_read_int(cfgfile,section,"bitshift",&bitshift);
 	bits = bitmask >> bitshift;
-	tmpi = (gint)exp2((double)bits);
+	tmpi = (gint)pow(2,(double)bits);
 
 	if (tmpi != num_choices)
 	{
 		printf("BIG PROBLEM, combobox  choices %i and bits %i don't match up\n",num_choices,tmpi);
 		return;
 	}
-	else
-		printf("all is OK\n");
 
 	store = gtk_list_store_new(COMBO_COLS,G_TYPE_STRING,G_TYPE_INT,G_TYPE_INT);
 
