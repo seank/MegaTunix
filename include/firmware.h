@@ -65,7 +65,7 @@ struct _Firmware_Details
 	gchar *burn_all_command;/*! New burn all command string */
 	gchar *burn_command;	/*! New burn command string */
 	gchar *raw_mem_command;	/*! New raw_mem command string */
-	gchar *page_cmd;	/*! Command to send to change pages ... */
+	gchar *page_command;	/*! New page change command */
 	gchar *SignatureVia;	/*! Key to retrieve signature string */
 	gchar *TextVerVia;	/*! Key to retrieve text version string */
 	gchar *NumVerVia;	/*! Key to retrieve numerical version string */

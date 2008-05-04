@@ -1096,7 +1096,7 @@ GIOStatus process_vex_table(Vex_Import *vex, gchar * string, GIOChannel *iochann
 		}		
 		g_string_free(a_line, TRUE);
 	}
-breakout:
+//breakout:
 	if (status == G_IO_STATUS_NORMAL)
 	{
 		vex->got_ve = TRUE;

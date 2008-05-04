@@ -146,7 +146,7 @@ EXPORT void populate_dlog_choices()
 				0, 0);
 		j++;
 
-		if (j == 5)
+		if (j == TABLE_COLS)
 		{
 			k++;
 			j = 0;

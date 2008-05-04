@@ -62,7 +62,6 @@ gboolean drain_hashtable(gpointer offset, gpointer value, gpointer user_data)
 
 	/* called per element from the hash table to drain and send to ECU */
 	OBJ_SET(data->object,"mode", GINT_TO_POINTER(MTX_SIMPLE_WRITE));
-	data->need_page_change = TRUE;
 	io_cmd(firmware->write_command,data);
 	return TRUE;
 }

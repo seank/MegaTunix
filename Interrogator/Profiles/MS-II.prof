@@ -1,14 +1,14 @@
 [API]
 major=1
-minor=2
+minor=3
 
 [interrogation_profile]
 name=MS-II V2.88
 
 [parameters]
 InterCharDelay=1
-SignatureVia=MS_Signature
-TextVerVia=MS_VerNum
+SignatureVia=get_signature
+TextVerVia=ms2_get_textrev
 RT_Command=ms2_std_rtvars
 RT_total_bytes=112
 MS2_RT_Page=6

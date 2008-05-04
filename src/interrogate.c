@@ -449,11 +449,11 @@ gboolean load_firmware_details(Firmware_Details *firmware, gchar * filename)
 	}
 	if ((firmware->multi_page) && (!(firmware->capabilities & MS2)))
 	{
-		if(!cfg_read_string(cfgfile,"parameters","Page_Cmd",
-					&firmware->page_cmd))
+		if(!cfg_read_string(cfgfile,"parameters","Page_Command",
+					&firmware->page_command))
 		{
 			if (dbg_lvl & (INTERROGATOR|CRITICAL))
-				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Page_Cmd\" flag not found in interrogation profile, ERROR\n"));
+				dbg_func(g_strdup(__FILE__": load_profile_details()\n\t\"Page_Command\" flag not found in interrogation profile, ERROR\n"));
 		}
 	}
 	if(!cfg_read_boolean(cfgfile,"parameters","ChunkWriteSupport",
@@ -1348,6 +1348,14 @@ void interrogate_error(gchar *text, gint num)
 void update_interrogation_gui(Firmware_Details *firmware,GHashTable *tests_hash)
 {
 	Detection_Test *test = NULL;
+
+	if (firmware->TextVerVia)
+		io_cmd(firmware->TextVerVia,NULL);
+	if (firmware->NumVerVia)
+		io_cmd(firmware->NumVerVia,NULL);
+	if (firmware->SignatureVia)
+		io_cmd(firmware->SignatureVia,NULL);
+	/*
 	if (firmware->TextVerVia == NULL)
 		thread_update_widget(g_strdup("text_version_entry"),MTX_ENTRY,g_strdup(""));
 	else
@@ -1391,5 +1399,6 @@ void update_interrogation_gui(Firmware_Details *firmware,GHashTable *tests_hash)
 		else
 			printf("couldn't find test results for the %s test\n",firmware->SignatureVia);
 	}
+	*/
 
 }

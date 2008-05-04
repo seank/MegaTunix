@@ -1356,7 +1356,7 @@ void ve3d_load_font_metrics(GtkWidget *widget)
 	PangoFontMetrics *font_metrics;
 	
 	gint font_height;
-	font_desc = widget->style->font_desc;
+	font_desc = pango_font_description_copy(widget->style->font_desc);
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_load_font_metrics()\n"));

@@ -534,7 +534,7 @@ log_by_default=TRUE
 [derived_33]
 keys=internal_names,dlog_gui_name,dlog_field_name,offset,size,dl_conv_expr,ul_conv_expr,is_float,tooltip,lower_limit,upper_limit,log_by_default
 key_types=_STRING_,_STRING_,_STRING_,_INT_,_ENUM_,_STRING_,_STRING_,_BOOL_,_STRING_,_INT_,_INT_,_BOOL_
-internal_names=iacstep
+internal_names=iacstep,idledc
 dlog_gui_name=IAC Step/IdleDC
 dlog_field_name=IAC
 offset=54

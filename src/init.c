@@ -612,8 +612,8 @@ void mem_dealloc()
 			g_free(firmware->burn_command);
 		if (firmware->burn_all_command)
 			g_free(firmware->burn_all_command);
-		if (firmware->page_cmd)
-			g_free(firmware->page_cmd);
+		if (firmware->page_command)
+			g_free(firmware->page_command);
 		for (i=0;i<firmware->total_pages;i++)
 		{
 			if (firmware->page_params[i])

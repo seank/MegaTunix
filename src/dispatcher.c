@@ -106,7 +106,7 @@ trypop:
 				printf("ERROR postfunction was null, continuing\n");
 				continue;
 			}
-			/*printf ("Should run function %s, %p\n",pf->name,pf->function);*/
+			//printf ("Should run function %s, %p\n",pf->name,pf->function);
 			if (pf->w_arg)
 			{
 				if (!pf->function_w_arg)
