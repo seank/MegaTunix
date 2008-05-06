@@ -127,19 +127,20 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 	Command *command = NULL;
 	gint i = 0;
 
-	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
 	switch (type)
 	{
 		case MS1_VECONST:
 
 			if (!offline)
 			{
+				g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
 				if (outstanding_data)
 					queue_burn_ecu_flash(last_page);
 				for (i=0;i<firmware->total_pages;i++)
 				{
 					if (!firmware->page_params[i]->dl_by_default)
 						continue;
+					queue_ms1_page_change(i);
 					output = initialize_outputdata();
 					OBJ_SET(output->object,"page",GINT_TO_POINTER(i));
 					OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[i]->truepgnum));
@@ -153,6 +154,7 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 		case MS2_VECONST:
 			if (!offline)
 			{
+				g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
 				if ((firmware->capabilities & MS2_EXTRA) && (outstanding_data))
 					queue_burn_ecu_flash(last_page);
 				for (i=0;i<firmware->total_pages;i++)
@@ -177,6 +179,7 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			{
 				if (outstanding_data)
 					queue_burn_ecu_flash(last_page);
+				queue_ms1_page_change(firmware->trigmon_page);
 				output = initialize_outputdata();
 				OBJ_SET(output->object,"page",GINT_TO_POINTER(firmware->trigmon_page));
 				OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[firmware->trigmon_page]->truepgnum));
@@ -190,6 +193,7 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 			{
 				if (outstanding_data)
 					queue_burn_ecu_flash(last_page);
+				queue_ms1_page_change(firmware->toothmon_page);
 				output = initialize_outputdata();
 				OBJ_SET(output->object,"page",GINT_TO_POINTER(firmware->toothmon_page));
 				OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[firmware->toothmon_page]->truepgnum));

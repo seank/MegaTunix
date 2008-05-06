@@ -152,9 +152,10 @@ EXPORT void update_write_status(void *data)
 	extern GList ***ve_widgets;
 	extern gboolean paused_handlers;
 
+//	printf("update_write_status\n");
 
 	if (!output)
-		return;
+		goto red_or_black;
 
 	mode = (WriteMode)OBJ_GET(output->object,"mode");
 	if (mode == MTX_CHUNK_WRITE)

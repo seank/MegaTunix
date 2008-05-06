@@ -176,7 +176,7 @@ void *thread_dispatcher(gpointer data)
 					message->command->helper_function(message, message->command->helper_func_arg);
 				break;
 			case NULL_CMD:
-				printf("null_cmd, just passing thru\n");
+				//printf("null_cmd, just passing thru\n");
 				break;
 
 			default:
@@ -302,6 +302,8 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 	 */
 	if (firmware->multi_page)
 		handle_page_change(page,last_page);
+	else
+		printf("firmware is not multi page\n");
 
 	output->queue_update = queue_update;
 	io_cmd(firmware->write_command,output);
@@ -317,14 +319,20 @@ void handle_page_change(gint page, gint last)
 	guint8 ** ecu_data = firmware->ecu_data;
 	guint8 ** ecu_data_last = firmware->ecu_data_last;
 
+	//printf("handle page change \n");
+
 	if ((page == last) && (!force_page_change))
+	{
+		//printf("page == last and force_page_change is not set\n");
 		return;
+	}
 	/* If current page is NOT a dl_by_default page, but the last one WAS
 	 * then a burn is required otherwise settings will be lost in the
 	 * last
 	 */
 	if ((!firmware->page_params[page]->dl_by_default) && (firmware->page_params[last]->dl_by_default))
 	{
+		//printf("current was not dl by default  but last was,  burning\n");
 		queue_burn_ecu_flash(last);
 		if (firmware->capabilities & MS1)
 			queue_ms1_page_change(page);
@@ -334,17 +342,28 @@ void handle_page_change(gint page, gint last)
 	 * not then a burn is NOT required.
 	 */
 	if ((!firmware->page_params[page]->dl_by_default) || (!firmware->page_params[last]->dl_by_default))
+	{
+		if ((page != last) && (firmware->capabilities & MS1))
+			queue_ms1_page_change(page);
 		return;
+	}
 	/* If current and last pages are DIFFERENT,  do a memory buffer scan
-	 * to see if preivious and last match,  if so return, otherwise burn
+	 * to see if previous and last match,  if so return, otherwise burn
 	 * then change page
 	 */
 	if (((page != last) && (((memcmp(ecu_data_last[last],ecu_data[last],firmware->page_params[last]->length) != 0)) || ((memcmp(ecu_data_last[page],ecu_data[page],firmware->page_params[page]->length) != 0)))))
 	{
+		//printf("page and last don't match AND there's a ram difference\n");
 		queue_burn_ecu_flash(last);
 		if (firmware->capabilities & MS1)
 			queue_ms1_page_change(page);
 	}
+	else if ((page != last) && (firmware->capabilities & MS1))
+	{
+		queue_ms1_page_change(page);
+		//printf("page and last don't match AND there's a NOT a RAM difference, changing page\n");
+	}
+
 
 }
 
@@ -363,6 +382,7 @@ void queue_ms1_page_change(gint page)
 	OBJ_SET(output->object,"truepgnum", GINT_TO_POINTER(firmware->page_params[page]->truepgnum));
 	OBJ_SET(output->object,"mode", GINT_TO_POINTER(MTX_CMD_WRITE));
 	io_cmd(firmware->page_command,output);
+	last_page = page;
 	return;
 }
 
@@ -397,6 +417,8 @@ void chunk_write(gint canID, gint page, gint offset, gint num_bytes, guint8 * da
 
 	if (firmware->multi_page)
 		handle_page_change(page,last_page);
+	else
+		printf("firmware is not multi page\n");
 	output->queue_update = TRUE;
 	io_cmd(firmware->chunk_write_command,output);
 	return;

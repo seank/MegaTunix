@@ -6,7 +6,7 @@ minor=3
 name=MegaSquirtnSpark-Extra 029x
 
 [parameters]
-SignatureVia=get_signatures
+SignatureVia=get_signature
 TextVerVia=ms1_get_textrev
 NumVerVia=get_numrev
 RT_Command=ms1_extra_rtvars

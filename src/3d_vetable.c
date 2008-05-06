@@ -358,7 +358,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
-	set_widget_color(label,(gpointer)GREEN);
+//	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("x_runtime_label_%i",table_num);
@@ -368,7 +368,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
-	set_widget_color(label,(gpointer)GREEN);
+//	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("y_runtime_label_%i",table_num);
@@ -378,7 +378,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
 			(GtkAttachOptions) (0), 0, 0);
 	label = gtk_label_new(NULL);
-	set_widget_color(label,(gpointer)GREEN);
+//	set_widget_color(label,(gpointer)GREEN);
 	set_fixed_size(label,12);
 
 	tmpbuf = g_strdup_printf("z_runtime_label_%i",table_num);
@@ -977,6 +977,9 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	extern Firmware_Details *firmware;
 	gfloat bottom = 0.0;
 	gchar * tmpbuf = NULL;
+	gchar * label = NULL;
+	gfloat tmpf1 = 0.0;
+	gfloat tmpf2 = 0.0;
 	extern GHashTable *dynamic_widgets;
 	GLfloat w = ve_view->window->allocation.width;
 	GLfloat h = ve_view->window->allocation.height;
@@ -1002,80 +1005,47 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	glBegin(GL_POINTS);
 
 	if (ve_view->fixed_scale)
-		glVertex3f(
-				(gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0),
-				(gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0),
-				cur_val->z_edit_value);
+	{
+		tmpf1 = (gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0);
+		tmpf2 = (gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0);
+	}
 	else
-		glVertex3f(
-				cur_val->x_edit_value,
-				cur_val->y_edit_value,
-				cur_val->z_edit_value);
+	{
+		tmpf1 = cur_val->x_edit_value;
+		tmpf2 = cur_val->y_edit_value;
+	}
 
+	glVertex3f(tmpf1,tmpf2,cur_val->z_edit_value);
 	glEnd();        
 
 	glBegin(GL_LINE_STRIP);
 	glColor3f(1.0,0.0,0.0);
 
-	if (ve_view->fixed_scale)
-	{
-		glVertex3f(
-				(gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0),
-				(gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0),
-				cur_val->z_edit_value);
-		glVertex3f(
-				(gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0),
-				(gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0),
-				bottom);
-		glVertex3f(
-				0.0,
-				(gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0),
-				bottom);
-	}
-	else
-	{
-		glVertex3f(
-				cur_val->x_edit_value,
-				cur_val->y_edit_value,
-				cur_val->z_edit_value);
-		glVertex3f(
-				cur_val->x_edit_value,
-				cur_val->y_edit_value,
-				bottom);
-		glVertex3f(
-				0.0,
-				cur_val->y_edit_value,
-				bottom);
-	}
+	glVertex3f(tmpf1,tmpf2,cur_val->z_edit_value);
+	glVertex3f(tmpf1,tmpf2,bottom);
+	glVertex3f(0.0,tmpf2,bottom);
 
 	glEnd();
 
 	glBegin(GL_LINES);
-	if (ve_view->fixed_scale)
-	{
-		glVertex3f(
-				(gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0),
-				(gfloat)ve_view->active_y/((gfloat)ve_view->y_bincount-1.0),
-				bottom - ve_view->z_offset);
-
-		glVertex3f(
-				(gfloat)ve_view->active_x/((gfloat)ve_view->x_bincount-1.0),
-				0.0,
-				bottom);
-	}
-	else
-	{
-		glVertex3f(
-				cur_val->x_edit_value,
-				cur_val->y_edit_value,
-				bottom - ve_view->z_offset);
-
-		glVertex3f(
-				cur_val->x_edit_value,
-				0.0,
-				bottom);
-	}
+	glVertex3f(tmpf1,tmpf2,bottom - ve_view->z_offset);
+	glVertex3f(tmpf1,0.0,bottom);
 	glEnd();
+	/*
+	// Live X axis marker 
+	label = g_strdup_printf("%i",(gint)tmpf1);
+
+	ve3d_draw_text(cur_val->x_edit_text,tmpf1,-0.05,-0.025);
+	g_free(label);
+
+
+	// Live Y axis marker 
+	label = g_strdup_printf("%i",(gint)tmpf2);
+
+	ve3d_draw_text(cur_val->y_edit_text,-0.05,tmpf2,-0.025);
+	g_free(label);
+	*/
+
 }
  
 
@@ -1176,14 +1146,14 @@ void ve3d_draw_runtime_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	/* Live X axis marker */
 	label = g_strdup_printf("%i",(gint)cur_val->x_val);
 
-	ve3d_draw_text(label,tmpf1,-0.05,-0.05);
+	ve3d_draw_text(label,tmpf1,-0.05,0.0);
 	g_free(label);
 
 
 	/* Live Y axis marker */
 	label = g_strdup_printf("%i",(gint)cur_val->y_val);
 
-	ve3d_draw_text(label,-0.05,tmpf2,-0.05);
+	ve3d_draw_text(label,-0.05,tmpf2,0.0);
 	g_free(label);
 }
 
