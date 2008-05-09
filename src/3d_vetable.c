@@ -977,7 +977,7 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	extern Firmware_Details *firmware;
 	gfloat bottom = 0.0;
 	gchar * tmpbuf = NULL;
-	gchar * label = NULL;
+	//gchar * label = NULL;
 	gfloat tmpf1 = 0.0;
 	gfloat tmpf2 = 0.0;
 	extern GHashTable *dynamic_widgets;

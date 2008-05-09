@@ -116,9 +116,27 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 			return;
 		prompt_to_save();
 	}
-
 	if (leaving)
 		return;
+	/* Stop timeout functions */
+
+	stop_tickler(RTV_TICKLER);
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_realtime\n"));
+	stop_tickler(TOOTHMON_TICKLER);
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_toothmon\n"));
+	stop_tickler(TRIGMON_TICKLER);
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_trigmon\n"));
+	stop_tickler(LV_PLAYBACK_TICKLER);
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_lv_playback\n"));
+
+	stop_datalogging();
+	if (dbg_lvl & CRITICAL)
+		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_datalogging\n"));
+
 	leaving = TRUE;
 	/* Message to trigger serial repair queue to exit immediately */
 	g_async_queue_push(serial_repair_queue,&tmp);
@@ -148,24 +166,6 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 		g_source_remove(statuscounts_id);
 	statuscounts_id = 0;
 
-	/* Stop timeout functions */
-
-	stop_tickler(RTV_TICKLER);
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_realtime\n"));
-	stop_tickler(TOOTHMON_TICKLER);
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_toothmon\n"));
-	stop_tickler(TRIGMON_TICKLER);
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_trigmon\n"));
-	stop_tickler(LV_PLAYBACK_TICKLER);
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_lv_playback\n"));
-
-	stop_datalogging();
-	if (dbg_lvl & CRITICAL)
-		dbg_func(g_strdup_printf(__FILE__": LEAVE() after stop_datalogging\n"));
 	if (dynamic_widgets)
 	{
 		if (g_hash_table_lookup(dynamic_widgets,"dlog_select_log_button"))
@@ -1962,8 +1962,8 @@ void update_widget(gpointer object, gpointer user_data)
 		g_free(path);
 		gtk_combo_box_set_active_iter(GTK_COMBO_BOX(widget),&iter);
 
-
-
+		if (toggle_groups)
+			combo_toggle_groups_linked(widget,tmpi);
 
 	}
 	else if (GTK_IS_CHECK_BUTTON(widget))
@@ -2651,6 +2651,62 @@ void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
 	}
 	/*printf ("DONE!\n\n\n");*/
 	g_strfreev(groups);
+}
+
+
+
+/*!
+ * \brief combo_toggle_groups_linked is used to change the state of controls that
+ * are "linked" to various other controls for the purpose of making the 
+ * UI more intuitive.  i.e. if u uncheck a feature, this can be used to 
+ * grey out a group of related controls.
+ * \param toggle_groups, comms sep list of group names
+ * \param new_state,  new state of the button linking to these groups
+ */
+void combo_toggle_groups_linked(GtkWidget *widget,gint active)
+{
+	gint num_groups = 0;
+	gint num_choices = 0;
+	gint i = 0;
+	gint j = 0;
+	gboolean state = FALSE;
+	gint page = 0;
+	gint offset = 0;
+
+	gchar **choices = NULL;
+	gchar **groups = NULL;
+	gchar * toggle_groups = NULL;
+	extern gboolean ready;
+	extern GHashTable *widget_group_states;
+
+	if (!ready)
+		return;
+	toggle_groups = (gchar *)OBJ_GET(widget,"toggle_groups");
+	page = (gint)OBJ_GET(widget,"page");
+	offset = (gint)OBJ_GET(widget,"offset");
+
+	//printf("toggling combobox groups\n");
+	choices = parse_keys(toggle_groups,&num_choices,",");
+	//printf("toggle groups defined for combo box %p at page %i, offset %i\n",widget,page,offset);
+
+	for (i=0;i<num_choices;i++)
+	{
+		groups = parse_keys(choices[i],&num_groups,":");
+		//printf("Choice %i, has %i groups\n",i,num_groups);
+		if (i == active)
+			state = TRUE;
+		else
+			state = FALSE;
+		for (j=0;j<num_groups;j++)
+		{
+			//printf("setting all widgets in group %s to state %i\n\n",groups[j],state);
+			g_hash_table_insert(widget_group_states,g_strdup(groups[j]),(gpointer)state);
+			g_list_foreach(get_list(groups[j]),alter_widget_state,NULL);
+		}
+		g_strfreev(groups);
+	}
+	//printf ("DONE!\n\n\n");
+	g_strfreev(choices);
 }
 
 

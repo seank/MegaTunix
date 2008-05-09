@@ -139,16 +139,16 @@ dealloc:
 	dealloc_message(message);
 	/*printf ("deallocation of dispatch message complete\n");*/
 	count++;
-	/* try to handle up to 4 messages at a time.  If this is 
+	/* try to handle up to 10 messages at a time.  If this is 
 	 * set too high, we can cause the timeout to hog the gui if it's
 	 * too low, things can fall behind. (GL redraw ;( )
 	 * */
-	if(count < 3)
+	if(count < 10)
 	{
-		/*printf("trying to handle another message\n");*/
+		//printf("trying to handle another message\n");
 		goto trypop;
 	}
-	/*printf("returning\n");*/
+	//printf("returning\n");
 	return TRUE;
 }
 
