@@ -2689,14 +2689,14 @@ void combo_toggle_groups_linked(GtkWidget *widget,gint active)
 	choices = parse_keys(toggle_groups,&num_choices,",");
 	//printf("toggle groups defined for combo box %p at page %i, offset %i\n",widget,page,offset);
 
+	/* First TURN OFF all non active groups */
 	for (i=0;i<num_choices;i++)
 	{
 		groups = parse_keys(choices[i],&num_groups,":");
 		//printf("Choice %i, has %i groups\n",i,num_groups);
 		if (i == active)
-			state = TRUE;
-		else
-			state = FALSE;
+			continue;
+		state = FALSE;
 		for (j=0;j<num_groups;j++)
 		{
 			//printf("setting all widgets in group %s to state %i\n\n",groups[j],state);
@@ -2705,6 +2705,18 @@ void combo_toggle_groups_linked(GtkWidget *widget,gint active)
 		}
 		g_strfreev(groups);
 	}
+
+	/* First TURN ON all active groups */
+	groups = parse_keys(choices[active],&num_groups,":");
+	state = TRUE;
+	for (j=0;j<num_groups;j++)
+	{
+		//printf("setting all widgets in group %s to state %i\n\n",groups[j],state);
+		g_hash_table_insert(widget_group_states,g_strdup(groups[j]),(gpointer)state);
+		g_list_foreach(get_list(groups[j]),alter_widget_state,NULL);
+	}
+	g_strfreev(groups);
+
 	//printf ("DONE!\n\n\n");
 	g_strfreev(choices);
 }
