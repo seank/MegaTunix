@@ -318,7 +318,7 @@ EXPORT void run_datalog(void)
 	gfloat value = 0.0;
 	GArray *history = NULL;
 	gint current_index = 0;
-	gchar buf[G_ASCII_DTOSTR_BUF_SIZE];
+	gint precision = 0;
 	gchar *tmpbuf = NULL;
 	extern GHashTable *dynamic_widgets;
 	extern gboolean interrogated;
@@ -362,15 +362,11 @@ EXPORT void run_datalog(void)
 
 		history = (GArray *)OBJ_GET(object,"history");
 		current_index = (gint)OBJ_GET(object,"current_index");
+		precision = (gint)OBJ_GET(object,"precision");
 		value = g_array_index(history, gfloat, current_index);
-		if ((gboolean)OBJ_GET(object,"is_float"))
-		{
-			/*printf("value %.3f\n",value); */
-			tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%.3f",value);
-			g_string_append(output,tmpbuf);
-		}
-		else
-			g_string_append_printf(output,"%i",(gint)value);
+
+		tmpbuf = g_strdelimit(g_strdup_printf("%1$.*2$f",value,precision),",",'.');
+		g_string_append(output,tmpbuf);
 		j++;
 
 		/* Print delimiter to log here so there isnt an extra
@@ -564,10 +560,9 @@ void dump_log_to_disk(GIOChannel *iochannel)
 	gsize count = 0;
 	GString *output;
 	GObject * object = NULL;
-	GArray **histories;
-	gchar buf[G_ASCII_DTOSTR_BUF_SIZE];
+	GArray **histories = NULL;
+	gint *precisions = NULL;
 	gchar *tmpbuf = NULL;
-	gboolean *is_floats;
 	gfloat value = 0.0;
 	extern gint realtime_id;
 	gboolean restart_tickler = FALSE;
@@ -583,13 +578,13 @@ void dump_log_to_disk(GIOChannel *iochannel)
 	write_log_header(iochannel, TRUE);
 
 	histories = g_new0(GArray *,rtv_map->derived_total);
-	is_floats = g_new0(gboolean ,rtv_map->derived_total);
+	precisions = g_new0(gint ,rtv_map->derived_total);
 
 	for(i=0;i<rtv_map->derived_total;i++)
 	{
 		object = g_array_index(rtv_map->rtv_list,GObject *,i);
 		histories[i] = (GArray *)OBJ_GET(object,"history");
-		is_floats[i] = (gboolean)OBJ_GET(object,"is_float");
+		precisions[i] = (gint)OBJ_GET(object,"precision");
 	}
 
 	for (x=0;x<rtv_map->ts_array->len;x++)
@@ -598,13 +593,9 @@ void dump_log_to_disk(GIOChannel *iochannel)
 		for(i=0;i<rtv_map->derived_total;i++)
 		{
 			value = g_array_index(histories[i], gfloat, x);
-			if (is_floats[i])
-			{
-				tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%.3f",value);
-				g_string_append(output,tmpbuf);
-			}
-			else
-				g_string_append_printf(output,"%i",(gint)value);
+			//tmpbuf = g_ascii_formatd(buf,G_ASCII_DTOSTR_BUF_SIZE,"%1$.*2$f",value,precisions[i]);
+			tmpbuf = g_strdelimit(g_strdup_printf("%1$.*2$f",value,precisions[i]),",",'.');
+			g_string_append(output,tmpbuf);
 			j++;
 
 			/* Print delimiter to log here so there isnt an extra
@@ -616,7 +607,7 @@ void dump_log_to_disk(GIOChannel *iochannel)
 		output = g_string_append(output,"\r\n");
 	}
 	g_io_channel_write_chars(iochannel,output->str,output->len,&count,NULL);
-	g_free(is_floats);
+	g_free(precisions);
 	g_free(histories);
 	g_string_free(output,TRUE);
 	if (restart_tickler)

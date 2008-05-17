@@ -22,6 +22,7 @@ Capabilities=_MS2_,_MS2_STD_
 MultiPage=TRUE
 ChunkWriteSupport=TRUE
 TotalTables=5
+TotalTETables=1
 TotalPages=7
 
 [table_0]
@@ -205,6 +206,34 @@ z_source=afr2
 z_suffix=AFR
 z_conv_expr=x/10
 z_precision=1
+
+[te_table_0]
+title=Cold Ignition Advance Offset
+bincount=10
+x_page=0
+x_base_offset=470
+x_size=_S16_
+x_source=cltdeg
+x_units=degF
+x_name=Coolant
+x_dl_conv_expr=x*10
+x_ul_conv_expr=x/10
+x_raw_lower=-400
+x_raw_upper=2000
+x_precision=1
+y_page=0
+y_base_offset=22
+y_size=_S16_
+y_source=
+y_units=deg
+y_name=Offset
+y_dl_conv_expr=(x*10)
+y_ul_conv_expr=(x/10)
+y_raw_lower=-10
+y_raw_upper=-10
+y_precision=1
+
+
 
 [page_0]
 dl_by_default=TRUE

@@ -1,5 +1,6 @@
 
 headers = \
+	2d_table_editor.h \
 	3d_vetable.h \
 	about_gui.h \
 	api-versions.h \

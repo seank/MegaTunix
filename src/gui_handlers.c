@@ -643,7 +643,6 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	gint spconfig_offset = -1;
 	gint oddfire_bit_offset = -1;
 	gfloat real_value = 0.0;
-	gboolean is_float = FALSE;
 	gboolean use_color = FALSE;
 	DataSize size = 0;
 	gint raw_lower = 0;
@@ -671,7 +670,6 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	else
 		base = (gint)OBJ_GET(widget,"base");
 	precision = (gint)OBJ_GET(widget,"precision");
-	is_float = (gboolean)OBJ_GET(widget,"is_float");
 	raw_lower = (gint)OBJ_GET(widget,"raw_lower");
 	raw_upper = (gint)OBJ_GET(widget,"raw_upper");
 	use_color = (gboolean)OBJ_GET(widget,"use_color");
@@ -685,8 +683,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 	 * or base16, the problem is the limits are in base10
 	 */
 
-
-	if ((tmpf != (gfloat)tmpi) && (!is_float))
+	if ((tmpf != (gfloat)tmpi) && (precision == 0))
 	{
 		/* Pause signals while we change the value */
 		/*		printf("resetting\n");*/
@@ -701,10 +698,7 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 		case GENERIC:
 			if (base == 10)
 			{
-				if (is_float)
-					dload_val = convert_before_download(widget,tmpf);
-				else
-					dload_val = convert_before_download(widget,tmpi);
+				dload_val = convert_before_download(widget,tmpf);
 			}
 			else if (base == 16)
 				dload_val = convert_before_download(widget,tmpi);
@@ -727,16 +721,10 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 
 			/*printf("real_value %f\n",real_value);*/
 			g_signal_handlers_block_by_func (widget,(gpointer) std_entry_handler, data);
-			if (is_float)
-			{
-				tmpbuf = g_strdup_printf("%1$.*2$f",real_value,precision);
-				gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-				g_free(tmpbuf);
-			}
-			else
-			{
+			
 				if (base == 10)
 				{
+					tmpbuf = g_strdup_printf("%1$.*2$f",real_value,precision);
 					tmpbuf = g_strdup_printf("%i",(gint)real_value);
 					gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
 					g_free(tmpbuf);
@@ -747,7 +735,6 @@ EXPORT gboolean std_entry_handler(GtkWidget *widget, gpointer data)
 					gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
 					g_free(tmpbuf);
 				}
-			}
 			g_signal_handlers_unblock_by_func (widget,(gpointer) std_entry_handler, data);
 			break;
 
@@ -1657,7 +1644,6 @@ void update_widget(gpointer object, gpointer user_data)
 	GtkWidget * widget = object;
 	gint dl_type = -1;
 	gboolean temp_dep = FALSE;
-	gboolean is_float = FALSE;
 	gboolean use_color = FALSE;
 	gint i = 0;
 	gint tmpi = -1;
@@ -1743,7 +1729,6 @@ void update_widget(gpointer object, gpointer user_data)
 
 	precision = (gint)OBJ_GET(widget,"precision");
 	temp_dep = (gboolean)OBJ_GET(widget,"temp_dep");
-	is_float = (gboolean)OBJ_GET(widget,"is_float");
 	toggle_groups = (gchar *)OBJ_GET(widget,"toggle_groups");
 	use_color = (gboolean)OBJ_GET(widget,"use_color");
 	swap_list = (gchar *)OBJ_GET(widget,"swap_labels");
@@ -1771,22 +1756,13 @@ void update_widget(gpointer object, gpointer user_data)
 			switch (get_ecu_data(canID,page,oddfire_bit_offset,size))
 			{
 				case 4:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value+90,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)value+90);
 					break;
 				case 2:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value+45,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)value+45);
 					break;
 				case 0:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)value);
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
@@ -1802,22 +1778,13 @@ void update_widget(gpointer object, gpointer user_data)
 			switch ((get_ecu_data(canID,page,spconfig_offset,size) & 0x03))
 			{
 				case 2:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value+45,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)value+45);
 					break;
 				case 1:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value+22.5,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)(value+22.5));
 					break;
 				case 0:
-					if (is_float)
 						tmpbuf = g_strdup_printf("%1$.*2$f",value,precision);
-					else
-						tmpbuf = g_strdup_printf("%i",(gint)value);
 					break;
 				default:
 					if (dbg_lvl & CRITICAL)
@@ -1833,24 +1800,12 @@ void update_widget(gpointer object, gpointer user_data)
 			update_color = TRUE;
 			if (base == 10)
 			{
-				if (is_float)
-				{
-					tmpbuf = g_strdup_printf("%1$.*2$f",value,precision);
-					if (g_ascii_strcasecmp(widget_text,tmpbuf) != 0)
-						gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-					else
-						update_color = FALSE;
-					g_free(tmpbuf);
-				}
+				tmpbuf = g_strdup_printf("%1$.*2$f",value,precision);
+				if (g_ascii_strcasecmp(widget_text,tmpbuf) != 0)
+					gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
 				else
-				{
-					tmpbuf = g_strdup_printf("%i",(gint)value);
-					if (g_ascii_strcasecmp(widget_text,tmpbuf) != 0)
-						gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-					else
-						update_color = FALSE;
-					g_free(tmpbuf);
-				}
+					update_color = FALSE;
+				g_free(tmpbuf);
 			}
 			else if (base == 16)
 			{

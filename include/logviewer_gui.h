@@ -31,7 +31,7 @@ struct _Viewable_Value
 	PangoRectangle *ink_rect;	/*! Ink rectangle around text */
 	GObject *object;		/*! object */
 	gchar *vname;			/*! Name of widget being logged */
-	gboolean is_float;		/*! TRUE or FALSE */
+	gint precision;			/*! number of digits */
 	gboolean force_update;		/*! flag to force update on addition */
 	gboolean highlight;		/*! flag it highlight it.. */
 	gint last_y;			/*! Last point on screen of trace */
