@@ -29,7 +29,6 @@
 #include <string.h>
 #include <threads.h>
 #include <timeout_handlers.h>
-#include <termios.h>
 #include <unistd.h>
 #include <3d_vetable.h>
 

@@ -139,7 +139,7 @@ EXPORT gboolean logger_display_expose_event(GtkWidget * widget, GdkEventExpose *
 }
 
 
-EXPORT void crunch_trigtooth_data()
+EXPORT void crunch_trigtooth_data_pf()
 {
 	_crunch_trigtooth_data(ttm_data->page);
 }
@@ -326,7 +326,7 @@ void _crunch_trigtooth_data(gint page)
 }
 
 
-EXPORT void update_trigtooth_display()
+EXPORT void update_trigtooth_display_pf()
 {
 	_update_trigtooth_display(ttm_data->page);
 }

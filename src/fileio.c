@@ -267,7 +267,7 @@ void restore_all_ecu_settings(gchar *filename)
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("update_ve_const");
+	pf->name = g_strdup("update_ve_const_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;

@@ -45,7 +45,7 @@ void dash_shape_combine(GtkWidget *, gboolean);
 gboolean dash_motion_event(GtkWidget *, GdkEventMotion *, gpointer );
 gboolean dash_button_event(GtkWidget *, GdkEventButton *, gpointer );
 gboolean dash_key_event(GtkWidget *, GdkEventKey *, gpointer );
-void initialize_dashboards(void);
+void initialize_dashboards_pf(void);
 gboolean present_dash_filechooser(GtkWidget *, gpointer );
 gboolean remove_dashcluster(gpointer, gpointer , gpointer );
 gboolean dummy(GtkWidget *,gpointer );

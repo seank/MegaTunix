@@ -38,6 +38,7 @@ megatunix_SOURCES = \
 	keybinder.c \
 	keyparser.c \
 	listmgmt.c \
+	locking.c \
 	logviewer_core.c \
 	logviewer_events.c \
 	logviewer_gui.c \

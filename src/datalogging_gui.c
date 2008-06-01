@@ -47,12 +47,12 @@ static gboolean header_needed = FALSE;
 
 
 /*!
- \brief populate_dlog_choices() is called when the datalogging tab is loaded
+ \brief populate_dlog_choices_pf() is called when the datalogging tab is loaded
  by glade AFTER the realtime variable definitions have been loaded and 
  processed.  All of the logable variables are then placed here to user 
  selecting during datalogging.
  */
-EXPORT void populate_dlog_choices()
+EXPORT void populate_dlog_choices_pf()
 {
 	gint i,j,k;
 	GtkWidget *vbox = NULL;
@@ -79,7 +79,7 @@ EXPORT void populate_dlog_choices()
 	if (!rtvars_loaded)
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup(__FILE__": populate_dlog_choices()\n\tCRITICAL ERROR, Realtime Variable definitions NOT LOADED!!!\n\n"));
+			dbg_func(g_strdup(__FILE__": populate_dlog_choices_pf()\n\tCRITICAL ERROR, Realtime Variable definitions NOT LOADED!!!\n\n"));
 		return;
 	}
 	set_title(g_strdup("Populating Datalogger..."));
@@ -303,10 +303,10 @@ void write_log_header(GIOChannel *iochannel, gboolean override)
 
 
 /*!
- \brief run_datalog() gets called each time data arrives after rtvar 
+ \brief run_datalog_pf() gets called each time data arrives after rtvar 
  processing and logs the selected values to the file
  */
-EXPORT void run_datalog(void)
+EXPORT void run_datalog_pf(void)
 {
 	gint i = 0;
 	gint j = 0;
@@ -334,7 +334,7 @@ EXPORT void run_datalog(void)
 	if (!iochannel)
 	{
 		if (dbg_lvl & CRITICAL)
-			dbg_func(g_strdup(__FILE__": run_datalog()\n\tIo_File undefined, returning NOW!!!\n"));
+			dbg_func(g_strdup(__FILE__": run_datalog_pf()\n\tIo_File undefined, returning NOW!!!\n"));
 		return;
 	}
 

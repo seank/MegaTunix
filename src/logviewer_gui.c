@@ -816,13 +816,13 @@ void draw_valtext(gboolean force_draw)
 
 
 /*!
- \brief rt_update_logview_traces() updates each trace in turn and then scrolls 
+ \brief update_logview_traces_pf() updates each trace in turn and then scrolls 
  the display
  \param force_redraw (gboolean) flag to force all data to be redrawn not 
  just the new data...
  \returns TRUE
  */
-EXPORT gboolean rt_update_logview_traces(gboolean force_redraw)
+EXPORT gboolean update_logview_traces_pf(gboolean force_redraw)
 {
 	extern gboolean connected;
 	extern gboolean interrogated;

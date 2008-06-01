@@ -231,7 +231,11 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() mem deallocated, closing log and exiting\n"));
 	close_debug();
+	if (dbg_lvl & CRITICAL)
+		printf(__FILE__": LEAVE() Log closed, attempting to unlock mutex\n");
 	g_static_mutex_unlock(&mutex);
+	if (dbg_lvl & CRITICAL)
+		printf(__FILE__": LEAVE() Mutex unlocked, calling gtk_main_quit()\n");
 	gtk_main_quit();
 	return;
 }
@@ -1420,11 +1424,11 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 
 
 /*!
- \brief update_ve_const() is called after a read of the VE/Const block of 
+ \brief update_ve_const_pf() is called after a read of the VE/Const block of 
  data from the ECU.  It takes care of updating evey control that relates to
  an ECU variable on screen
  */
-EXPORT void update_ve_const()
+EXPORT void update_ve_const_pf()
 {
 	gint canID = 0;  
 	gint page = 0;

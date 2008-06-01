@@ -60,7 +60,7 @@ GdkGC * initialize_gc(GdkDrawable *, GcType );
 GdkColor get_colors_from_hue(gfloat, gfloat, gfloat);
 void draw_infotext();
 void draw_valtext(gboolean);
-gboolean rt_update_logview_traces(gboolean);
+gboolean update_logview_traces_pf(gboolean);
 gboolean pb_update_logview_traces(gboolean);
 void trace_update(gboolean );
 gboolean logviewer_log_position_change(GtkWidget *, gpointer);

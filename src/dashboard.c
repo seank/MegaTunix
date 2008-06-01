@@ -68,9 +68,8 @@ void load_dashboard(gchar *filename, gpointer data)
 
 	LIBXML_TEST_VERSION
 
-		/*parse the file and get the DOM */
-		doc = xmlReadFile(filename, NULL, 0);
-
+	/*parse the file and get the DOM */
+	doc = xmlReadFile(filename, NULL, 0);
 	if (doc == NULL)
 	{
 		printf("error: could not parse file %s\n",filename);
@@ -81,6 +80,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	gtk_window_set_title(GTK_WINDOW(window),"Dash Cluster");
 	gtk_window_set_decorated(GTK_WINDOW(window),FALSE);
 	gtk_window_set_transient_for(GTK_WINDOW(window),GTK_WINDOW(main_window));
+
 
 	g_signal_connect(G_OBJECT (window), "configure_event",
 			G_CALLBACK (dash_configure_event), NULL);
@@ -140,7 +140,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	/*printf("move/resize to %i,%i, %ix%i\n",x,y,width,height); */
 	gtk_window_move(GTK_WINDOW(window), x,y);
 	if (ratio)
-		gtk_window_set_default_size(GTK_WINDOW(window), width**ratio,height**ratio);
+		gtk_window_set_default_size(GTK_WINDOW(window), (gint)(width*(*ratio)),(gint)(height*(*ratio)));
 	else
 		gtk_window_set_default_size(GTK_WINDOW(window), width,height);
 	gtk_widget_show_all(window);
@@ -528,10 +528,7 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 	{
 		case GDK_q:
 		case GDK_Q:
-			if (GTK_WIDGET_VISIBLE(main_window))
-				leave(NULL,GINT_TO_POINTER(FALSE));
-			else
-				leave(NULL,GINT_TO_POINTER(TRUE));
+				leave(NULL,NULL);
 			break;
 		case GDK_M:
 		case GDK_m:
@@ -623,9 +620,11 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	return FALSE;
 }
 
-EXPORT void initialize_dashboards()
+EXPORT void initialize_dashboards_pf()
 {
 	GtkWidget * label = NULL;
+	extern GtkWidget *main_window;
+	gboolean retval = FALSE;
 	gchar * tmpbuf = NULL;
 	gchar * tmpstr = NULL;
 	gboolean nodash1 = TRUE;
@@ -663,8 +662,17 @@ EXPORT void initialize_dashboards()
 	 * So we force the dash chooser
 	 */
 	if ((nodash1) && (nodash2) && (args->hide_maingui))
-		present_dash_filechooser(NULL,GINT_TO_POINTER(1));
+	{
+		retval = present_dash_filechooser(NULL,GINT_TO_POINTER(1));
+		return;
+		if (!retval)
+		{
+			CmdLineArgs *args = OBJ_GET(global_data,"args");
+			args->be_quiet = TRUE;
+			g_signal_emit_by_name(main_window,"destroy_event");
+		}
 
+	}
 }
 
 
@@ -691,6 +699,8 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 
 
 	filename = choose_file(fileio);
+	free_mtxfileio(fileio);
+	printf("filename from chooser %s\n",filename);
 	if (filename)
 	{
 		if (dash_gauges)
@@ -702,11 +712,11 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 				gtk_label_set_text(GTK_LABEL(label),g_filename_to_utf8(filename,-1,NULL,NULL,NULL));
 		}
 		load_dashboard(filename,data);
+		return TRUE;
 	}
+	else
+	      	return FALSE;
 
-	free_mtxfileio(fileio);
-
-	return TRUE;
 }
 
 

@@ -575,7 +575,7 @@ gboolean all_table_import(GIOChannel *iochannel)
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("update_ve_const");
+	pf->name = g_strdup("update_ve_const_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;
@@ -657,7 +657,7 @@ void single_table_import(GIOChannel *iochannel, gint table_num)
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("update_ve_const");
+	pf->name = g_strdup("update_ve_const_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;
@@ -1387,7 +1387,7 @@ void revert_to_previous_data()
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("update_ve_const");
+	pf->name = g_strdup("update_ve_const_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;

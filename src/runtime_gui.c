@@ -50,10 +50,10 @@ GStaticMutex rtv_mutex = G_STATIC_MUTEX_INIT;
 
 
 /*!
- \brief update_runtime_vars() updates all of the runtime sliders on all
+ \brief update_runtime_vars_pf() updates all of the runtime sliders on all
  visible portions of the gui
  */
-EXPORT gboolean update_runtime_vars()
+EXPORT gboolean update_runtime_vars_pf()
 {
 	gint i = 0;
 	Ve_View_3D * ve_view = NULL;
@@ -259,7 +259,7 @@ breakout:
 		if (!lookup_current_value("cltdeg",&coolant))
 		{
 			if (dbg_lvl & CRITICAL)
-				dbg_func(g_strdup(__FILE__": update_runtime_vars()\n\t Error getting current value of \"cltdeg\" from datasource\n"));
+				dbg_func(g_strdup(__FILE__": update_runtime_vars_pf()\n\t Error getting current value of \"cltdeg\" from datasource\n"));
 		}
 		if ((coolant != last_coolant) || (forced_update))
 			warmwizard_update_status(coolant);

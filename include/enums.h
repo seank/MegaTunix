@@ -424,4 +424,11 @@ typedef enum
 	ARGS
 }ArrayType;
 
+typedef enum
+{
+	INBOUND=0x2E0,
+	OUTBOUND,
+	BOTH
+}FlushDirection;
+
 #endif

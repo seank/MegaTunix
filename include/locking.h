@@ -11,13 +11,13 @@
  * No warranty is made or implied. You use this program at your own risk.
  */
 
-#ifndef __WINSERIALIO_H__
-#define __WINSERIALIO_H__
+#ifndef __LOCKING_H__
+#define __LOCKING_H__
 
 /* Prototypes */
-void win32_toggle_serial_control_lines(void);
-void win32_setup_serial_params(int);
-void win32_flush_serial(int, FlushDirection);
+void create_mtx_lock(void);
+void win32_create_mtx_lock(void);
+void unix_create_mtx_lock(void);
 /* Prototypes */
 
 #endif

@@ -67,6 +67,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 {
 	GtkWidget *window;
 	GtkWidget *frame;
+	GtkWidget *ebox;
 	GtkWidget *vbox;
 	GtkWidget *button;
 	GtkWidget *vbox2;
@@ -421,8 +422,10 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	gtk_box_pack_start(GTK_BOX(vbox),frame,FALSE,TRUE,0);
 	gtk_container_set_border_width(GTK_CONTAINER(frame),0);
 
-	hbox = gtk_hbox_new(TRUE,5);
+	ebox = gtk_event_box_new();
 	gtk_container_add(GTK_CONTAINER(frame),hbox);
+	hbox = gtk_hbox_new(TRUE,5);
+	gtk_container_add(GTK_CONTAINER(ebox),hbox);
 
 	table = gtk_table_new(2,2,FALSE);
 	gtk_table_set_col_spacings(GTK_TABLE(table),5);

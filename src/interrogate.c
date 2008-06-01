@@ -111,7 +111,7 @@ EXPORT gboolean interrogate_ecu()
 
 	for (i=0;i<tests_to_run;i++)
 	{
-		flush_serial(serial_params->fd,TCIOFLUSH);
+		flush_serial(serial_params->fd,BOTH);
 		count = 0;
 		test = g_array_index(tests,Detection_Test *, i);
 

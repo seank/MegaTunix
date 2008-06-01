@@ -79,7 +79,7 @@ gboolean pf_dispatcher(gpointer data)
 		return TRUE;
 	/* Endless Loop, wait for message, processs and repeat... */
 trypop:
-	/*printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));*/
+//	printf("pf_dispatch queue length is %i\n",g_async_queue_length(pf_dispatch_queue));
 	if (leaving)
 		return TRUE;
 	message = g_async_queue_try_pop(pf_dispatch_queue);
@@ -120,9 +120,12 @@ trypop:
 					printf("ERROR, couldn't find function \"%s\"\n",pf->name);
 				else
 					pf->function();
+				printf("Function %s done executing\n",pf->name);
 			}
 
+			printf("going to clean pending events\n");
 			gdk_threads_enter();
+			printf("inside threads\n");
 			while (gtk_events_pending())
 			{
 				if (leaving)
@@ -130,6 +133,7 @@ trypop:
 					gdk_threads_leave();
 					goto dealloc;
 				}
+				printf("calling main iteration\n");
 				gtk_main_iteration();
 			}
 			gdk_threads_leave();
@@ -180,7 +184,7 @@ gboolean gui_dispatcher(gpointer data)
 		return TRUE;
 	/* Endless Loop, wait for message, processs and repeat... */
 trypop:
-	/*printf("dispatch queue length is %i\n",g_async_queue_length(dispatch_queue));*/
+	//printf("gui_dispatch queue length is %i\n",g_async_queue_length(gui_dispatch_queue));
 	if (leaving)
 		return TRUE;
 	message = g_async_queue_try_pop(gui_dispatch_queue);

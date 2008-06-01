@@ -37,7 +37,7 @@ extern gint dbg_lvl;
 extern GObject *global_data;
 
 
-EXPORT void enable_interrogation_button_cb(void)
+EXPORT void enable_interrogation_button_pf(void)
 {
 	extern GHashTable *dynamic_widgets;
 	extern volatile gboolean offline;
@@ -48,20 +48,20 @@ EXPORT void enable_interrogation_button_cb(void)
 }
 
 
-EXPORT void start_statuscounts_cb(void)
+EXPORT void start_statuscounts_pf(void)
 {
 	start_tickler(SCOUNTS_TICKLER);
 }
 
 
-EXPORT void enable_reboot_button_cb(void)
+EXPORT void enable_reboot_button_pf(void)
 {
 	extern GHashTable *dynamic_widgets;
 	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"error_status_reboot_button"),TRUE);
 }
 
 
-EXPORT void spawn_read_ve_const_cb(void)
+EXPORT void spawn_read_ve_const_pf(void)
 {
 	extern Firmware_Details *firmware;
 	if (!firmware)
@@ -209,19 +209,19 @@ EXPORT gboolean read_ve_const(void *data, XmlCmdType type)
 }
 
 
-EXPORT void enable_get_data_buttons_cb(void)
+EXPORT void enable_get_data_buttons_pf(void)
 {
 	g_list_foreach(get_list("get_data_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-EXPORT void enable_ttm_buttons_cb(void)
+EXPORT void enable_ttm_buttons_pf(void)
 {
 	g_list_foreach(get_list("ttm_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-EXPORT void conditional_start_rtv_tickler_cb(void)
+EXPORT void conditional_start_rtv_tickler_pf(void)
 {
 	static gboolean just_starting = TRUE;
 
@@ -233,7 +233,7 @@ EXPORT void conditional_start_rtv_tickler_cb(void)
 }
 
 
-EXPORT void set_store_black_cb(void)
+EXPORT void set_store_black_pf(void)
 {
 	gint j = 0;
 	extern Firmware_Details *firmware;
@@ -243,23 +243,23 @@ EXPORT void set_store_black_cb(void)
 		set_reqfuel_color(BLACK,j);
 }
 
-EXPORT void enable_3d_buttons_cb(void)
+EXPORT void enable_3d_buttons_pf(void)
 {
 	g_list_foreach(get_list("3d_buttons"),set_widget_sensitive,GINT_TO_POINTER(TRUE));
 }
 
 
-EXPORT void disable_burner_buttons_cb(void)
+EXPORT void disable_burner_buttons_pf(void)
 {
 	g_list_foreach(get_list("burners"),set_widget_sensitive,GINT_TO_POINTER(FALSE));
 }
 
-EXPORT void reset_temps_cb(void)
+EXPORT void reset_temps_pf(void)
 {
 	reset_temps(OBJ_GET(global_data,"temp_units"));
 }
 
-EXPORT void simple_read_cb(void * data, XmlCmdType type)
+EXPORT void simple_read_pf(void * data, XmlCmdType type)
 {
 	Io_Message *message  = NULL;
 	OutputData *output  = NULL;
@@ -425,7 +425,7 @@ EXPORT void simple_read_cb(void * data, XmlCmdType type)
  \brief burn_ecu_flash() issues the commands to the ECU to burn the contents
  of RAM to flash.
  */
-EXPORT void post_burn_cb()
+EXPORT void post_burn_pf()
 {
 	gint i = 0;
 	extern Firmware_Details * firmware;
@@ -439,13 +439,13 @@ EXPORT void post_burn_cb()
 	}
 
 	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup(__FILE__": post_burn_cb()\n\tBurn to Flash Completed\n"));
+		dbg_func(g_strdup(__FILE__": post_burn_pf()\n\tBurn to Flash Completed\n"));
 
 	return;
 }
 
 
-EXPORT void post_single_burn_cb(void *data)
+EXPORT void post_single_burn_pf(void *data)
 {
 	Io_Message *message = (Io_Message *)data;
 	OutputData *output = (OutputData *)message->payload;
@@ -458,7 +458,7 @@ EXPORT void post_single_burn_cb(void *data)
 	backup_current_data(firmware->canID,page);
 
 	if (dbg_lvl & SERIAL_WR)
-		dbg_func(g_strdup(__FILE__": post_single_burn_cb()\n\tBurn to Flash Completed\n"));
+		dbg_func(g_strdup(__FILE__": post_single_burn_pf()\n\tBurn to Flash Completed\n"));
 
 	return;
 }
