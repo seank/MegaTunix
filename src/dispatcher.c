@@ -120,23 +120,16 @@ trypop:
 					printf("ERROR, couldn't find function \"%s\"\n",pf->name);
 				else
 					pf->function();
-				printf("Function %s done executing\n",pf->name);
 			}
 
-			printf("going to clean pending events\n");
-			gdk_threads_enter();
-			printf("inside threads\n");
 			while (gtk_events_pending())
 			{
 				if (leaving)
 				{
-					gdk_threads_leave();
 					goto dealloc;
 				}
-				printf("calling main iteration\n");
 				gtk_main_iteration();
 			}
-			gdk_threads_leave();
 		}
 	}
 dealloc:
@@ -254,17 +247,14 @@ trypop:
 					*/
 			}
 
-			gdk_threads_enter();
 			while (gtk_events_pending())
 			{
 				if (leaving)
 				{
-					gdk_threads_leave();
 					goto dealloc;
 				}
 				gtk_main_iteration();
 			}
-			gdk_threads_leave();
 		}
 	}
 dealloc:

@@ -178,17 +178,14 @@ EXPORT gboolean load_gui_tabs_pf(void)
 		i++;
 
 		/* Allow gui to update as it should.... */
-		gdk_threads_enter();
 		while (gtk_events_pending())
 		{
 			if (leaving)
 			{
-				gdk_threads_leave();
 				return FALSE;
 			}
 			gtk_main_iteration();
 		}
-		gdk_threads_leave();
 
 		if (!firmware)
 			break;

@@ -223,7 +223,7 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 
 
 	/* Grab and release all mutexes to get them to relinquish
-	 */
+	*/
 	g_static_mutex_lock(&serio_mutex);
 	g_static_mutex_unlock(&serio_mutex);
 	/* Free all buffers */
@@ -231,11 +231,13 @@ EXPORT void leave(GtkWidget *widget, gpointer data)
 	if (dbg_lvl & CRITICAL)
 		dbg_func(g_strdup_printf(__FILE__": LEAVE() mem deallocated, closing log and exiting\n"));
 	close_debug();
+	/*
 	if (dbg_lvl & CRITICAL)
 		printf(__FILE__": LEAVE() Log closed, attempting to unlock mutex\n");
 	g_static_mutex_unlock(&mutex);
 	if (dbg_lvl & CRITICAL)
 		printf(__FILE__": LEAVE() Mutex unlocked, calling gtk_main_quit()\n");
+		*/
 	gtk_main_quit();
 	return;
 }
@@ -1695,17 +1697,14 @@ void update_widget(gpointer object, gpointer user_data)
 	upd_count++;
 	if ((upd_count%64) == 0)
 	{
-		gdk_threads_enter();
 		while (gtk_events_pending())
 		{
 			if (leaving)
 			{
-				gdk_threads_leave();
 				return;
 			}
 			gtk_main_iteration();
 		}
-		gdk_threads_leave();
 
 	}
 	if (!GTK_IS_OBJECT(widget))

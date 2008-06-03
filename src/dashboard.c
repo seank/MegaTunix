@@ -31,8 +31,13 @@
 
 
 gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
+gboolean focus_event(GtkWidget * , gpointer);
+gboolean delayed_configure_event(gpointer );
+
 extern gint dbg_lvl;
 static gboolean timer_active = FALSE;
+static volatile gboolean moving = FALSE;
+static volatile gboolean resizing = FALSE;
 GStaticMutex dash_mutex = G_STATIC_MUTEX_INIT;
 extern GObject *global_data;
 
@@ -56,6 +61,7 @@ void load_dashboard(gchar *filename, gpointer data)
 	gint y = 0;
 	gfloat * ratio = NULL;
 	extern GdkColor black;
+	//extern GdkColor white;
 	extern GtkWidget * main_window;
 	xmlDoc *doc = NULL;
 	xmlNode *root_element = NULL;
@@ -93,13 +99,15 @@ void load_dashboard(gchar *filename, gpointer data)
 
 	gtk_widget_add_events(GTK_WIDGET(ebox),GDK_POINTER_MOTION_MASK|
 			GDK_BUTTON_PRESS_MASK |GDK_BUTTON_RELEASE_MASK);
+			
 	g_signal_connect (G_OBJECT (ebox), "motion_notify_event",
 			G_CALLBACK (dash_motion_event), NULL);
+	g_signal_connect (G_OBJECT (window), "focus-in-event",
+			G_CALLBACK (focus_event), NULL);
 	g_signal_connect (G_OBJECT (ebox), "button_press_event",
 			G_CALLBACK (dash_button_event), NULL);
 	g_signal_connect (G_OBJECT (window), "key_press_event",
 			G_CALLBACK (dash_key_event), NULL);
-
 
 	dash = gtk_fixed_new();
 	gtk_fixed_set_has_window(GTK_FIXED(dash),TRUE);
@@ -164,7 +172,6 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	gfloat ratio = 0.0;
 	GtkWidget * dash  = NULL;
 
-
 	dash = OBJ_GET(widget,"dash");
 	if (!GTK_IS_WIDGET(dash))
 		return FALSE;
@@ -179,6 +186,7 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	if (((ratio - (gint)ratio)*100) < 1)
 		return FALSE;
 
+	//printf("dash_config_event\n");
 	g_signal_handlers_block_by_func(G_OBJECT(widget),G_CALLBACK(dash_configure_event),NULL);
 	children = GTK_FIXED(dash)->children;
 	for (i=0;i<g_list_length(children);i++)
@@ -565,6 +573,14 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	/*printf("button event\n"); */
 	gint edge = -1;
 
+	GtkWidget *dash = GTK_BIN(widget)->child;
+	if (!timer_active)
+	{
+		dash_shape_combine(dash,FALSE);
+		g_timeout_add(4000,hide_dash_resizers,dash);
+		timer_active = TRUE;
+	}
+
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 1))
 	{
 		/*printf("dash button event\n"); */
@@ -599,6 +615,8 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 		if ((edge == -1 ) && (GTK_IS_WINDOW(widget->parent)))
 		{
 			/*printf("MOVE drag\n"); */
+			moving = TRUE;
+			g_signal_handlers_block_by_func(G_OBJECT(gtk_widget_get_toplevel(widget)),G_CALLBACK(dash_configure_event),NULL);
 			gtk_window_begin_move_drag (GTK_WINDOW(gtk_widget_get_toplevel(widget)),
 					event->button,
 					event->x_root,
@@ -609,6 +627,7 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 		else if (GTK_IS_WINDOW(widget->parent))
 		{
 			/*printf("RESIZE drag\n"); */
+			resizing = TRUE;
 			gtk_window_begin_resize_drag (GTK_WINDOW(gtk_widget_get_toplevel(widget)),
 					edge,
 					event->button,
@@ -617,6 +636,8 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 					event->time);
 		}
 	}
+	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+		printf("Right click in dash\n");
 	return FALSE;
 }
 
@@ -834,10 +855,35 @@ void update_tab_gauges()
 }
 
 
+gboolean delayed_configure_event(gpointer data)
+{
+	if (resizing)
+		return FALSE;
+		gtk_widget_queue_draw(GTK_WIDGET(data));
+	return  FALSE;
+}
+
+
 gboolean hide_dash_resizers(gpointer data)
 {
 	if (GTK_IS_WIDGET(data))
 		dash_shape_combine(data,TRUE);
 	timer_active = FALSE;
 	return FALSE;
+}
+
+gboolean focus_event(GtkWidget *widget, gpointer data)
+{
+	if (moving)
+	{
+		g_signal_handlers_unblock_by_func(G_OBJECT(gtk_widget_get_toplevel(widget)),G_CALLBACK(dash_configure_event),NULL);
+		moving = FALSE;
+	}
+	if (resizing)
+	{
+		resizing = FALSE;
+		gtk_widget_queue_draw(widget);
+	}
+	return FALSE;
+
 }

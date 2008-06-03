@@ -62,9 +62,6 @@ gint main(gint argc, gchar ** argv)
 	if(!g_thread_supported())
 		g_thread_init(NULL);
 
-	gdk_threads_init();
-	gdk_threads_enter();
-
 	gtk_init(&argc, &argv);
 	glade_init();
 	gbr_init(NULL);
@@ -116,6 +113,5 @@ gint main(gint argc, gchar ** argv)
 
 	ready = TRUE;
 	gtk_main();
-	gdk_threads_leave();
 	return (0) ;
 }
