@@ -85,7 +85,7 @@ gboolean load_table(gchar *table_name, gchar *filename)
 {
 	GIOStatus status;
 	GIOChannel *iochannel;
-	gboolean go = TRUE;
+	gboolean done = FALSE;
 	gchar * str = NULL;
 	gchar * tmp = NULL;
 	gchar * end = NULL;
@@ -102,12 +102,12 @@ gboolean load_table(gchar *table_name, gchar *filename)
 		if (dbg_lvl & CRITICAL)
 			dbg_func(g_strdup(__FILE__": load_lookuptables()\n\tError seeking to beginning of the file\n"));
 	}
-	while (go)	
+	while (!done)	
 	{
 		a_line = g_string_new("\0");
 		status = g_io_channel_read_line_string(iochannel, a_line, NULL, NULL);
 		if (status == G_IO_STATUS_EOF)
-			go = FALSE;
+			done = TRUE;
 		else
 		{
 		/*	str = g_strchug(g_strdup(a_line->str));*/
@@ -335,9 +335,14 @@ gfloat direct_lookup_data(gchar *table, gint offset)
 	LookupTable *lookuptable = NULL;
 
 	lookuptable = (LookupTable *)g_hash_table_lookup(lookuptables,table);	
-
 	if (!lookuptable)
 	{
+		printf("FATAL_ERROR: direct_lookup_data, table \"%s\" is null\n",table);
+		return offset;
+	}
+	if (!lookuptable->array)
+	{
+		printf("FATAL_ERROR: direct_lookup_data, %s->array is null\n",table);
 		return offset;
 	}
 	return lookuptable->array[offset];
