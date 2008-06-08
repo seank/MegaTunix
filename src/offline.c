@@ -102,21 +102,21 @@ void set_offline_mode(void)
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("load_realtime_map");
+	pf->name = g_strdup("load_realtime_map_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;
 	pfuncs = g_array_append_val(pfuncs,pf);
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("load_gui_tabs");
+	pf->name = g_strdup("load_gui_tabs_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;
 	pfuncs = g_array_append_val(pfuncs,pf);
 	
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("disable_burner_buttons_cb");
+	pf->name = g_strdup("disable_burner_buttons_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;
@@ -142,7 +142,7 @@ void set_offline_mode(void)
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));
 
 	pf = g_new0(PostFunction,1);
-	pf->name = g_strdup("reset_temps_cb");
+	pf->name = g_strdup("reset_temps_pf");
 	if (module)
 		g_module_symbol(module,pf->name,(void *)&pf->function);
 	pf->w_arg = FALSE;

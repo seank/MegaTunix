@@ -570,6 +570,19 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+	static gboolean fullscreen = FALSE;
+	static gint dash_x = 0;
+	static gint dash_y = 0;
+	static gint dash_w = 0;
+	static gint dash_h = 0;
+	gint screen_w = 0;
+	gint screen_h = 0;
+	gfloat x_ratio = 0.0;
+	gfloat y_ratio = 0.0;
+	gfloat ratio = 0.0;
+	gint w = 0;
+	gint h = 0;
+	GdkScreen *screen = NULL;
 	/*printf("button event\n"); */
 	gint edge = -1;
 
@@ -611,7 +624,7 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 		else
 			edge = -1;
 
-	
+
 		if ((edge == -1 ) && (GTK_IS_WINDOW(widget->parent)))
 		{
 			/*printf("MOVE drag\n"); */
@@ -637,7 +650,42 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 		}
 	}
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+	{
 		printf("Right click in dash\n");
+		if (fullscreen)
+		{
+			printf("disabling fullscreen\n");
+			gtk_widget_hide_all(gtk_widget_get_toplevel(widget));
+			gtk_window_resize(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_w,dash_h);
+			gtk_window_move(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_x,dash_y);
+			gtk_widget_show_all(gtk_widget_get_toplevel(widget));
+			gtk_window_set_keep_above(GTK_WINDOW(gtk_widget_get_toplevel(widget)),FALSE);
+			fullscreen = FALSE;
+		}
+		else
+		{
+			printf("enabling fullscreen\n");
+			screen = gtk_window_get_screen(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
+			screen_w = gdk_screen_get_width(screen);
+			screen_h = gdk_screen_get_height(screen);
+			gtk_window_get_position(GTK_WINDOW(gtk_widget_get_toplevel(widget)),&dash_x,&dash_y);
+			dash_w = widget->allocation.width;
+			dash_h = widget->allocation.height;
+			x_ratio = (float)screen_w/(float)dash_w;
+			y_ratio = (float)screen_h/(float)dash_h;
+			ratio = x_ratio > y_ratio ? y_ratio:x_ratio;
+			w = dash_w*ratio;
+			h = dash_h*ratio;
+			gtk_widget_hide_all(gtk_widget_get_toplevel(widget));
+			gtk_window_resize(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_w*ratio,dash_h*ratio);
+			gtk_window_move(GTK_WINDOW(gtk_widget_get_toplevel(widget)),(screen_w-w)/2,(screen_h-h)/2);
+			gtk_widget_show_all(gtk_widget_get_toplevel(widget));
+			gtk_window_set_keep_above(GTK_WINDOW(gtk_widget_get_toplevel(widget)),TRUE);
+			printf("screen dimensions: %i:%i\n",screen_w,screen_h);
+			printf("dash dimensions: %i:%i\n",dash_w,dash_h);
+			fullscreen = TRUE;
+		}
+	}
 	return FALSE;
 }
 

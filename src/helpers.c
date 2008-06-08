@@ -277,6 +277,7 @@ EXPORT void simple_read_pf(void * data, XmlCmdType type)
 	static gboolean just_starting = TRUE;
 	extern gboolean forced_update;
 	extern gboolean force_page_change;
+	extern volatile gboolean offline;
 
 
 	message = (Io_Message *)data;
@@ -297,6 +298,8 @@ EXPORT void simple_read_pf(void * data, XmlCmdType type)
 			printf("MS2_CLOCK not written yet\n");
 			break;
 		case NUM_REV:
+			if (offline)
+				break;
 			count = read_data(-1,&message->recv_buf);
 			ptr8 = (guchar *)message->recv_buf;
 			if (count > 0)
@@ -305,6 +308,8 @@ EXPORT void simple_read_pf(void * data, XmlCmdType type)
 				thread_update_widget(g_strdup("ecu_revision_entry"),MTX_ENTRY,g_strdup(""));
 			break;
 		case TEXT_REV:
+			if (offline)
+				break;
 			count = read_data(-1,&message->recv_buf);
 			if (count > 0)
 				thread_update_widget(g_strdup("text_version_entry"),MTX_ENTRY,g_strndup(message->recv_buf,count));
@@ -312,6 +317,8 @@ EXPORT void simple_read_pf(void * data, XmlCmdType type)
 				thread_update_widget(g_strdup("text_version_entry"),MTX_ENTRY,g_strdup(""));
 			break;
 		case SIGNATURE:
+			if (offline)
+				break;
 			 count = read_data(-1,&message->recv_buf);
                          if (count > 0)
 				 thread_update_widget(g_strdup("ecu_signature_entry"),MTX_ENTRY,g_strndup(message->recv_buf,count));

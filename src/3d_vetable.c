@@ -423,7 +423,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(frame),0);
 
 	ebox = gtk_event_box_new();
-	gtk_container_add(GTK_CONTAINER(frame),hbox);
+	gtk_container_add(GTK_CONTAINER(frame),ebox);
 	hbox = gtk_hbox_new(TRUE,5);
 	gtk_container_add(GTK_CONTAINER(ebox),hbox);
 
