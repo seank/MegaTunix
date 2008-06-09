@@ -52,6 +52,8 @@ gboolean dummy(GtkWidget *,gpointer );
 EXPORT void create_gauge(GtkWidget *);
 gboolean hide_dash_resizers(gpointer );
 void update_tab_gauges(void);
+gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
+gboolean focus_event(GtkWidget * , gpointer);
 /* Prototypes */
 
 #endif

@@ -30,9 +30,6 @@
 #include <widgetmgmt.h>
 
 
-gboolean dash_configure_event(GtkWidget * , GdkEventConfigure * );
-gboolean focus_event(GtkWidget * , gpointer);
-gboolean delayed_configure_event(gpointer );
 
 extern gint dbg_lvl;
 static gboolean timer_active = FALSE;
@@ -40,6 +37,7 @@ static volatile gboolean moving = FALSE;
 static volatile gboolean resizing = FALSE;
 GStaticMutex dash_mutex = G_STATIC_MUTEX_INIT;
 extern GObject *global_data;
+static volatile gboolean fullscreen = FALSE;
 
 
 /*!
@@ -161,6 +159,9 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	gint orig_height = 0;
 	gint cur_width = 0;
 	gint cur_height = 0;
+	gfloat x_ratio = 0.0;
+	gfloat y_ratio = 0.0;
+	gboolean w_constricted = FALSE;
 	GtkFixedChild *child = NULL;
 	GtkWidget *gauge = NULL;
 	GList *children = NULL;
@@ -178,11 +179,14 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 
 	orig_width = (gint) OBJ_GET(dash,"orig_width");
 	orig_height = (gint) OBJ_GET(dash,"orig_height");
-	cur_width =  event->width;
-	cur_height =  event->height;
+	cur_width = event->width;
+	cur_height = event->height;
 
-	ratio = (((gfloat)cur_height/(gfloat)orig_height)+((gfloat)cur_width/(gfloat)orig_width))/2.0;
-
+	x_ratio = (float)cur_width/(float)orig_width;
+	y_ratio = (float)cur_height/(float)orig_height;
+	ratio = x_ratio > y_ratio ? y_ratio:x_ratio;
+	w_constricted = x_ratio > y_ratio ? FALSE:TRUE;
+	
 	if (((ratio - (gint)ratio)*100) < 1)
 		return FALSE;
 
@@ -197,14 +201,20 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 		child_y = (gint)OBJ_GET(gauge,"orig_y_offset");
 		child_w = (gint)OBJ_GET(gauge,"orig_width");
 		child_h = (gint)OBJ_GET(gauge,"orig_height");
-		gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x,ratio*child_y);
+		if (w_constricted)
+			gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x,ratio*child_y+(((y_ratio-x_ratio)*orig_height)/2));
+		else
+			gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x-(((y_ratio-x_ratio)*orig_width)/2),ratio*child_y);
 		gtk_widget_set_size_request(gauge,child_w*ratio,child_h*ratio);
 	}
-	dash_shape_combine(dash,FALSE);
-	if (!timer_active)
+	if (!fullscreen)
 	{
-		g_timeout_add(4000,hide_dash_resizers,dash);
-		timer_active = TRUE;
+		dash_shape_combine(dash,FALSE);
+		if (!timer_active)
+		{
+			g_timeout_add(4000,hide_dash_resizers,dash);
+			timer_active = TRUE;
+		}
 	}
 
 	g_signal_handlers_unblock_by_func(G_OBJECT(widget),G_CALLBACK(dash_configure_event),NULL);
@@ -259,10 +269,11 @@ void load_geometry(GtkWidget *dash, xmlNode *node)
 	
 	hints.min_width = 100;
 	hints.min_height = 100;
-	hints.min_aspect = (gfloat)width/(gfloat)height;
-	hints.max_aspect = hints.min_aspect;
+//	hints.min_aspect = (gfloat)width/(gfloat)height;
+//	hints.max_aspect = hints.min_aspect;
 
-	gtk_window_set_geometry_hints(GTK_WINDOW(gtk_widget_get_toplevel(dash)),NULL,&hints,GDK_HINT_ASPECT|GDK_HINT_MIN_SIZE);
+	//gtk_window_set_geometry_hints(GTK_WINDOW(gtk_widget_get_toplevel(dash)),NULL,&hints,GDK_HINT_ASPECT|GDK_HINT_MIN_SIZE);
+	gtk_window_set_geometry_hints(GTK_WINDOW(gtk_widget_get_toplevel(dash)),NULL,&hints,GDK_HINT_MIN_SIZE);
 
 }
 
@@ -570,19 +581,6 @@ gboolean dash_key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 
 gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-	static gboolean fullscreen = FALSE;
-	static gint dash_x = 0;
-	static gint dash_y = 0;
-	static gint dash_w = 0;
-	static gint dash_h = 0;
-	gint screen_w = 0;
-	gint screen_h = 0;
-	gfloat x_ratio = 0.0;
-	gfloat y_ratio = 0.0;
-	gfloat ratio = 0.0;
-	gint w = 0;
-	gint h = 0;
-	GdkScreen *screen = NULL;
 	/*printf("button event\n"); */
 	gint edge = -1;
 
@@ -651,39 +649,15 @@ gboolean dash_button_event(GtkWidget *widget, GdkEventButton *event, gpointer da
 	}
 	if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
 	{
-		printf("Right click in dash\n");
 		if (fullscreen)
 		{
-			printf("disabling fullscreen\n");
-			gtk_widget_hide_all(gtk_widget_get_toplevel(widget));
-			gtk_window_resize(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_w,dash_h);
-			gtk_window_move(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_x,dash_y);
-			gtk_widget_show_all(gtk_widget_get_toplevel(widget));
-			gtk_window_set_keep_above(GTK_WINDOW(gtk_widget_get_toplevel(widget)),FALSE);
 			fullscreen = FALSE;
+			gtk_window_unfullscreen(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 		}
 		else
 		{
-			printf("enabling fullscreen\n");
-			screen = gtk_window_get_screen(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
-			screen_w = gdk_screen_get_width(screen);
-			screen_h = gdk_screen_get_height(screen);
-			gtk_window_get_position(GTK_WINDOW(gtk_widget_get_toplevel(widget)),&dash_x,&dash_y);
-			dash_w = widget->allocation.width;
-			dash_h = widget->allocation.height;
-			x_ratio = (float)screen_w/(float)dash_w;
-			y_ratio = (float)screen_h/(float)dash_h;
-			ratio = x_ratio > y_ratio ? y_ratio:x_ratio;
-			w = dash_w*ratio;
-			h = dash_h*ratio;
-			gtk_widget_hide_all(gtk_widget_get_toplevel(widget));
-			gtk_window_resize(GTK_WINDOW(gtk_widget_get_toplevel(widget)),dash_w*ratio,dash_h*ratio);
-			gtk_window_move(GTK_WINDOW(gtk_widget_get_toplevel(widget)),(screen_w-w)/2,(screen_h-h)/2);
-			gtk_widget_show_all(gtk_widget_get_toplevel(widget));
-			gtk_window_set_keep_above(GTK_WINDOW(gtk_widget_get_toplevel(widget)),TRUE);
-			printf("screen dimensions: %i:%i\n",screen_w,screen_h);
-			printf("dash dimensions: %i:%i\n",dash_w,dash_h);
 			fullscreen = TRUE;
+			gtk_window_fullscreen(GTK_WINDOW(gtk_widget_get_toplevel(widget)));
 		}
 	}
 	return FALSE;
@@ -769,7 +743,6 @@ EXPORT gboolean present_dash_filechooser(GtkWidget *widget, gpointer data)
 
 	filename = choose_file(fileio);
 	free_mtxfileio(fileio);
-	printf("filename from chooser %s\n",filename);
 	if (filename)
 	{
 		if (dash_gauges)
@@ -900,15 +873,6 @@ void update_tab_gauges()
 			mtx_gauge_face_set_value(MTX_GAUGE_FACE(gauge),current);
 	}
 
-}
-
-
-gboolean delayed_configure_event(gpointer data)
-{
-	if (resizing)
-		return FALSE;
-		gtk_widget_queue_draw(GTK_WIDGET(data));
-	return  FALSE;
 }
 
 
