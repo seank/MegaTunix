@@ -9,6 +9,14 @@
  * is made available for FREE.
  * 
  * No warranty is made or implied. You use this program at your own risk.
+ *
+ * changelog
+ * Ben Pierre 05/21/08
+ * - define _RGB3f RGB3f rgb float triplet
+ * - _RGB3f RGB3f structure
+ * - prototype rgb_from_hue()
+ * - set_shading_mode()
+ * - drawFrameRate()
  */
 
 #ifndef __3D_VETABLE_H__
@@ -34,10 +42,19 @@ typedef enum
 	_Z_
 }Axis;
 
+typedef struct _RGB3f RGB3f;
 typedef struct _Cur_Vals Cur_Vals;
 typedef struct _Ve_View_3D Ve_View_3D;
 
-
+/*!
+ \brief the _RGB3f structure contains rgb color values in standard floats
+ */
+struct _RGB3f
+{
+	float red;
+	float green;
+	float blue;
+};
 /*!
  \brief the _Ve_View_3D structure contains all the field to create and 
  manipulate a 3D view of a MegaSquirt VE/Spark table, and should work in
@@ -115,6 +132,7 @@ struct _Ve_View_3D
 	DataSize z_size;
 	gchar *table_name;
 	gint table_num;
+	gfloat opacity;
 	gboolean tracking_focus;
 	gboolean fixed_scale;
 	GtkWidget *tracking_button;
@@ -145,6 +163,7 @@ struct _Cur_Vals
 };
 
 /* Prototypes */
+RGB3f rgb_from_hue(gfloat, gfloat, gfloat);
 gint create_ve3d_view(GtkWidget *, gpointer );
 gint free_ve3d_view(GtkWidget *);
 GdkGLConfig* get_gl_config(void);
@@ -169,9 +188,10 @@ Cur_Vals * get_current_values(Ve_View_3D *);
 void free_current_values(Cur_Vals *);
 gboolean set_tracking_focus(GtkWidget *, gpointer );
 gboolean set_scaling_mode(GtkWidget *, gpointer );
+gboolean set_shading_mode(GtkWidget *, gpointer );
 gfloat get_fixed_pos(Ve_View_3D *, void *,gfloat, Axis);
 gint get_multiplier(DataSize );
-
+void drawFrameRate(char *, GLclampf, GLclampf, GLclampf, GLfloat, GLfloat);
 /* Prototypes */
 
 #endif

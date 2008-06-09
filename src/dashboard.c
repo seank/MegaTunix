@@ -187,9 +187,6 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 	ratio = x_ratio > y_ratio ? y_ratio:x_ratio;
 	w_constricted = x_ratio > y_ratio ? FALSE:TRUE;
 	
-	if (((ratio - (gint)ratio)*100) < 1)
-		return FALSE;
-
 	//printf("dash_config_event\n");
 	g_signal_handlers_block_by_func(G_OBJECT(widget),G_CALLBACK(dash_configure_event),NULL);
 	children = GTK_FIXED(dash)->children;
@@ -207,14 +204,11 @@ gboolean dash_configure_event(GtkWidget *widget, GdkEventConfigure *event)
 			gtk_fixed_move(GTK_FIXED(dash),gauge,ratio*child_x-(((y_ratio-x_ratio)*orig_width)/2),ratio*child_y);
 		gtk_widget_set_size_request(gauge,child_w*ratio,child_h*ratio);
 	}
-	if (!fullscreen)
+	dash_shape_combine(dash,FALSE);
+	if (!timer_active)
 	{
-		dash_shape_combine(dash,FALSE);
-		if (!timer_active)
-		{
-			g_timeout_add(4000,hide_dash_resizers,dash);
-			timer_active = TRUE;
-		}
+		g_timeout_add(4000,hide_dash_resizers,dash);
+		timer_active = TRUE;
 	}
 
 	g_signal_handlers_unblock_by_func(G_OBJECT(widget),G_CALLBACK(dash_configure_event),NULL);
@@ -470,27 +464,32 @@ void dash_shape_combine(GtkWidget *dash, gboolean hide_resizers)
 	}
 
 	gdk_gc_set_foreground (gc1, &white);
-	children = GTK_FIXED(dash)->children;
-	for (i=0;i<g_list_length(children);i++)
+	if (fullscreen)
+		gdk_draw_rectangle(bitmap,gc1,TRUE,0,0,width,height);
+	else
 	{
-		child = g_list_nth_data(children,i);
-		x = child->x;
-		y = child->y;
-		gtk_widget_size_request(child->widget,&req);
-		w = req.width;
-		h = req.height;
-		radius = MIN(w,h)/2;
-		xc = x+w/2;
-		yc = y+h/2;
-		gdk_draw_arc (bitmap,
-				gc1,
-				TRUE,     /* filled */
-				xc-radius,
-				yc-radius,
-				2*radius,
-				2*radius,
-				0,        /* angle 1 */
-				360*64);  /* angle 2: full circle */
+		children = GTK_FIXED(dash)->children;
+		for (i=0;i<g_list_length(children);i++)
+		{
+			child = g_list_nth_data(children,i);
+			x = child->x;
+			y = child->y;
+			gtk_widget_size_request(child->widget,&req);
+			w = req.width;
+			h = req.height;
+			radius = MIN(w,h)/2;
+			xc = x+w/2;
+			yc = y+h/2;
+			gdk_draw_arc (bitmap,
+					gc1,
+					TRUE,     /* filled */
+					xc-radius,
+					yc-radius,
+					2*radius,
+					2*radius,
+					0,        /* angle 1 */
+					360*64);  /* angle 2: full circle */
+		}
 	}
 	if (GTK_IS_WINDOW(gtk_widget_get_toplevel(dash)))
 	{
