@@ -169,7 +169,7 @@ gchar * present_firmware_choices()
 	GtkWidget *sep = NULL;
 	GtkWidget *button = NULL;
 	GtkWidget *label = NULL;
-	FwElement *element = NULL;
+	ListElement *element = NULL;
 	gchar *tmpbuf = NULL;
 	GArray *classes = NULL;
 	GSList *group = NULL;
@@ -215,14 +215,14 @@ gchar * present_firmware_choices()
 
 		if (g_array_index(classes,FileClass,i) == PERSONAL)
 		{
-			element = g_new0(FwElement, 1);
+			element = g_new0(ListElement, 1);
 			element->filename = g_strdup(filenames[i]);
 			element->name = g_strdup(tmpbuf);
 			p_list = g_list_append(p_list,(gpointer)element);
 		}
 		if (g_array_index(classes,FileClass,i) == SYSTEM)
 		{
-			element = g_new0(FwElement, 1);
+			element = g_new0(ListElement, 1);
 			element->filename = g_strdup(filenames[i]);
 			element->name = g_strdup(tmpbuf);
 			s_list = g_list_append(s_list,(gpointer)element);
@@ -363,21 +363,4 @@ gboolean offline_ecu_restore(GtkWidget *widget, gpointer data)
 	free_mtxfileio(fileio);
 	return TRUE;
 
-}
-
-
-gint list_sort(gconstpointer a, gconstpointer b)
-{
-	FwElement *a1 = (FwElement *)a;
-	FwElement *b1 = (FwElement *)b;
-	return g_ascii_strcasecmp(a1->name,b1->name);
-}
-
-
-void free_element(gpointer data, gpointer user_data)
-{
-	FwElement *a = (FwElement *)data;
-	g_free(a->filename);
-	g_free(a->name);
-	g_free(a);
 }
