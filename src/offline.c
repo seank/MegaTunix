@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <tabloader.h>
 #include <threads.h>
+#include <timeout_handlers.h>
 
 
 gchar * offline_firmware_choice = NULL;
@@ -64,9 +65,6 @@ void set_offline_mode(void)
         extern GAsyncQueue *serial_repair_queue;
 
 
-	/* Disable interrogation button */
-
-	offline = TRUE;
 	/* Cause Serial Searcher thread to abort.... */
 	g_async_queue_push(serial_repair_queue,&tmp);
 
@@ -85,9 +83,14 @@ void set_offline_mode(void)
 
 	}
 
+	offline = TRUE;
+	interrogated = TRUE;
+
+	/* Disable interrogation button */
 	widget = g_hash_table_lookup(dynamic_widgets,"interrogate_button");
 	if (GTK_IS_WIDGET(widget))
 		gtk_widget_set_sensitive(GTK_WIDGET(widget),FALSE);
+
 	queue_function(g_strdup("kill_conn_warning"));
 
 	tests = validate_and_load_tests(&tests_hash);
@@ -96,7 +99,6 @@ void set_offline_mode(void)
 	load_firmware_details(firmware,filename);
 	update_interrogation_gui(firmware,tests_hash);
 
-	interrogated = TRUE;
 
 	module = g_module_open(NULL,G_MODULE_BIND_LAZY);
 	pfuncs = g_array_new(FALSE,TRUE,sizeof(PostFunction *));

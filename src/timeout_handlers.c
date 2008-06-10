@@ -310,4 +310,3 @@ gboolean early_interrogation()
 	io_cmd("interrogation",NULL);
 	return FALSE;
 }
-
