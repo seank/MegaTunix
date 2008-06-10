@@ -16,11 +16,21 @@
 
 #include <gtk/gtk.h>
 
+typedef struct _FwElement FwElement;
+
+struct _FwElement 
+{
+	gchar *filename;	/* Filename  of interrogation profile */
+	gchar *name;		/* Shortname in choice box */
+};
+
 /* Prototypes */
 void set_offline_mode(void);
 gchar * present_firmware_choices(void);
 gint ptr_sort(gconstpointer , gconstpointer );
 gboolean offline_ecu_restore(GtkWidget *, gpointer );
+gint list_sort(gconstpointer, gconstpointer);
+void free_element(gpointer, gpointer);
 /* Prototypes */
 
 #endif
