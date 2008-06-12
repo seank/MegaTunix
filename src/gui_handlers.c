@@ -434,7 +434,7 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 	gint dl_type = -1;
 	gint handler = 0;
 	gint table_num = -1;
-	OutputData *q_data = NULL;
+	Deferred_Data *d_data = NULL;
 	gchar * swap_list = NULL;
 	gchar * set_labels = NULL;
 	gchar * table_2_update = NULL;
@@ -508,19 +508,22 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 				tmp = tmp & ~bitmask;/* clears bits */
 				tmp = tmp | (bitval << bitshift);
 				dload_val = tmp;
+				//printf("ALT_SIMUL, MSnS-E, table num %i, dload_val %i, curr ecu val %i\n",table_num,dload_val, get_ecu_data(canID,page,offset,size));
 				if (dload_val == get_ecu_data(canID,page,offset,size))
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
-				q_data = initialize_outputdata();
-				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
-				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+				//printf("last alt %i, cur alt %i\n",firmware->rf_params[table_num]->last_alternate,firmware->rf_params[table_num]->alternate);
+
+				d_data = g_new0(Deferred_Data, 1);
+				d_data->canID = canID;
+				d_data->page = page;
+				d_data->offset = offset;
+				d_data->value = dload_val;
+				d_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						q_data);
+						d_data);
 				check_req_fuel_limits(table_num);
 			}
 			else
@@ -532,15 +535,15 @@ EXPORT gboolean bitmask_button_handler(GtkWidget *widget, gpointer data)
 					return FALSE;
 				firmware->rf_params[table_num]->last_alternate = firmware->rf_params[table_num]->alternate;
 				firmware->rf_params[table_num]->alternate = bitval;
-				q_data = initialize_outputdata();
-				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
-				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+				d_data = g_new0(Deferred_Data, 1);
+				d_data->canID = canID;
+				d_data->page = page;
+				d_data->offset = offset;
+				d_data->value = dload_val;
+				d_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						q_data);
+						d_data);
 				check_req_fuel_limits(table_num);
 			}
 			break;
@@ -1113,7 +1116,7 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 	gfloat value = 0.0;
 	gchar *tmpbuf = NULL;
 	GtkWidget * tmpwidget = NULL;
-	OutputData *q_data = NULL;
+	Deferred_Data *d_data = NULL;
 	extern gint realtime_id;
 	Reqd_Fuel *reqd_fuel = NULL;
 	extern GHashTable *dynamic_widgets;
@@ -1228,15 +1231,15 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				dload_val = (gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
-				q_data = initialize_outputdata();
-				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(divider_offset));
-				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+				d_data = g_new0(Deferred_Data, 1);
+				d_data->canID = canID;
+				d_data->page = page;
+				d_data->offset = divider_offset;
+				d_data->value = dload_val;
+				d_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
-						q_data);
+						d_data);
 				err_flag = FALSE;
 				set_reqfuel_color(BLACK,table_num);
 				check_req_fuel_limits(table_num);
@@ -1264,30 +1267,29 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 				tmp = tmp & ~bitmask;	/*clears top 4 bits */
 				tmp = tmp | ((tmpi-1) << bitshift);
 				dload_val = tmp;
-				/*printf("new num_cyls is %i, new data is %i\n",tmpi,tmp);*/
-				q_data = initialize_outputdata();
-				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
-				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+				d_data = g_new0(Deferred_Data, 1);
+				d_data->canID = canID;
+				d_data->page = page;
+				d_data->offset = offset;
+				d_data->value = dload_val;
+				d_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(offset),
-						q_data);
+						d_data);
 
 				dload_val = 
 					(gint)(((float)firmware->rf_params[table_num]->num_cyls/(float)firmware->rf_params[table_num]->num_squirts)+0.001);
 
 				firmware->rf_params[table_num]->divider = dload_val;
-				q_data = initialize_outputdata();
-				OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-				OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-				OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(divider_offset));
-				OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-				OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+				d_data = g_new0(Deferred_Data, 1);
+				d_data->canID = canID;
+				d_data->page = page;
+				d_data->offset = divider_offset;
+				d_data->value = dload_val;
+				d_data->size = MTX_U08;
 				g_hash_table_insert(interdep_vars[page],
 						GINT_TO_POINTER(divider_offset),
-						q_data);
+						d_data);
 
 				err_flag = FALSE;
 				set_reqfuel_color(BLACK,table_num);	
@@ -1307,15 +1309,15 @@ EXPORT gboolean spin_button_handler(GtkWidget *widget, gpointer data)
 			tmp = tmp | ((tmpi-1) << bitshift);
 			dload_val = tmp;
 
-			q_data = initialize_outputdata();
-			OBJ_SET(q_data->object,"canID",GINT_TO_POINTER(canID));
-			OBJ_SET(q_data->object,"page",GINT_TO_POINTER(page));
-			OBJ_SET(q_data->object,"offset",GINT_TO_POINTER(offset));
-			OBJ_SET(q_data->object,"dload_val",GINT_TO_POINTER(dload_val));
-			OBJ_SET(q_data->object,"size",GINT_TO_POINTER(MTX_U08));
+			d_data = g_new0(Deferred_Data, 1);
+			d_data->canID = canID;
+			d_data->page = page;
+			d_data->offset = offset;
+			d_data->value = dload_val;
+			d_data->size = MTX_U08;
 			g_hash_table_insert(interdep_vars[page],
 					GINT_TO_POINTER(offset),
-					q_data);
+					d_data);
 
 			check_req_fuel_limits(table_num);
 			break;
@@ -1508,11 +1510,12 @@ EXPORT void update_ve_const_pf()
 		firmware->rf_params[i]->last_alternate = firmware->rf_params[i]->alternate;
 		reqfuel = get_ecu_data(canID,page,firmware->table_params[i]->reqfuel_offset,size);
 
-		/*
-		 * printf("num_inj %i, divider %i\n",firmware->rf_params[i]->num_inj,firmware->rf_params[i]->divider);
-		 * printf("num_cyls %i, alternate %i\n",firmware->rf_params[i]->num_cyls,firmware->rf_params[i]->alternate);
-		 * printf("req_fuel_per_lsquirt is %i\n",reqfuel);
-		 */
+	/*	
+		  printf("num_inj %i, divider %i\n",firmware->rf_params[i]->num_inj,firmware->rf_params[i]->divider);
+		  printf("num_cyls %i, alternate %i\n",firmware->rf_params[i]->num_cyls,firmware->rf_params[i]->alternate);
+		  printf("req_fuel_per_l_squirt is %i\n",reqfuel);
+		  */
+		 
 
 
 		/* Calcs vary based on firmware. 
@@ -1522,26 +1525,27 @@ EXPORT void update_ve_const_pf()
 		 */
 		if (firmware->capabilities & DUALTABLE)
 		{
-			/*	printf("DT\n"); */
+				//printf("DT\n"); 
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else if ((firmware->capabilities & MSNS_E) && (((get_ecu_data(canID,firmware->table_params[i]->dtmode_page,firmware->table_params[i]->dtmode_offset,size)& 0x10) >> 4) == 1))
 		{
-			/*	printf("MSnS-E DT\n"); */
+				//printf("MSnS-E DT\n"); 
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/(float)(firmware->rf_params[i]->divider);
 		}
 		else
 		{
-			/*	printf("B&G\n"); */
+				//printf("B&G\n"); 
 			tmpf = (float)(firmware->rf_params[i]->num_inj)/((float)(firmware->rf_params[i]->divider)*((float)(firmware->rf_params[i]->alternate)+1.0));
 		}
 
 		/* ReqFuel Total */
+		//printf("intermediate tmpf is %f\n",tmpf);
 		tmpf *= (float)reqfuel;
 		tmpf /= 10.0;
 		firmware->rf_params[i]->req_fuel_total = tmpf;
 		firmware->rf_params[i]->last_req_fuel_total = tmpf;
-		/*printf("req_fuel_total is %f\n",tmpf);*/
+		//printf("req_fuel_total  for table number %i is %f\n",i,tmpf);
 
 		/* Injections per cycle */
 		firmware->rf_params[i]->num_squirts = (float)(firmware->rf_params[i]->num_cyls)/(float)(firmware->rf_params[i]->divider);
@@ -2044,10 +2048,10 @@ EXPORT gboolean key_event(GtkWidget *widget, GdkEventKey *event, gpointer data)
 	reverse_keys = (gboolean) OBJ_GET(widget,"reverse_keys");
 
 	value = get_ecu_data(canID,page,offset,size);
-	if (event->keyval == GDK_KP_Space)
-	{
-		printf("spacebar!\n");
-	}
+//	if (event->keyval == GDK_KP_Space)
+//	{
+//		printf("spacebar!\n");
+//	}
 	if (event->keyval == GDK_Shift_L)
 	{
 		if (event->type == GDK_KEY_PRESS)

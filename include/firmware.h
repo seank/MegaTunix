@@ -24,6 +24,7 @@ typedef struct _Firmware_Details Firmware_Details;
 typedef struct _Table_Params Table_Params;
 typedef struct _TE_Params TE_Params;
 typedef struct _Page_Params Page_Params;
+typedef struct _Deferred_Data Deferred_Data;
 
 
 /*!
@@ -242,6 +243,16 @@ struct _TE_Params
 	gint y_precision;	/*! column precisions */
 	gchar *y_name;	/*! column name */
 	gchar *y_units;	/*! column units */
+};
+
+
+struct _Deferred_Data
+{
+	gint canID;		/* canBus ID */
+	gint page;		/* ECU Page */
+	gint offset;		/* OFfset in page */
+	gint value;		/* Value at this offset in this page */
+	DataSize size;		/* Size of this data */
 };
 
 

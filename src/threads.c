@@ -233,10 +233,15 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 		case MTX_CHAR:
 		case MTX_S08:
 		case MTX_U08:
+	//		printf("8 bit var %i at offset %i\n",value,offset);
+			break;
 		case MTX_S16:
 		case MTX_U16:
+	//		printf("16 bit var %i at offset %i\n",value,offset);
+			break;
 		case MTX_S32:
 		case MTX_U32:
+	//		printf("32 bit var %i at offset %i\n",value,offset);
 			break;
 		default:
 			printf("ERROR!!! Size undefined for var at canID %i, page %i, offset %i\n",canID,page,offset);
