@@ -38,6 +38,7 @@
 #include <unistd.h>
 
 
+gboolean force_page_change;
 extern gboolean connected;			/* valid connection with MS */
 extern volatile gboolean offline;		/* ofline mode with MS */
 extern gboolean interrogated;			/* valid connection with MS */
@@ -166,8 +167,8 @@ void *thread_dispatcher(gpointer data)
 							message->command,
 							message->command->func_call_arg);
 
-				if (!result)
-					message->command->defer_post_functions=TRUE;
+				//if (!result)
+			//		message->command->defer_post_functions=TRUE;
 				}
 				break;
 			case WRITE_CMD:
@@ -320,7 +321,6 @@ void send_to_ecu(gint canID, gint page, gint offset, DataSize size, gint value, 
 void handle_page_change(gint page, gint last)
 {
 	extern Firmware_Details *firmware;
-	extern gboolean force_page_change;
 	guint8 ** ecu_data = firmware->ecu_data;
 	guint8 ** ecu_data_last = firmware->ecu_data_last;
 

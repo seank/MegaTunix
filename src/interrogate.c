@@ -81,7 +81,6 @@ EXPORT gboolean interrogate_ecu()
 
 	/* prevent multiple runs of interrogator simultaneously */
 	g_static_mutex_lock(&mutex);
-	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),FALSE);
 	if (dbg_lvl & INTERROGATOR)
 		dbg_func(g_strdup("\n"__FILE__": interrogate_ecu() ENTERED\n\n"));
 
@@ -89,7 +88,6 @@ EXPORT gboolean interrogate_ecu()
 	{
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": interrogate_ecu()\n\tNOT connected to ECU!!!!\n"));
-		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),TRUE);
 		g_static_mutex_unlock(&mutex);
 		return FALSE;
 	}
@@ -103,9 +101,10 @@ EXPORT gboolean interrogate_ecu()
 		if (dbg_lvl & (INTERROGATOR|CRITICAL))
 			dbg_func(g_strdup(__FILE__": interrogate_ecu()\n\t validate_and_load_tests() didn't return a valid list of commands\n\t MegaTunix was NOT installed correctly, Aborting Interrogation\n"));
 		g_static_mutex_unlock(&mutex);
-		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),TRUE);
 		return FALSE;
 	}
+	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),FALSE);
+	gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"interrogate_button"),FALSE);
 	/* how many tests.... */
 	tests_to_run = tests->len;
 
@@ -241,7 +240,10 @@ EXPORT gboolean interrogate_ecu()
 	g_hash_table_destroy(tests_hash);
 
 	if (!interrogated)
+	{
+		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"interrogate_button"),TRUE);
 		gtk_widget_set_sensitive(g_hash_table_lookup(dynamic_widgets,"offline_button"),TRUE);
+	}
 
 	g_static_mutex_unlock(&mutex);
 	if (dbg_lvl & INTERROGATOR)

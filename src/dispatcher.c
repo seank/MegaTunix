@@ -50,11 +50,6 @@
 
 extern GAsyncQueue *pf_dispatch_queue;
 extern GAsyncQueue *gui_dispatch_queue;
-extern gboolean connected;			/* valid connection with MS */
-extern volatile gboolean offline;			/* Offline mode */
-extern gboolean tabs_loaded;			/* Tabs loaded? */
-extern gboolean interrogated;			/* valid detection with MS */
-gboolean force_page_change = FALSE;
 extern GObject *global_data;
 
 

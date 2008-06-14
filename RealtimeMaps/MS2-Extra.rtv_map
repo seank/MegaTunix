@@ -502,8 +502,8 @@ offset=50
 size=_S16_
 lower_limit=0
 upper_limit=255
-dl_conv_expr=x*1
-ul_conv_expr=x/1
+dl_conv_expr=x*10
+ul_conv_expr=x/10
 tooltip="VE 1" is the current VE for injector channel 1.
 log_by_default=TRUE
 
@@ -517,8 +517,8 @@ offset=52
 size=_S16_
 lower_limit=0
 upper_limit=255
-dl_conv_expr=x*1
-ul_conv_expr=x/1
+dl_conv_expr=x*10
+ul_conv_expr=x/10
 tooltip="VE 2" is the current VE for injector channel 1.
 log_by_default=TRUE
 

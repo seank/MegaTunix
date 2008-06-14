@@ -18,7 +18,6 @@
 #include <gtk/gtk.h>
 
 /* Prototypes */
-void enable_interrogation_button_pf(void);
 void start_statuscounts_pf(void);
 void spawn_read_ve_const_pf(void);
 void enable_get_data_buttons_pf(void);

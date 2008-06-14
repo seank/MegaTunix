@@ -37,17 +37,6 @@ extern gint dbg_lvl;
 extern GObject *global_data;
 
 
-EXPORT void enable_interrogation_button_pf(void)
-{
-	extern GHashTable *dynamic_widgets;
-	extern volatile gboolean offline;
-	extern gboolean interrogated;
-
-	if ((!offline) && (!interrogated))
-		gtk_widget_set_sensitive(GTK_WIDGET(g_hash_table_lookup(dynamic_widgets, "interrogate_button")),TRUE);
-}
-
-
 EXPORT void start_statuscounts_pf(void)
 {
 	start_tickler(SCOUNTS_TICKLER);
@@ -87,7 +76,6 @@ EXPORT gboolean ms2_burn_all_helper(void *data, XmlCmdType type)
 		/* MS2 extra is slightly different as it's paged like MS1 */
 		if ((firmware->capabilities & MS2_EXTRA) && (outstanding_data))
 		{
-			printf("ms2 extra burn all\n");
 			output = initialize_outputdata();
 			OBJ_SET(output->object,"page",GINT_TO_POINTER(last_page));
 			OBJ_SET(output->object,"truepgnum",GINT_TO_POINTER(firmware->page_params[last_page]->truepgnum));
@@ -98,7 +86,6 @@ EXPORT gboolean ms2_burn_all_helper(void *data, XmlCmdType type)
 		else if (!(firmware->capabilities & MS2_EXTRA))
 		{
 			/* MS2 std allows all pages to be in ram at will*/
-			printf("ms2 STD burn all\n");
 			for (i=0;i<firmware->total_pages;i++)
 			{
 				if (!firmware->page_params[i]->dl_by_default)
