@@ -1699,7 +1699,7 @@ void update_widget(gpointer object, gpointer user_data)
 		return;
 
 	upd_count++;
-	if ((upd_count%64) == 0)
+	if ((upd_count%128) == 0)
 	{
 		while (gtk_events_pending())
 		{

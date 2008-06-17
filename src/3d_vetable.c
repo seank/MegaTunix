@@ -638,12 +638,9 @@ gint free_ve3d_view(GtkWidget *widget)
 	store_list("burners",g_list_remove(
 				get_list("burners"),(gpointer)ve_view->burn_but));
 	g_hash_table_remove(winstat,GINT_TO_POINTER(ve_view->table_num));
-	tmpbuf = g_strdup_printf("ve_view_%i",ve_view->table_num);
 
+	tmpbuf = g_strdup_printf("ve_view_%i",ve_view->table_num);
 	OBJ_SET(g_hash_table_lookup(dynamic_widgets,tmpbuf),"ve_view",NULL);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("ve_view_%i",ve_view->table_num);
 	deregister_widget(tmpbuf);
 	g_free(tmpbuf);
 
@@ -810,6 +807,8 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 	/* Draw everything */
 	cur_vals = get_current_values(ve_view);
 	ve3d_calculate_scaling(ve_view,cur_vals);
+	if (!ve_view->mesh_created)
+		generate_quad_mesh(ve_view,cur_vals);
 	ve3d_draw_runtime_indicator(ve_view,cur_vals);
 	ve3d_draw_edit_indicator(ve_view,cur_vals);
 	ve3d_draw_active_vertexes_marker(ve_view,cur_vals);
@@ -1047,7 +1046,6 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_draw_ve_grid() \n"));
 
-	generate_quad_mesh(ve_view,cur_val);
 
 	glLineWidth(1.25);
 
@@ -1553,6 +1551,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gboolean cur_state = FALSE;
 	gboolean update_widgets = FALSE;
 	Ve_View_3D *ve_view = NULL;
+	Cur_Vals *cur_vals = NULL;
 	extern Firmware_Details *firmware;
 	extern gboolean forced_update;
 	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
@@ -1694,6 +1693,9 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n\tupdating widget data in ECU\n"));
 
 		send_to_ecu(canID,z_page,offset,z_size,dload_val, TRUE);
+		cur_vals = get_current_values(ve_view);
+		generate_quad_mesh(ve_view, cur_vals);
+		free_current_values(cur_vals);
 		forced_update = TRUE;
 	}
 
@@ -1758,6 +1760,7 @@ Ve_View_3D * initialize_ve3d_view()
 	ve_view->table_name = NULL;
 	ve_view->opacity = 0.85;
 	ve_view->wireframe = TRUE;
+	ve_view->mesh_created = FALSE;
 	return ve_view;
 }
 
@@ -1782,6 +1785,9 @@ void update_ve3d_if_necessary(int page, int offset)
 	gchar * string = NULL;
 	GtkWidget * tmpwidget = NULL;
 	Ve_View_3D *ve_view = NULL;
+	Cur_Vals *cur_vals = NULL;
+	gint count = 0;
+	gint table_list[total_tables];
 
 	for (i=0;i<total_tables;i++)
 	{
@@ -1789,35 +1795,41 @@ void update_ve3d_if_necessary(int page, int offset)
 			if ((offset >= (firmware->table_params[i]->x_base)) && (offset <= (firmware->table_params[i]->x_base + firmware->table_params[i]->x_bincount)))
 			{
 				need_update = TRUE;
-				goto update_now;
+				table_list[count++] = i;
 			}
 		if (firmware->table_params[i]->y_page == page)
 			if ((offset >= (firmware->table_params[i]->y_base)) && (offset <= (firmware->table_params[i]->y_base + firmware->table_params[i]->y_bincount)))
 			{
 				need_update = TRUE;
-				goto update_now;
+				table_list[count++] = i;
 			}
 		if (firmware->table_params[i]->z_page == page)
 			if ((offset >= (firmware->table_params[i]->z_base)) && (offset <= (firmware->table_params[i]->z_base + (firmware->table_params[i]->x_bincount * firmware->table_params[i]->y_bincount))))
 			{
 				need_update = TRUE;
-				goto update_now;
+				table_list[count++] = i;
 			}
 	}
-	return;
-update_now:
-	string = g_strdup_printf("ve_view_%i",i);
-	tmpwidget = g_hash_table_lookup(dynamic_widgets,string);
-	g_free(string);
-	if (GTK_IS_WIDGET(tmpwidget))
+	if (!need_update)
+		return;
+	for (i=0;i<count;i++)
 	{
-		ve_view = (Ve_View_3D
-				*)OBJ_GET(tmpwidget,"ve_view");
-		if ((ve_view != NULL) && (ve_view->drawing_area->window != NULL))
+		string = g_strdup_printf("ve_view_%i",table_list[i]);
+		tmpwidget = g_hash_table_lookup(dynamic_widgets,string);
+		g_free(string);
+		if (GTK_IS_WIDGET(tmpwidget))
 		{
-			gdk_window_invalidate_rect (ve_view->drawing_area->window, &ve_view->drawing_area->allocation, FALSE);
-		}
+			ve_view = (Ve_View_3D *)OBJ_GET(tmpwidget,"ve_view");
 
+			if ((ve_view != NULL) && (ve_view->drawing_area->window != NULL))
+			{
+				cur_vals = get_current_values(ve_view);
+				generate_quad_mesh(ve_view, cur_vals);
+				free_current_values(cur_vals);
+				gdk_window_invalidate_rect (ve_view->drawing_area->window, &ve_view->drawing_area->allocation, FALSE);
+			}
+
+		}
 	}
 }
 
@@ -2023,7 +2035,7 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 
 
 /*!
- \brief get_current_values isa helper function that populates a structure
+ \brief get_current_valuea isa helper function that populates a structure
  of data comon to all the redraw subhandlers to avoid duplication of
  effort
  /param ve_view, base structure
@@ -2229,11 +2241,15 @@ gboolean set_scaling_mode(GtkWidget *widget, gpointer data)
 {
 	extern gboolean forced_update;
 	Ve_View_3D *ve_view = NULL;
+	Cur_Vals *cur_vals = NULL;
 
 	ve_view = OBJ_GET(widget,"ve_view");
 	if (!ve_view)
 		return FALSE;
 	ve_view->fixed_scale = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	cur_vals = get_current_values(ve_view);
+	generate_quad_mesh(ve_view, cur_vals);
+	free_current_values(cur_vals);
 	forced_update = TRUE;
 	return TRUE;
 }
@@ -2453,4 +2469,5 @@ void generate_quad_mesh(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 			}
 		}
 	}
+	ve_view->mesh_created = TRUE;
 }

@@ -152,6 +152,7 @@ struct _Ve_View_3D
 	gboolean wireframe;
 	GtkWidget *tracking_button;
 	Quad ***quad_mesh;
+	gboolean mesh_created;
 };
 
 
