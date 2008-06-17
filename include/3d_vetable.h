@@ -43,6 +43,7 @@ typedef enum
 }Axis;
 
 typedef struct _RGB3f RGB3f;
+typedef struct _Quad Quad;
 typedef struct _Cur_Vals Cur_Vals;
 typedef struct _Ve_View_3D Ve_View_3D;
 
@@ -55,6 +56,19 @@ struct _RGB3f
 	float green;
 	float blue;
 };
+
+
+/*! 
+ \brief _Quad describes a quad forthe 3D mesh grid
+ */
+struct _Quad
+{
+	gfloat x[4];
+	gfloat y[4];
+	gfloat z[4];
+	RGB3f color[4];
+};
+
 /*!
  \brief the _Ve_View_3D structure contains all the field to create and 
  manipulate a 3D view of a MegaSquirt VE/Spark table, and should work in
@@ -135,7 +149,9 @@ struct _Ve_View_3D
 	gfloat opacity;
 	gboolean tracking_focus;
 	gboolean fixed_scale;
+	gboolean wireframe;
 	GtkWidget *tracking_button;
+	Quad ***quad_mesh;
 };
 
 
@@ -188,10 +204,13 @@ Cur_Vals * get_current_values(Ve_View_3D *);
 void free_current_values(Cur_Vals *);
 gboolean set_tracking_focus(GtkWidget *, gpointer );
 gboolean set_scaling_mode(GtkWidget *, gpointer );
+gboolean set_rendering_mode(GtkWidget *, gpointer );
 gboolean set_shading_mode(GtkWidget *, gpointer );
 gfloat get_fixed_pos(Ve_View_3D *, void *,gfloat, Axis);
 gint get_multiplier(DataSize );
 void drawFrameRate(char *, GLclampf, GLclampf, GLclampf, GLfloat, GLfloat);
+void generate_quad_mesh(Ve_View_3D *, Cur_Vals *);
+
 /* Prototypes */
 
 #endif

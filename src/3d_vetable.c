@@ -240,6 +240,8 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	GtkObject * object = NULL;
 	GdkGLConfig *gl_config;
 	gchar * tmpbuf = NULL;
+	gint i = 0;
+	gint j = 0;
 	Ve_View_3D *ve_view;
 	extern Firmware_Details *firmware;
 	extern gboolean gl_ability;
@@ -347,6 +349,13 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 		g_strdup(firmware->table_params[table_num]->table_name);
 	ve_view->table_num = table_num;
 
+	ve_view->quad_mesh = g_new0(Quad **, firmware->table_params[table_num]->x_bincount);
+	for (i=0;i<firmware->table_params[table_num]->x_bincount;i++)
+	{
+		ve_view->quad_mesh[i] = g_new0(Quad *,firmware->table_params[table_num]->y_bincount);
+		for (j=0;j<firmware->table_params[table_num]->y_bincount;j++)
+			ve_view->quad_mesh[i][j] = g_new0(Quad, 1);
+	}
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(window), ve_view->table_name);
 	gtk_widget_set_size_request(window,DEFAULT_WIDTH,DEFAULT_HEIGHT);
@@ -558,8 +567,15 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			G_CALLBACK(gtk_widget_destroy),
 			(gpointer) window);
 
+	button = gtk_check_button_new_with_label("Wireframe or Solid");
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),ve_view->wireframe);
+	OBJ_SET(button,"ve_view",ve_view);
+	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "toggled",
+			G_CALLBACK(set_rendering_mode),
+			NULL);
+
 	button = gtk_check_button_new_with_label("Fixed Scale or Proportional");
-	ve_view->tracking_button = button;
 	OBJ_SET(button,"ve_view",ve_view);
 	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,TRUE,0);
 	g_signal_connect(G_OBJECT(button), "toggled",
@@ -1024,50 +1040,19 @@ VEtable grid
 void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 {
 	extern Firmware_Details *firmware;
-	RGB3f color;
 	gint x = 0;
 	gint y = 0;
-	gint x_page = 0;
-	gint y_page = 0;
-	gint z_page = 0;
-	gint x_base = 0;
-	gint y_base = 0;
-	gint z_base = 0;
-	gint x_mult = 0;
-	gint y_mult = 0;
-	gint z_mult = 0;
-	gint canID = firmware->canID;
-	gfloat tmpf1 = 0.0;
-	gfloat tmpf0x = 0.0; gfloat tmpf0y = 0.0; gfloat tmpf0z = 0.0;
-	gfloat tmpf1x = 0.0; gfloat tmpf1y = 0.0; gfloat tmpf1z = 0.0;
-	gfloat tmpf2x = 0.0; gfloat tmpf2y = 0.0; gfloat tmpf2z = 0.0;
-	gfloat tmpf3x = 0.0; gfloat tmpf3y = 0.0; gfloat tmpf3z = 0.0;
-	GLfloat w = ve_view->window->allocation.width;
-	GLfloat h = ve_view->window->allocation.height;
+	Quad * quad = NULL;
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_draw_ve_grid() \n"));
 
-	x_base = ve_view->x_base;
-	y_base = ve_view->y_base;
-	z_base = ve_view->z_base;
-
-	x_page = ve_view->x_page;
-	y_page = ve_view->y_page;
-	z_page = ve_view->z_page;
-
-	x_mult = ve_view->x_mult;
-	y_mult = ve_view->y_mult;
-	z_mult = ve_view->z_mult;
-
-
-	glColor3f(1.0, 1.0, 1.0);
-	tmpf1 = (MIN(w,h)/360.0 < 1.2) ? 1.2:MIN(w,h)/360.0;
+	generate_quad_mesh(ve_view,cur_val);
 
 	glLineWidth(1.25);
 
 	/* Switch between solid and wireframe */
-	if (1)
+	if (ve_view->wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -1078,70 +1063,65 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 		glBegin(GL_QUADS);
 		for(x=0;x<ve_view->x_bincount-1;++x)
 		{
-			if (ve_view->fixed_scale)
-			{
-				/* (0x,0y) */
-				tmpf0x = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
-				tmpf0y = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
-				tmpf0z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf0x,tmpf0y,tmpf0z);
-				/* (1x,0y) */
-				tmpf1x = ((gfloat)x+1.0)/((gfloat)ve_view->x_bincount-1.0);
-				tmpf1y = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
-				tmpf1z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf1x,tmpf1y,tmpf1z);
-				/* (1x,1y) */
-				tmpf2x = ((gfloat)x+1.0)/((gfloat)ve_view->x_bincount-1.0);
-				tmpf2y = ((gfloat)y+1.0)/((gfloat)ve_view->y_bincount-1.0);
-				tmpf2z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf2x,tmpf2y,tmpf2z);
-				/* (0x,1y) */
-				tmpf3x = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
-				tmpf3y = ((gfloat)y+1.0)/((gfloat)ve_view->y_bincount-1.0);
-				tmpf3z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf3x,tmpf3y,tmpf3z);
-			}
-			else
-			{
-				/* (0x,0y) */
-				tmpf0x = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
-				tmpf0y = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
-				tmpf0z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf0x,tmpf0y,tmpf0z);
-				/* (1x,0y) */
-				tmpf1x = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+((x+1.0)*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
-				tmpf1y = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
-				tmpf1z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf1x,tmpf1y,tmpf1z);
-				/* (1x,1y) */
-				tmpf2x = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+((x+1.0)*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
-				tmpf2y = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+((y+1.0)*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
-				tmpf2z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf2x,tmpf2y,tmpf2z);
-				/* (0x,1y) */
-				tmpf3x = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
-				tmpf3y = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+((y+1.0)*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
-				tmpf3z = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
-				color = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
-				glColor4f(color.red, color.green, color.blue, ve_view->opacity);
-				glVertex3f(tmpf3x,tmpf3y,tmpf3z);
-			}
+			quad = ve_view->quad_mesh[x][y];
+			/* (0x,0y) */
+			glColor4f(quad->color[0].red, quad->color[0].green, quad->color[0].blue, ve_view->opacity);
+			glVertex3f(quad->x[0],quad->y[0],quad->z[0]);
+			/* (1x,0y) */
+			glColor4f(quad->color[1].red, quad->color[1].green, quad->color[1].blue, ve_view->opacity);
+			glVertex3f(quad->x[1],quad->y[1],quad->z[1]);
+			/* (1x,1y) */
+			glColor4f(quad->color[2].red, quad->color[2].green, quad->color[2].blue, ve_view->opacity);
+			glVertex3f(quad->x[2],quad->y[2],quad->z[2]);
+			/* (0x,1y) */
+			glColor4f(quad->color[3].red, quad->color[3].green, quad->color[3].blue, ve_view->opacity);
+			glVertex3f(quad->x[3],quad->y[3],quad->z[3]);
 		}
 		glEnd();
+	}
+	if (!ve_view->wireframe)  /* render black grid on main grid */
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		for(y=0;y<ve_view->y_bincount-1;++y)
+		{
+			glBegin(GL_QUADS);
+			for(x=0;x<ve_view->x_bincount-1;++x)
+			{
+				quad = ve_view->quad_mesh[x][y];
+				/* (0x,0y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[0],quad->y[0],quad->z[0]+0.01);
+				/* (1x,0y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[1],quad->y[1],quad->z[1]+0.01);
+				/* (1x,1y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[2],quad->y[2],quad->z[2]+0.01);
+				/* (0x,1y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[3],quad->y[3],quad->z[3]+0.01);
+			}
+			glEnd();
+			glBegin(GL_QUADS);
+			for(x=0;x<ve_view->x_bincount-1;++x)
+			{
+				quad = ve_view->quad_mesh[x][y];
+				/* (0x,0y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[0],quad->y[0],quad->z[0]-0.01);
+				/* (1x,0y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[1],quad->y[1],quad->z[1]-0.01);
+				/* (1x,1y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[2],quad->y[2],quad->z[2]-0.01);
+				/* (0x,1y) */
+				glColor4f(0,0,0, ve_view->opacity);
+				glVertex3f(quad->x[3],quad->y[3],quad->z[3]-0.01);
+			}
+			glEnd();
+		}
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }
 
@@ -1776,7 +1756,8 @@ Ve_View_3D * initialize_ve3d_view()
 	ve_view->x_bincount = 0;
 	ve_view->y_bincount = 0;
 	ve_view->table_name = NULL;
-	ve_view->opacity = 1.0;
+	ve_view->opacity = 0.85;
+	ve_view->wireframe = TRUE;
 	return ve_view;
 }
 
@@ -2257,6 +2238,20 @@ gboolean set_scaling_mode(GtkWidget *widget, gpointer data)
 	return TRUE;
 }
 
+
+gboolean set_rendering_mode(GtkWidget *widget, gpointer data)
+{
+	extern gboolean forced_update;
+	Ve_View_3D *ve_view = NULL;
+
+	ve_view = OBJ_GET(widget,"ve_view");
+	if (!ve_view)
+		return FALSE;
+	ve_view->wireframe = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+	forced_update = TRUE;
+	return TRUE;
+}
+
 /* Set shading mode of ve_table Fill Quads or Wireframe */
 //gboolean set_shading_mode(GtkWidget *widget, gpointer data)
 //{
@@ -2369,4 +2364,93 @@ gint get_multiplier(DataSize size)
 			break;
 	}
 	return mult;
+}
+
+
+void generate_quad_mesh(Ve_View_3D *ve_view, Cur_Vals *cur_val)
+{
+	extern Firmware_Details *firmware;
+	gint x = 0;
+	gint y = 0;
+	gint x_page = 0;
+	gint y_page = 0;
+	gint z_page = 0;
+	gint x_base = 0;
+	gint y_base = 0;
+	gint z_base = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
+	gint z_mult = 0;
+	gint canID = firmware->canID;
+	Quad * quad = NULL;
+
+	if (dbg_lvl & OPENGL)
+		dbg_func(g_strdup(__FILE__": generate_quad_mesh() \n"));
+
+	x_base = ve_view->x_base;
+	y_base = ve_view->y_base;
+	z_base = ve_view->z_base;
+
+	x_page = ve_view->x_page;
+	y_page = ve_view->y_page;
+	z_page = ve_view->z_page;
+
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
+	z_mult = ve_view->z_mult;
+
+	/* Draw QUAD MESH into stored grid (Calc'd once*/
+	for(y=0;y<ve_view->y_bincount-1;++y)
+	{
+		for(x=0;x<ve_view->x_bincount-1;++x)
+		{
+			quad = ve_view->quad_mesh[x][y];
+			if (ve_view->fixed_scale)
+			{
+				/* (0x,0y) */
+				quad->x[0] = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
+				quad->y[0] = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
+				quad->z[0] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[0] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (1x,0y) */
+				quad->x[1] = ((gfloat)x+1.0)/((gfloat)ve_view->x_bincount-1.0);
+				quad->y[1] = (gfloat)y/((gfloat)ve_view->y_bincount-1.0);
+				quad->z[1] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[1] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (1x,1y) */
+				quad->x[2] = ((gfloat)x+1.0)/((gfloat)ve_view->x_bincount-1.0);
+				quad->y[2] = ((gfloat)y+1.0)/((gfloat)ve_view->y_bincount-1.0);
+				quad->z[2] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[2] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (0x,1y) */
+				quad->x[3] = (gfloat)x/((gfloat)ve_view->x_bincount-1.0);
+				quad->y[3] = ((gfloat)y+1.0)/((gfloat)ve_view->y_bincount-1.0);
+				quad->z[3] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[3] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+			}
+			else
+			{
+				/* (0x,0y) */
+				quad->x[0] = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				quad->y[0] = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				quad->z[0] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[0] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (1x,0y) */
+				quad->x[1] = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+((x+1.0)*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				quad->y[1] = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+(y*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				quad->z[1] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[1] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+(((y*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (1x,1y) */
+				quad->x[2] = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+((x+1.0)*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				quad->y[2] = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+((y+1.0)*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				quad->z[2] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[2] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x+1)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+				/* (0x,1y) */
+				quad->x[3] = ((evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,x_page,x_base+(x*x_mult),ve_view->x_size))-ve_view->x_trans)*ve_view->x_scale);
+				quad->y[3] = ((evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,y_page,y_base+((y+1.0)*y_mult),ve_view->y_size))-ve_view->y_trans)*ve_view->y_scale);
+				quad->z[3] = (((evaluator_evaluate_x(cur_val->z_eval,get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)))-ve_view->z_trans)*ve_view->z_scale);
+				quad->color[3] = rgb_from_hue(((gfloat)get_ecu_data(canID,z_page,z_base+((((y+1)*ve_view->y_bincount)+x)*z_mult),ve_view->z_size)/256.0)*360.0,0.33, 1.0);
+			}
+		}
+	}
 }
