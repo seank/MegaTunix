@@ -371,7 +371,7 @@ void set_title(gchar * text)
 	g_free(text);
 }
 
-gboolean set_warning_flag()
+gboolean set_warning_flag(gpointer user_data)
 {
 	warning_present = FALSE;
 	return FALSE;

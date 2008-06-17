@@ -31,7 +31,7 @@ gboolean get_response(GtkWidget *, gpointer );
 
 gint close_dialog(GtkWidget *, gpointer);
 gint dialog_response(GtkWidget *, gpointer );
-gboolean set_warning_flag(void);
+gboolean set_warning_flag(gpointer);
 /* Prototypes */
 
 #endif
