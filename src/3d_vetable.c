@@ -58,9 +58,6 @@
 #include <time.h>
 #include <widgetmgmt.h>
 
-/* let's get what we need for FPS */
-//#include "frames.h"
-
 #define ONE_SECOND 	 1	// one second
 
 static GLuint font_list_base;
@@ -75,70 +72,70 @@ static GHashTable *winstat = NULL;
 
 /* let's get what we need and calculate FPS */
 
-//void CalculateFrameRate()
-//{
-//
-//
-//	static float framesPerSecond    = 0.0f;        // This will store our fps
-//	static long lastTime            = 0;           // This will hold the time from the last frame
-//	static char strFrameRate[50]    = {0};         // We will store the string here for the window title
-//
-//	// struct for the time value
-//	struct timeval currentTime;
-//	currentTime.tv_sec  = 0;
-//	currentTime.tv_usec = 0;
-//
-//	// gets the microseconds passed since app started
-//	gettimeofday(&currentTime, NULL);
-//
-//	// Increase the frame counter
-//	++framesPerSecond;
-//
-//	if( currentTime.tv_sec - lastTime >= ONE_SECOND )
-//	{
-//		lastTime = currentTime.tv_sec;
-//
-//		// Copy the frames per second into a string to display in the window
-//		sprintf(strFrameRate, "Current Frames Per Second: %d", (int)framesPerSecond);
-//
-//		// Reset the frames per second
-//		framesPerSecond = 0;
-//
-//	}
-//
-//	/* draw frame rate on screen */
-//	drawFrameRate(strFrameRate, 1.0f, 1.0f, 1.0f, 0.05, 0.95 );
-//}
+void CalculateFrameRate()
+{
+
+
+	static float framesPerSecond    = 0.0f;        // This will store our fps
+	static long lastTime            = 0;           // This will hold the time from the last frame
+	static char strFrameRate[50]    = {0};         // We will store the string here for the window title
+
+	// struct for the time value
+	GTimeVal  currentTime;
+	currentTime.tv_sec  = 0;
+	currentTime.tv_usec = 0;
+
+	// gets the microseconds passed since app started
+	g_get_current_time(&currentTime);
+
+	// Increase the frame counter
+	++framesPerSecond;
+
+	if( currentTime.tv_sec - lastTime >= ONE_SECOND )
+	{
+		lastTime = currentTime.tv_sec;
+
+		// Copy the frames per second into a string to display in the window
+		sprintf(strFrameRate, "Current Frames Per Second: %d", (int)framesPerSecond);
+
+		// Reset the frames per second
+		framesPerSecond = 0;
+
+	}
+
+	/* draw frame rate on screen */
+	drawFrameRate(strFrameRate, 1.0f, 1.0f, 1.0f, 0.05, 0.05 );
+}
 
 /* Draws the current frame rate on screen */
 
-//void drawFrameRate(char *str, GLclampf r, GLclampf g, GLclampf b, GLfloat x, GLfloat y)
-//{
-//	GLint matrixMode;
-//
-//	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);  /* matrix mode? */
-//
-//	glMatrixMode(GL_PROJECTION);
-//		glPushMatrix();
-//			glLoadIdentity();
-//			gluOrtho2D(0.0, 1.0, 0.0, 1.0);
-//			glMatrixMode(GL_MODELVIEW);
-//			glPushMatrix();
-//				glLoadIdentity();
-//				glPushAttrib(GL_COLOR_BUFFER_BIT);       /* save current colour */
-//					glColor3f(r, g, b);
-//					glRasterPos3f(x, y, 0.0);
-//					while(*str)
-//					{
-//						glCallList(font_list_base+(*str));
-//						str++;
-//					};
-//				glPopAttrib();
-//			glPopMatrix();
-//			glMatrixMode(GL_PROJECTION);
-//		glPopMatrix();
-//	glMatrixMode(matrixMode);
-//}
+void drawFrameRate(char *str, GLclampf r, GLclampf g, GLclampf b, GLfloat x, GLfloat y)
+{
+	GLint matrixMode;
+
+	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);  /* matrix mode? */
+
+	glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+			glLoadIdentity();
+			gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+			glMatrixMode(GL_MODELVIEW);
+			glPushMatrix();
+				glLoadIdentity();
+				glPushAttrib(GL_COLOR_BUFFER_BIT);       /* save current colour */
+					glColor3f(r, g, b);
+					glRasterPos3f(x, y, 0.0);
+					while(*str)
+					{
+						glCallList(font_list_base+(*str));
+						str++;
+					};
+				glPopAttrib();
+			glPopMatrix();
+			glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+	glMatrixMode(matrixMode);
+}
 
 
 /*!
@@ -236,6 +233,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 	GtkWidget *hbox;
 	GtkWidget *table;
 	GtkWidget *label;
+	GtkWidget *scale;
 	GtkWidget *drawing_area;
 	GtkObject * object = NULL;
 	GdkGLConfig *gl_config;
@@ -567,6 +565,19 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			G_CALLBACK(gtk_widget_destroy),
 			(gpointer) window);
 
+	/* Opacity Slider */
+	label = gtk_label_new("Opacity");
+	gtk_box_pack_start(GTK_BOX(vbox2),label,FALSE,TRUE,0);
+
+	scale = gtk_hscale_new_with_range(0.1,1.0,0.001);
+	OBJ_SET(scale,"ve_view",ve_view);
+	g_signal_connect(G_OBJECT(scale), "value_changed",
+			G_CALLBACK(set_opacity),
+			NULL);
+	gtk_range_set_value(GTK_RANGE(scale),ve_view->opacity);
+	gtk_scale_set_draw_value(GTK_SCALE(scale),FALSE);
+	gtk_box_pack_start(GTK_BOX(vbox2),scale,FALSE,TRUE,0);
+
 	button = gtk_check_button_new_with_label("Wireframe or Solid");
 	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),ve_view->wireframe);
 	OBJ_SET(button,"ve_view",ve_view);
@@ -815,7 +826,7 @@ gboolean ve3d_expose_event(GtkWidget *widget, GdkEventExpose *event, gpointer da
 	ve3d_draw_ve_grid(ve_view,cur_vals);
 	ve3d_draw_axis(ve_view,cur_vals);
 	free_current_values(cur_vals);
-	//CalculateFrameRate();
+	CalculateFrameRate();
 
 	gdk_gl_drawable_swap_buffers (gldrawable);
 	glFlush ();
@@ -1085,37 +1096,31 @@ void ve3d_draw_ve_grid(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 			glBegin(GL_QUADS);
 			for(x=0;x<ve_view->x_bincount-1;++x)
 			{
+				glColor4f(0,0,0, 1);
 				quad = ve_view->quad_mesh[x][y];
 				/* (0x,0y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[0],quad->y[0],quad->z[0]+0.01);
+				glVertex3f(quad->x[0],quad->y[0],quad->z[0]+0.001);
 				/* (1x,0y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[1],quad->y[1],quad->z[1]+0.01);
+				glVertex3f(quad->x[1],quad->y[1],quad->z[1]+0.001);
 				/* (1x,1y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[2],quad->y[2],quad->z[2]+0.01);
+				glVertex3f(quad->x[2],quad->y[2],quad->z[2]+0.001);
 				/* (0x,1y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[3],quad->y[3],quad->z[3]+0.01);
+				glVertex3f(quad->x[3],quad->y[3],quad->z[3]+0.001);
 			}
 			glEnd();
 			glBegin(GL_QUADS);
 			for(x=0;x<ve_view->x_bincount-1;++x)
 			{
+				glColor4f(0,0,0, 1);
 				quad = ve_view->quad_mesh[x][y];
 				/* (0x,0y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[0],quad->y[0],quad->z[0]-0.01);
+				glVertex3f(quad->x[0],quad->y[0],quad->z[0]-0.001);
 				/* (1x,0y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[1],quad->y[1],quad->z[1]-0.01);
+				glVertex3f(quad->x[1],quad->y[1],quad->z[1]-0.001);
 				/* (1x,1y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[2],quad->y[2],quad->z[2]-0.01);
+				glVertex3f(quad->x[2],quad->y[2],quad->z[2]-0.001);
 				/* (0x,1y) */
-				glColor4f(0,0,0, ve_view->opacity);
-				glVertex3f(quad->x[3],quad->y[3],quad->z[3]-0.01);
+				glVertex3f(quad->x[3],quad->y[3],quad->z[3]-0.001);
 			}
 			glEnd();
 		}
@@ -1347,9 +1352,9 @@ void ve3d_draw_runtime_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 
 	/* draw time - Frames Per Second */
 	//label = g_strdup_printf("%i",(gint)cur_val->x_val);
-	//
-	//ve3d_draw_text(label,tmpf1,-0.05,-0.05);
-	//g_free(label);
+//	
+//	ve3d_draw_text(label,tmpf1,-0.05,-0.05);
+//	g_free(label);
 
 }
 
@@ -2268,20 +2273,19 @@ gboolean set_rendering_mode(GtkWidget *widget, gpointer data)
 	return TRUE;
 }
 
-/* Set shading mode of ve_table Fill Quads or Wireframe */
-//gboolean set_shading_mode(GtkWidget *widget, gpointer data)
-//{
-//	extern gboolean forced_update;
-//	Ve_View_3D *ve_view = NULL;
-//
-//	ve_view = OBJ_GET(widget,"ve_view");
-//	if (!ve_view)
-//		return FALSE;
-//	ve_view->fill_wire = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-//	forced_update = TRUE;
-//	return TRUE;
-//}
 
+gboolean set_opacity(GtkWidget *widget, gpointer data)
+{
+	extern gboolean forced_update;
+	Ve_View_3D *ve_view = NULL;
+
+	ve_view = OBJ_GET(widget,"ve_view");
+	if (!ve_view)
+		return FALSE;
+	ve_view->opacity = gtk_range_get_value(GTK_RANGE(widget));
+	forced_update = TRUE;
+	return TRUE;
+}
 
 void free_current_values(Cur_Vals *cur_val)
 {

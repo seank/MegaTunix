@@ -1250,7 +1250,7 @@ void gdk_generate_gauge_background(MtxGaugeFace *gauge)
 	/* Gradients */
 
 	lwidth = MIN (priv->xc,priv->yc)/20 < 1 ? 1: MIN (priv->xc,priv->yc)/20;
-	gdk_gc_set_line_attributes(gauge->gc,lwidth,
+	gdk_gc_set_line_attributes(priv->gc,lwidth,
 			GDK_LINE_SOLID,
 			GDK_CAP_BUTT,
 			GDK_JOIN_BEVEL);
@@ -1485,10 +1485,10 @@ void gdk_generate_gauge_background(MtxGaugeFace *gauge)
 			if ((tgroup->num_min_ticks > 0) && (j < (tgroup->num_maj_ticks-1)))
 			{
 				mintick_inset = priv->radius * tgroup->min_tick_inset;
-				gdk_gc_set_rgb_fg_color(gauge->gc,&tgroup->min_tick_color);
+				gdk_gc_set_rgb_fg_color(priv->gc,&tgroup->min_tick_color);
 				inset = tgroup->min_tick_length * priv->radius;
 				lwidth = (priv->radius/10)*tgroup->min_tick_width < 1 ? 1: (priv->radius/10)*tgroup->min_tick_width;
-				gdk_gc_set_line_attributes(gauge->gc,lwidth,
+				gdk_gc_set_line_attributes(priv->gc,lwidth,
 						GDK_LINE_SOLID,
 						GDK_CAP_BUTT,
 						GDK_JOIN_BEVEL);
