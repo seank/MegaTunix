@@ -25,6 +25,9 @@
  * - uses glColor3f() openGL native float color function
  * - set_shading_mode()
  * - drawFrameRate()
+ *
+ * David Andruczyk 6/24/08
+ *  - drawFrameRate change to drawOrthoText
  */
 
 #include <3d_vetable.h>
@@ -104,36 +107,36 @@ void CalculateFrameRate()
 	}
 
 	/* draw frame rate on screen */
-	drawFrameRate(strFrameRate, 1.0f, 1.0f, 1.0f, 0.05, 0.05 );
+	drawOrthoText(strFrameRate, 1.0f, 1.0f, 1.0f, 0.025, 0.975 );
 }
 
 /* Draws the current frame rate on screen */
 
-void drawFrameRate(char *str, GLclampf r, GLclampf g, GLclampf b, GLfloat x, GLfloat y)
+void drawOrthoText(char *str, GLclampf r, GLclampf g, GLclampf b, GLfloat x, GLfloat y)
 {
 	GLint matrixMode;
 
 	glGetIntegerv(GL_MATRIX_MODE, &matrixMode);  /* matrix mode? */
 
 	glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-			glLoadIdentity();
-			gluOrtho2D(0.0, 1.0, 0.0, 1.0);
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-				glLoadIdentity();
-				glPushAttrib(GL_COLOR_BUFFER_BIT);       /* save current colour */
-					glColor3f(r, g, b);
-					glRasterPos3f(x, y, 0.0);
-					while(*str)
-					{
-						glCallList(font_list_base+(*str));
-						str++;
-					};
-				glPopAttrib();
-			glPopMatrix();
-			glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
+	glPushMatrix();
+	glLoadIdentity();
+	gluOrtho2D(0.0, 1.0, 0.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	glPushAttrib(GL_COLOR_BUFFER_BIT);       /* save current colour */
+	glColor3f(r, g, b);
+	glRasterPos3f(x, y, 0.0);
+	while(*str)
+	{
+		glCallList(font_list_base+(*str));
+		str++;
+	};
+	glPopAttrib();
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
 	glMatrixMode(matrixMode);
 }
 
@@ -1160,6 +1163,11 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->z_edit_text);
 	g_free(tmpbuf);
 
+	drawOrthoText(cur_val->x_edit_text, 1.0f, 0.2f, 0.2f, 0.025, 0.2 );
+	drawOrthoText(cur_val->y_edit_text, 1.0f, 0.2f, 0.2f, 0.025, 0.233 );
+	drawOrthoText(cur_val->z_edit_text, 1.0f, 0.2f, 0.2f, 0.025, 0.266 );
+	drawOrthoText("Edit Position", 1.0f, 0.2f, 0.2f, 0.025, 0.300 );
+
 	/* Render a red dot at the active VE map position */
 	glPointSize(MIN(w,h)/55.0);
 	glColor3f(1.0,0.0,0.0);
@@ -1284,6 +1292,10 @@ void ve3d_draw_runtime_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 	tmpbuf = g_strdup_printf("z_runtime_label_%i",ve_view->table_num);
 	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->z_runtime_text);
 	g_free(tmpbuf);
+	drawOrthoText(cur_val->x_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.033 );
+	drawOrthoText(cur_val->y_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.066 );
+	drawOrthoText(cur_val->z_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.100 );
+	drawOrthoText("Runtime Position", 0.2f, 1.0f, 0.2f, 0.025, 0.133 );
 
 	bottom = 0.0;
 	/* Render a green dot at the active VE map position */
@@ -1549,8 +1561,15 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gint y_base = 0;
 	gint x_base = 0;
 	gint z_base = 0;
+	gint x_mult = 0;
+	gint y_mult = 0;
 	gint z_mult = 0;
+	gint page = 0;
+	DataSize size = 0;
+	DataSize x_size = 0;
+	DataSize y_size = 0;
 	DataSize z_size = 0;
+	gint max = 0;
 	gint dload_val = 0;
 	gint canID = 0;
 	gboolean cur_state = FALSE;
@@ -1576,8 +1595,12 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	y_page = ve_view->y_page;
 	z_page = ve_view->z_page;
 
+	x_mult = ve_view->x_mult;
+	y_mult = ve_view->y_mult;
 	z_mult = ve_view->z_mult;
 
+	x_size = ve_view->x_size;
+	y_size = ve_view->y_size;
 	z_size = ve_view->z_size;
 
 	switch (event->keyval)
@@ -1586,8 +1609,23 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"UP\"\n"));
 
-			if (ve_view->active_y < (y_bincount-1))
-				ve_view->active_y += 1;
+			if (event->state & GDK_CONTROL_MASK)
+			{
+				offset = y_base + (ve_view->active_y*y_mult);
+				max = (gint)pow(2,y_mult*8) -10;
+				if (get_ecu_data(canID,y_page,offset,y_size) <= max)
+				{
+					dload_val = get_ecu_data(canID,y_page,offset,y_size) + 10;
+					page = y_page;
+					size = y_size;
+					update_widgets = TRUE;
+				}
+			}
+			else
+			{
+				if (ve_view->active_y < (y_bincount-1))
+					ve_view->active_y += 1;
+			}
 			gdk_window_invalidate_rect (ve_view->drawing_area->window,
 					&ve_view->drawing_area->allocation, FALSE);
 			break;
@@ -1596,8 +1634,22 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"DOWN\"\n"));
 
-			if (ve_view->active_y > 0)
-				ve_view->active_y -= 1;
+			if (event->state & GDK_CONTROL_MASK)
+			{
+				offset = y_base + (ve_view->active_y*y_mult);
+				if (get_ecu_data(canID,y_page,offset,y_size) > 10)
+				{
+					dload_val = get_ecu_data(canID,y_page,offset,y_size) - 10;
+					page = y_page;
+					size = y_size;
+					update_widgets = TRUE;
+				}
+			}
+			else
+			{
+				if (ve_view->active_y > 0)
+					ve_view->active_y -= 1;
+			}
 			gdk_window_invalidate_rect (ve_view->drawing_area->window,
 					&ve_view->drawing_area->allocation, FALSE);
 			break;
@@ -1606,8 +1658,22 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"LEFT\"\n"));
 
-			if (ve_view->active_x > 0)
-				ve_view->active_x -= 1;
+			if (event->state & GDK_CONTROL_MASK)
+			{
+				offset = x_base + (ve_view->active_x*x_mult);
+				if (get_ecu_data(canID,x_page,offset,x_size) > 10)
+				{
+					dload_val = get_ecu_data(canID,x_page,offset,x_size) - 10;
+					page = x_page;
+					size = x_size;
+					update_widgets = TRUE;
+				}
+			}
+			else
+			{
+				if (ve_view->active_x > 0)
+					ve_view->active_x -= 1;
+			}
 			gdk_window_invalidate_rect (ve_view->drawing_area->window,
 					&ve_view->drawing_area->allocation, FALSE);
 			break;
@@ -1615,8 +1681,23 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"RIGHT\"\n"));
 
-			if (ve_view->active_x < (x_bincount-1))
-				ve_view->active_x += 1;
+			if (event->state & GDK_CONTROL_MASK)
+			{
+				offset = x_base + (ve_view->active_x*x_mult);
+				max = (gint)pow(2,x_mult*8) -10;
+				if (get_ecu_data(canID,x_page,offset,x_size) <= max)
+				{
+					dload_val = get_ecu_data(canID,x_page,offset,x_size) + 10;
+					page = x_page;
+					size = x_size;
+					update_widgets = TRUE;
+				}
+			}
+			else
+			{
+				if (ve_view->active_x < (x_bincount-1))
+					ve_view->active_x += 1;
+			}
 			gdk_window_invalidate_rect (ve_view->drawing_area->window,
 					&ve_view->drawing_area->allocation, FALSE);
 			break;
@@ -1629,6 +1710,8 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (get_ecu_data(canID,z_page,offset,z_size) <= 245)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
+				page = z_page;
+				size = z_size;
 				update_widgets = TRUE;
 			}
 			break;
@@ -1645,6 +1728,8 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (get_ecu_data(canID,z_page,offset,z_size) < 255)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
+				page = z_page;
+				size = z_size;
 				update_widgets = TRUE;
 			}
 			break;
@@ -1656,6 +1741,8 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
+				page = z_page;
+				size = z_size;
 				update_widgets = TRUE;
 			}
 			break;
@@ -1672,6 +1759,8 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (get_ecu_data(canID,z_page,offset,z_size) > 0)
 			{
 				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
+				page = z_page;
+				size = z_size;
 				update_widgets = TRUE;
 			}
 			break;
@@ -1697,7 +1786,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 		if (dbg_lvl & OPENGL)
 			dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n\tupdating widget data in ECU\n"));
 
-		send_to_ecu(canID,z_page,offset,z_size,dload_val, TRUE);
+		send_to_ecu(canID,page,offset,size,dload_val, TRUE);
 		cur_vals = get_current_values(ve_view);
 		generate_quad_mesh(ve_view, cur_vals);
 		free_current_values(cur_vals);
@@ -1880,9 +1969,9 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	mult = get_multiplier(size);
 	for (i=0;i<firmware->table_params[table]->x_bincount-1;i++)
 	{
-		if (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base,ve_view->x_size)) >= cur_val->x_val)
+		if (evaluator_evaluate_x(cur_val->x_eval,get_ecu_data(canID,page,base+(i*mult),ve_view->x_size)) >= cur_val->x_val)
 		{
-			bin[0] = -1;
+			bin[0] = 0;
 			bin[1] = 0;
 			left_w = 1;
 			right_w = 1;
@@ -1904,7 +1993,7 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 		if (cur_val->x_val > right)
 		{
 			bin[0] = i+1;
-			bin[1] = -1;
+			bin[1] = i+1;
 			left_w = 1;
 			right_w = 1;
 		}
@@ -1916,9 +2005,9 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 	mult = get_multiplier(size);
 	for (i=0;i<firmware->table_params[table]->y_bincount-1;i++)
 	{
-		if (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base,ve_view->y_size)) >= cur_val->y_val)
+		if (evaluator_evaluate_x(cur_val->y_eval,get_ecu_data(canID,page,base+(i*mult),ve_view->y_size)) >= cur_val->y_val)
 		{
-			bin[2] = -1;
+			bin[2] = 0;
 			bin[3] = 0;
 			top_w = 1;
 			bottom_w = 1;
@@ -1940,7 +2029,7 @@ void ve3d_draw_active_vertexes_marker(Ve_View_3D *ve_view,Cur_Vals *cur_val)
 		if (cur_val->y_val > top)
 		{
 			bin[2] = i+1;
-			bin[3] = -1;
+			bin[3] = i+1;
 			top_w = 1;
 			bottom_w = 1;
 		}
