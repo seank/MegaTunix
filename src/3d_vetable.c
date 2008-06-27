@@ -486,75 +486,6 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			NULL);
 	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,FALSE,0);
 
-	table = gtk_table_new(4,2,FALSE);
-	gtk_table_set_row_spacings(GTK_TABLE(table),2);
-	gtk_table_set_col_spacings(GTK_TABLE(table),5);
-	gtk_box_pack_start(GTK_BOX(vbox2),table,TRUE,TRUE,5);
-
-	label = gtk_label_new("Edit");
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 0, 1,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("x_active_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 1, 2,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("y_active_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 2, 3,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("z_active_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 0, 1, 3, 4,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-
-	label = gtk_label_new("Runtime");
-	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 0, 1,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("x_runtime_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 1, 2,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("y_runtime_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 2, 3,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-	label = gtk_label_new(NULL);
-	set_fixed_size(label,12);
-
-	tmpbuf = g_strdup_printf("z_runtime_label_%i",table_num);
-	register_widget(tmpbuf,label);
-	g_free(tmpbuf);
-	gtk_table_attach (GTK_TABLE (table), label, 1, 2, 3, 4,
-			(GtkAttachOptions) (GTK_EXPAND|GTK_FILL),
-			(GtkAttachOptions) (0), 0, 0);
-
 
 	button = gtk_button_new_with_label("Close Window");
 	gtk_box_pack_end(GTK_BOX(vbox2),button,FALSE,FALSE,0);
@@ -568,34 +499,7 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			G_CALLBACK(gtk_widget_destroy),
 			(gpointer) window);
 
-	/* Opacity Slider */
-	label = gtk_label_new("Opacity");
-	gtk_box_pack_start(GTK_BOX(vbox2),label,FALSE,TRUE,0);
-
-	scale = gtk_hscale_new_with_range(0.1,1.0,0.001);
-	OBJ_SET(scale,"ve_view",ve_view);
-	g_signal_connect(G_OBJECT(scale), "value_changed",
-			G_CALLBACK(set_opacity),
-			NULL);
-	gtk_range_set_value(GTK_RANGE(scale),ve_view->opacity);
-	gtk_scale_set_draw_value(GTK_SCALE(scale),FALSE);
-	gtk_box_pack_start(GTK_BOX(vbox2),scale,FALSE,TRUE,0);
-
-	button = gtk_check_button_new_with_label("Wireframe or Solid");
-	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),ve_view->wireframe);
-	OBJ_SET(button,"ve_view",ve_view);
-	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "toggled",
-			G_CALLBACK(set_rendering_mode),
-			NULL);
-
-	button = gtk_check_button_new_with_label("Fixed Scale or Proportional");
-	OBJ_SET(button,"ve_view",ve_view);
-	gtk_box_pack_start(GTK_BOX(vbox2),button,FALSE,TRUE,0);
-	g_signal_connect(G_OBJECT(button), "toggled",
-			G_CALLBACK(set_scaling_mode),
-			NULL);
-
+	/* Focus follows vertex toggle */
 	button = gtk_check_button_new_with_label("Focus Follows Vertex\n with most Weight");
 	ve_view->tracking_button = button;
 	OBJ_SET(button,"ve_view",ve_view);
@@ -604,6 +508,37 @@ EXPORT gint create_ve3d_view(GtkWidget *widget, gpointer data)
 			G_CALLBACK(set_tracking_focus),
 			NULL);
 
+	/* Fixed/Prop scale toggle */
+	button = gtk_check_button_new_with_label("Fixed Scale or Proportional");
+	OBJ_SET(button,"ve_view",ve_view);
+	gtk_box_pack_end(GTK_BOX(vbox2),button,FALSE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "toggled",
+			G_CALLBACK(set_scaling_mode),
+			NULL);
+
+	/* Wireframe/solid toggle */
+	button = gtk_check_button_new_with_label("Wireframe or Solid");
+	gtk_toggle_button_set_state(GTK_TOGGLE_BUTTON(button),ve_view->wireframe);
+	OBJ_SET(button,"ve_view",ve_view);
+	gtk_box_pack_end(GTK_BOX(vbox2),button,FALSE,TRUE,0);
+	g_signal_connect(G_OBJECT(button), "toggled",
+			G_CALLBACK(set_rendering_mode),
+			NULL);
+
+	/* Opacity Slider */
+	scale = gtk_hscale_new_with_range(0.1,1.0,0.001);
+	OBJ_SET(scale,"ve_view",ve_view);
+	g_signal_connect(G_OBJECT(scale), "value_changed",
+			G_CALLBACK(set_opacity),
+			NULL);
+	gtk_range_set_value(GTK_RANGE(scale),ve_view->opacity);
+	gtk_scale_set_draw_value(GTK_SCALE(scale),FALSE);
+	gtk_box_pack_end(GTK_BOX(vbox2),scale,FALSE,TRUE,0);
+
+	label = gtk_label_new("Opacity");
+	gtk_box_pack_end(GTK_BOX(vbox2),label,FALSE,TRUE,0);
+
+	/* Realtime var slider gauges */
 	frame = gtk_frame_new("Real-Time Variables");
 	gtk_box_pack_start(GTK_BOX(vbox),frame,FALSE,TRUE,0);
 	gtk_container_set_border_width(GTK_CONTAINER(frame),0);
@@ -658,29 +593,6 @@ gint free_ve3d_view(GtkWidget *widget)
 	deregister_widget(tmpbuf);
 	g_free(tmpbuf);
 
-	tmpbuf = g_strdup_printf("x_active_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("y_active_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("z_active_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("x_runtime_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("y_runtime_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("z_runtime_label_%i",ve_view->table_num);
-	deregister_widget(tmpbuf);
-	g_free(tmpbuf);
 	g_free(ve_view->x_source);
 	g_free(ve_view->y_source);
 	g_free(ve_view->z_source);
@@ -1143,25 +1055,12 @@ void ve3d_draw_edit_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 {
 	extern Firmware_Details *firmware;
 	gfloat bottom = 0.0;
-	gchar * tmpbuf = NULL;
 	extern GHashTable *dynamic_widgets;
 	GLfloat w = ve_view->window->allocation.width;
 	GLfloat h = ve_view->window->allocation.height;
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_draw_edit_indicator()\n"));
-
-	tmpbuf = g_strdup_printf("x_active_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->x_edit_text);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("y_active_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->y_edit_text);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("z_active_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->z_edit_text);
-	g_free(tmpbuf);
 
 	drawOrthoText(cur_val->x_edit_text, 1.0f, 0.2f, 0.2f, 0.025, 0.2 );
 	drawOrthoText(cur_val->y_edit_text, 1.0f, 0.2f, 0.2f, 0.025, 0.233 );
@@ -1258,7 +1157,6 @@ the
  */
 void ve3d_draw_runtime_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 {
-	gchar * tmpbuf = NULL;
 	gchar * label = NULL;
 	gfloat tmpf1 = 0.0;
 	gfloat tmpf2 = 0.0;
@@ -1280,18 +1178,6 @@ void ve3d_draw_runtime_indicator(Ve_View_3D *ve_view, Cur_Vals *cur_val)
 		return;
 	}
 
-
-	tmpbuf = g_strdup_printf("x_runtime_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->x_runtime_text);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("y_runtime_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->y_runtime_text);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("z_runtime_label_%i",ve_view->table_num);
-	gtk_label_set_text(GTK_LABEL(g_hash_table_lookup(dynamic_widgets,tmpbuf)),cur_val->z_runtime_text);
-	g_free(tmpbuf);
 	drawOrthoText(cur_val->x_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.033 );
 	drawOrthoText(cur_val->y_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.066 );
 	drawOrthoText(cur_val->z_runtime_text, 0.2f, 1.0f, 0.2f, 0.025, 0.100 );
@@ -1565,6 +1451,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	gint y_mult = 0;
 	gint z_mult = 0;
 	gint page = 0;
+	gint i = 0;
 	DataSize size = 0;
 	DataSize x_size = 0;
 	DataSize y_size = 0;
@@ -1578,10 +1465,13 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 	Cur_Vals *cur_vals = NULL;
 	extern Firmware_Details *firmware;
 	extern gboolean forced_update;
+	static GStaticMutex mutex = G_STATIC_MUTEX_INIT;
 	ve_view = (Ve_View_3D *)OBJ_GET(widget,"ve_view");
 
 	if (dbg_lvl & OPENGL)
 		dbg_func(g_strdup(__FILE__": ve3d_key_press_event()\n"));
+
+	g_static_mutex_lock(&mutex);
 
 	x_bincount = ve_view->x_bincount;
 	y_bincount = ve_view->y_bincount;
@@ -1609,6 +1499,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"UP\"\n"));
 
+			/* Ctrl+Up moves the Load axis up */
 			if (event->state & GDK_CONTROL_MASK)
 			{
 				offset = y_base + (ve_view->active_y*y_mult);
@@ -1634,6 +1525,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"DOWN\"\n"));
 
+			/* Ctrl+Down moves the Load axis down */
 			if (event->state & GDK_CONTROL_MASK)
 			{
 				offset = y_base + (ve_view->active_y*y_mult);
@@ -1658,6 +1550,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"LEFT\"\n"));
 
+			/* Ctrl+Down moves the RPM axis left (down) */
 			if (event->state & GDK_CONTROL_MASK)
 			{
 				offset = x_base + (ve_view->active_x*x_mult);
@@ -1681,6 +1574,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"RIGHT\"\n"));
 
+			/* Ctrl+Down moves the RPM axis right (up) */
 			if (event->state & GDK_CONTROL_MASK)
 			{
 				offset = x_base + (ve_view->active_x*x_mult);
@@ -1706,13 +1600,52 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"Page Up\"\n"));
 
-			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
-			if (get_ecu_data(canID,z_page,offset,z_size) <= 245)
+			max = (gint)pow(2,z_mult*8) -10;
+			if (event->state & GDK_CONTROL_MASK)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
-				page = z_page;
-				size = z_size;
-				update_widgets = TRUE;
+				//printf("Ctrl-q/+/=, big increase ROW!\n");
+				for (i=0;i<x_bincount;i++)
+				{
+					offset = z_base+(((ve_view->active_y*y_bincount)+i)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) <= max)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else if (event->state & GDK_MOD1_MASK)
+			{
+				//printf("Alt-q/+/=, big increase COL!\n");
+				for (i=0;i<y_bincount;i++)
+				{
+					offset = z_base+(((i*y_bincount)+ve_view->active_x)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) <= max)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+
+			else
+			{
+				offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
+				if (get_ecu_data(canID,z_page,offset,z_size) <= max)
+				{
+					dload_val = get_ecu_data(canID,z_page,offset,z_size) + 10;
+					page = z_page;
+					size = z_size;
+					update_widgets = TRUE;
+				}
 			}
 			break;
 		case GDK_plus:
@@ -1724,26 +1657,101 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"PLUS\"\n"));
 
-			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
-			if (get_ecu_data(canID,z_page,offset,z_size) < 255)
+			max = (gint)pow(2,z_mult*8)-1;
+			if (event->state & GDK_CONTROL_MASK)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
-				page = z_page;
-				size = z_size;
-				update_widgets = TRUE;
+				//printf("Ctrl-q/+/=, increase ROW!\n");
+				for (i=0;i<x_bincount;i++)
+				{
+					offset = z_base+(((ve_view->active_y*y_bincount)+i)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) <= max)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else if (event->state & GDK_MOD1_MASK)
+			{
+				//printf("Ctrl-q/+/=, increase COL!\n");
+				for (i=0;i<y_bincount;i++)
+				{
+					offset = z_base+(((i*y_bincount)+ve_view->active_x)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) <= max)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else
+			{
+				offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
+				if (get_ecu_data(canID,z_page,offset,z_size) < max)
+				{
+					page = z_page;
+					size = z_size;
+					dload_val = get_ecu_data(canID,z_page,offset,z_size) + 1;
+					update_widgets = TRUE;
+				}
 			}
 			break;
 		case GDK_Page_Down:
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"Page Down\"\n"));
 
-			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
-			if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
+			if (event->state & GDK_CONTROL_MASK)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
-				page = z_page;
-				size = z_size;
-				update_widgets = TRUE;
+				//printf("Ctrl-q/+/=, big decrease ROW!\n");
+				for (i=0;i<x_bincount;i++)
+				{
+					offset = z_base+(((ve_view->active_y*y_bincount)+i)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			if (event->state & GDK_MOD1_MASK)
+			{
+				//printf("Ctrl-q/+/=, big decrease COL!\n");
+				for (i=0;i<y_bincount;i++)
+				{
+					offset = z_base+(((i*y_bincount)+ve_view->active_x)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else
+			{
+				offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
+				if (get_ecu_data(canID,z_page,offset,z_size) >= 10)
+				{
+					dload_val = get_ecu_data(canID,z_page,offset,z_size) - 10;
+					page = z_page;
+					size = z_size;
+					update_widgets = TRUE;
+				}
 			}
 			break;
 
@@ -1755,13 +1763,50 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup("\t\"MINUS\"\n"));
 
-			offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
-			if (get_ecu_data(canID,z_page,offset,z_size) > 0)
+			if (event->state & GDK_CONTROL_MASK)
 			{
-				dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
-				page = z_page;
-				size = z_size;
-				update_widgets = TRUE;
+				//printf("Ctrl-q/+/=, decrease ROW!\n");
+				for (i=0;i<x_bincount;i++)
+				{
+					offset = z_base+(((ve_view->active_y*y_bincount)+i)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) > 0)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else if (event->state & GDK_MOD1_MASK)
+			{
+				//printf("Ctrl-q/+/=, decrease COL!\n");
+				for (i=0;i<y_bincount;i++)
+				{
+					offset = z_base+(((i*y_bincount)+ve_view->active_x)*z_mult);
+					if (get_ecu_data(canID,z_page,offset,z_size) > 0)
+					{
+						dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
+						page = z_page;
+						size = z_size;
+						send_to_ecu(canID,page,offset,size,dload_val, TRUE);
+						update_widgets = TRUE;
+
+					}
+				}
+			}
+			else
+			{
+				offset = z_base+(((ve_view->active_y*y_bincount)+ve_view->active_x)*z_mult);
+				if (get_ecu_data(canID,z_page,offset,z_size) > 0)
+				{
+					dload_val = get_ecu_data(canID,z_page,offset,z_size) - 1;
+					page = z_page;
+					size = z_size;
+					update_widgets = TRUE;
+				}
 			}
 			break;
 
@@ -1779,6 +1824,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 		default:
 			if (dbg_lvl & OPENGL)
 				dbg_func(g_strdup_printf(__FILE__": ve3d_key_press_event()\n\tKeypress not handled, code: %#.4X\"\n",event->keyval));
+			g_static_mutex_unlock(&mutex);
 			return FALSE;
 	}
 	if (update_widgets)
@@ -1793,6 +1839,7 @@ EXPORT gboolean ve3d_key_press_event (GtkWidget *widget, GdkEventKey
 		forced_update = TRUE;
 	}
 
+	g_static_mutex_unlock(&mutex);
 	return TRUE;
 }
 
