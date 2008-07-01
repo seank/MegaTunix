@@ -377,23 +377,23 @@ key_types=_ENUM_,_STRING_
 handler=_EXPORT_SINGLE_TABLE_
 table_num=8
 
-[SP1_recalc_scaling_button]
+[SP1_rescale_button]
 keys=handler,data
 key_types=_ENUM_,_STRING_
 handler=_RESCALE_TABLE_
-data=SP_SP1_rescale_spinner
+data=SP_SP1_rescale_entry,SP_SP1_rescale_combo
 
-[SP2_recalc_scaling_button]
+[SP2_rescale_button]
 keys=handler,data
 key_types=_ENUM_,_STRING_
 handler=_RESCALE_TABLE_
-data=SP_SP2_rescale_spinner
+data=SP_SP2_rescale_entry,SP_SP2_rescale_combo
 
-[SP3_recalc_scaling_button]
+[SP3_rescale_button]
 keys=handler,data
 key_types=_ENUM_,_STRING_
 handler=_RESCALE_TABLE_
-data=SP_SP3_rescale_spinner
+data=SP_SP3_rescale_entry,SP_SP3_rescale_combo
 
 [SP1_3d_view_button]
 keys=table_num,tooltip,bind_to_list
@@ -416,22 +416,42 @@ table_num=8
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current Spark-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate.  A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-#----- Rescale Spinner ------------------------------------------------------
+#----- Rescale Entries ------------------------------------------------------
 
-[SP1_rescale_spinner]
+[SP1_rescale_entry]
 keys=table_num
 key_types=_STRING_
 table_num=6
 
-[SP2_rescale_spinner]
+[SP2_rescale_entry]
 keys=table_num
 key_types=_STRING_
 table_num=7
 
-[SP3_rescale_spinner]
+[SP3_rescale_entry]
 keys=table_num
 key_types=_STRING_
 table_num=8
+
+#----- Rescale Combos ------------------------------------------------------
+
+[SP1_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=6
+post_function_with_arg=lock_entry
+
+[SP2_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=7
+post_function_with_arg=lock_entry
+
+[SP3_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=8
+post_function_with_arg=lock_entry
 
 #----- MAIN SparkTable Container ---------------------------------------------
 

@@ -431,4 +431,12 @@ typedef enum
 	BOTH
 }FlushDirection;
 
+typedef enum
+{
+	ADD=0,
+	SUBTRACT,
+	MULTIPLY,
+	DIVIDE
+}ScaleOp;
+
 #endif

@@ -340,12 +340,12 @@ table_num=0
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current VE-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate. A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-[VE1_recalc_scaling_button]
+[VE1_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=4
 handler=_RESCALE_TABLE_
-data=VE12_VE1_rescale_spinner
+data=VE12_VE1_rescale_entry,VE12_VE1_rescale_combo
 
 [VE1_reqfuel_rescale_button]
 keys=page,handler,data,table_num,applicable_tables
@@ -388,12 +388,12 @@ table_num=1
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current VE-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate. A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-[VE2_recalc_scaling_button]
+[VE2_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=4
 handler=_RESCALE_TABLE_
-data=VE12_VE2_rescale_spinner
+data=VE12_VE2_rescale_s,VE12_VE2_rescale_combopinner
 
 [VE3_3d_view_button]
 #keys=page,table_num,an_y_source,x_source,y_source,z_source,tooltip,bind_to_list
@@ -409,12 +409,12 @@ table_num=2
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current VE-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate. A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-[VE3_recalc_scaling_button]
+[VE3_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=4
 handler=_RESCALE_TABLE_
-data=VE12_VE3_rescale_spinner
+data=VE12_VE3_rescale_entry,VE12_VE3_rescale_combo
 
 #----- Spinners -------------------------------------------------------------
 [VE1_curr_reqfuel_entry]
@@ -664,23 +664,40 @@ datasource=afr
 
 #----- Rescale Entries ------------------------------------------------------
 
-[VE1_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=4
+[VE1_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=0
 
-[VE2_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=4
+[VE2_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=1
 
-[VE3_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=4
+[VE3_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=2
+
+#----- Rescale Combos ------------------------------------------------------
+
+[VE1_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=0
+post_function_with_arg=lock_entry
+
+[VE2_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=1
+post_function_with_arg=lock_entry
+
+[VE3_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=2
+post_function_with_arg=lock_entry
 
 #----- MAIN VETable Container ---------------------------------------------
 

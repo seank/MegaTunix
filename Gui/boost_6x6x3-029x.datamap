@@ -420,46 +420,63 @@ table_num=9
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current Boost-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate. A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-[B1_recalc_scaling_button]
+[B1_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=7
 handler=_RESCALE_TABLE_
-data=BT_B1_rescale_spinner
+data=BT_B1_rescale_entry,BT_B1_rescale_combo
 
-[B2_recalc_scaling_button]
+[B2_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=7
 handler=_RESCALE_TABLE_
-data=BT_B2_rescale_spinner
+data=BT_B2_rescale_entry,BT_B2_rescale_combo
 
-[B3_recalc_scaling_button]
+[B3_rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=7
 handler=_RESCALE_TABLE_
-data=BT_B3_rescale_spinner
+data=BT_B3_rescale_entry,BT_B3_rescale_combo
 
 #----- Rescale Entries ------------------------------------------------------
 
-[B1_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=7
+[B1_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=7
 
-[B2_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=7
+[B2_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=8
 
-[B3_rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=7
+[B3_rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=9
+
+#----- Rescale Combos ------------------------------------------------------
+
+[B1_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=7
+post_function_with_arg=lock_entry
+
+[B2_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=8
+post_function_with_arg=lock_entry
+
+[B3_rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=9
+post_function_with_arg=lock_entry
 
 #----- MAIN VETable Container ------------------------------------------------
 

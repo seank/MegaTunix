@@ -183,12 +183,12 @@ table_num=0
 bind_to_list=3d_buttons
 tooltip=This pops up a 3 dimensional view of the current VE-Table.  Editing of the table in the 3D view is supported with the +/- and PgUp/PgDn keys (fine/coarse edit) and the arrows navigate. A Red dot shows the current edit position as does the indicators on the right side of the window beneath the buttons.  A left mouse button holddown and drag of the mouse in the 3D view will rotate the display.  Using the middle mouse button will strafe (slide) and the right mouse button will zoom.
 
-[recalc_scaling_button]
+[rescale_button]
 keys=page,handler,data
 key_types=_INT_,_ENUM_,_STRING_
 page=0
 handler=_RESCALE_TABLE_
-data=VE1_rescale_spinner
+data=VE1_rescale_entry,VE1_rescale_combo
 
 [reqfuel_rescale_button]
 keys=page,handler,data,table_num,applicable_tables
@@ -208,11 +208,18 @@ table_num=0
 
 #----- Rescale Entries ------------------------------------------------------
 
-[rescale_spinner]
-keys=page,table_num
-key_types=_INT_,_STRING_
-page=0
+[rescale_entry]
+keys=table_num
+key_types=_STRING_
 table_num=0
+
+#----- Rescale Combos ------------------------------------------------------
+
+[rescale_combo]
+keys=table_num,post_function_with_arg
+key_types=_STRING_,_STRING_
+table_num=0
+post_function_with_arg=lock_entry
 
 #----- MAIN VETable Container ------------------------------------------------
 
