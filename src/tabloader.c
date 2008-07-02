@@ -163,7 +163,9 @@ EXPORT gboolean load_gui_tabs_pf(void)
 			}
 			cfg_free(cfgfile);
 			g_free(cfgfile);
+#ifndef DEBUG
 			g_object_unref(xml);
+#endif
 			update_logbar("interr_view",NULL,g_strdup_printf(" completed.\n"),FALSE,FALSE);
 		}
 		else
@@ -511,14 +513,11 @@ void bind_data(GtkWidget *widget, gpointer user_data)
 		g_free(tmpbuf);
 	}
 
-	if (page == -1)
+	if (!cfg_read_int(cfgfile,section,"page",&page)) 
 	{
-		if (!cfg_read_int(cfgfile,section,"page",&page)) 
-		{
-			if (dbg_lvl & (TABLOADER|CRITICAL))
-				dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
+		if (dbg_lvl & (TABLOADER|CRITICAL))
+			dbg_func(g_strdup_printf(__FILE__": bind_data()\n\tObject %s doesn't have a page assigned!!!!\n",section));	
 
-		}
 	}
 	/* Bind widgets to lists if they have the bind_to_list flag set...
 	*/

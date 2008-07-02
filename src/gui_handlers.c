@@ -1750,6 +1750,7 @@ void update_widget(gpointer object, gpointer user_data)
 			value = (value-32)*(5.0/9.0);
 	}
 
+	//printf("update_widget %s, page %i, offset %i bitval %i, mask %i, shift %i\n",(gchar *)glade_get_widget_name(widget), page,offset,bitval,bitmask,bitshift);
 	/* update widget whether spin,radio or checkbutton  
 	 * (checkbutton encompases radio)
 	 */
@@ -2593,10 +2594,11 @@ void toggle_groups_linked(GtkWidget *widget,gboolean new_state)
 		return;
 	group_states = (gchar *)OBJ_GET(widget,"group_states");
 	toggle_groups = (gchar *)OBJ_GET(widget,"toggle_groups");
+	/*printf("groups to toggle %s to state %s\n",toggle_groups,group_states);*/
 
-	/*	printf("toggling groups\n");*/
+	/*printf("toggling groups\n");*/
 	groups = parse_keys(toggle_groups,&num_groups,",");
-	/*	printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);*/
+	/*printf("toggle groups defined for widget %p at page %i, offset %i\n",widget,page,offset);*/
 
 	for (i=0;i<num_groups;i++)
 	{

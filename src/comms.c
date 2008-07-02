@@ -169,15 +169,17 @@ EXPORT void update_write_status(void *data)
 	paused_handlers = TRUE;
 
 	/*printf ("page %i, offset %i\n",data->page,data->offset); */
+	/*printf("WRITE STATUS, page %i, offset %i\n",page,offset);*/
 	for (i=0;i<g_list_length(ve_widgets[page][offset]);i++)
 	{
 		if ((gint)OBJ_GET(g_list_nth_data(ve_widgets[page][offset],i),"dl_type") != DEFERRED)
 		{
-			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i))); */
+			/*printf("updating widget %s\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i)));*/
 			update_widget(g_list_nth_data(ve_widgets[page][offset],i),NULL);
 		}
-		/*	else
-		printf("NOT updating widget %s because it's defered\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i)));
+		/*
+		else
+			printf("\n\nNOT updating widget %s because it's defered\n\n\n",(gchar *)glade_get_widget_name(g_list_nth_data(ve_widgets[page][offset],i)));
 		*/
 	}
 
