@@ -30,7 +30,8 @@
 gint realtime_id = 0;
 gint playback_id = 0;
 gint toothmon_id = 0;
-gint statuscounts_id = 0;
+//gint statuscounts_id = 0;
+GThread * statuscounts_id = NULL;
 static gint trigmon_id = 0;
 static gboolean restart_realtime = FALSE;
 
@@ -126,8 +127,15 @@ void start_tickler(TicklerType type)
 				break;
 			if (!((connected) && (interrogated)))
 				break;
-			if (statuscounts_id == 0)
-				statuscounts_id = g_timeout_add(100,(GSourceFunc)update_errcounts,NULL);
+			if (statuscounts_id == NULL)
+			{
+				//	statuscounts_id = g_timeout_add(100,(GSourceFunc)update_errcounts,NULL);
+				statuscounts_id = g_thread_create(update_errcounts,
+						NULL, /* Thread args */
+						TRUE, /* Joinable */
+						NULL); /*GError Pointer */
+
+			}
 			else
 				dbg_func(CRITICAL,g_strdup(__FILE__": start_tickler()\n\tStatuscounts tickler already active \n"));
 			break;
@@ -148,6 +156,7 @@ void stop_tickler(TicklerType type)
 {
 	extern Serial_Params *serial_params;
 	extern volatile gboolean leaving;
+	extern GCond * statuscounts_cond;
 	switch (type)
 	{
 		case RTV_TICKLER:
@@ -197,8 +206,11 @@ void stop_tickler(TicklerType type)
 			break;
 		case SCOUNTS_TICKLER:
 			if (statuscounts_id)
-				g_source_remove(statuscounts_id);
-				statuscounts_id = 0;
+			{
+				g_cond_signal(statuscounts_cond);
+				g_thread_join(statuscounts_id);
+				statuscounts_id = NULL;
+			}
 			break;
 		default:
 			break;

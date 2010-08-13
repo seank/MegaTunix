@@ -64,7 +64,9 @@ void * update_errcounts(gpointer data)
 	extern volatile gboolean leaving;
 	extern GAsyncQueue *pf_dispatch_queue;
 	extern GAsyncQueue *gui_dispatch_queue;
+	extern GCond *statuscounts_cond;
 	GMutex *mutex = g_mutex_new();
+	GTimeVal time;
 
 	g_mutex_lock(mutex);
 	while (TRUE)
@@ -141,12 +143,12 @@ void * update_errcounts(gpointer data)
 		g_free(tmpbuf);
 		gdk_threads_leave();
 
-		time = g_get_current_time(&time);
+		g_get_current_time(&time);
 		g_time_val_add(&time,100000);
 		if(g_cond_timed_wait(statuscounts_cond,mutex,&time))
 		{
 			g_mutex_unlock(mutex);
-			g_mutex_destroy(mutex);
+			g_mutex_free(mutex);
 			g_thread_exit(0);
 			printf("statuscounts thread exiting\n");
 		}

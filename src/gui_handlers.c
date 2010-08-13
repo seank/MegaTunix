@@ -101,7 +101,6 @@ EXPORT gboolean leave(GtkWidget *widget, gpointer data)
 {
 	extern gint pf_dispatcher_id;
 	extern gint gui_dispatcher_id;
-	extern gint statuscounts_id;
 	/*
 	extern GThread * ascii_socket_id;
 	extern GThread * binary_socket_id;
@@ -196,10 +195,8 @@ EXPORT gboolean leave(GtkWidget *widget, gpointer data)
 			gtk_main_iteration();
 		count++;
 	}
+	stop_tickler(SCOUNTS_TICKLER);
 	g_mutex_lock(mutex);
-	if (statuscounts_id)
-		g_source_remove(statuscounts_id);
-	statuscounts_id = 0;
 	if (pf_dispatcher_id)
 		g_source_remove(pf_dispatcher_id);
 	pf_dispatcher_id = 0;
