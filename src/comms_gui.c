@@ -55,7 +55,7 @@ EXPORT gboolean reset_errcounts(GtkWidget *widget)
  current statistical error and i/O counters
  \returns TRUE
  */
-gboolean update_errcounts()
+void * update_errcounts(gpointer data)
 {
 	gchar *tmpbuf = NULL;
 	gint tmp = 0;
@@ -63,82 +63,92 @@ gboolean update_errcounts()
 	static gboolean pf_red = FALSE;
 	extern volatile gboolean leaving;
 	extern GAsyncQueue *pf_dispatch_queue;
-        extern GAsyncQueue *gui_dispatch_queue;
-	
-	if (leaving)
-		return TRUE;
+	extern GAsyncQueue *gui_dispatch_queue;
+	GMutex *mutex = g_mutex_new();
 
-	gdk_threads_enter();
-	tmpbuf = g_strdup_printf("%i",ms_ve_goodread_count);
-	widget = lookup_widget("runtime_good_ve_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	widget = lookup_widget("comms_vecount_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("%i",ms_goodread_count);
-	widget = lookup_widget("comms_rtcount_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	widget = lookup_widget("runtime_good_rt_read_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("%i",ms_reset_count);
-	widget = lookup_widget("comms_reset_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	widget = lookup_widget("runtime_hardreset_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	g_free(tmpbuf);
-
-	tmpbuf = g_strdup_printf("%i",serial_params->errcount);
-	widget = lookup_widget("comms_sioerr_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	widget = lookup_widget("runtime_sioerr_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	g_free(tmpbuf);
-	tmp = g_async_queue_length(pf_dispatch_queue);
-	tmpbuf = g_strdup_printf("%i",tmp);
-	widget = lookup_widget("comms_pf_queue_entry");
-	if (GTK_IS_ENTRY(widget))
+	g_mutex_lock(mutex);
+	while (TRUE)
 	{
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-		if ((!pf_red) && (tmp > 10))
-			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&red);
-		if ((pf_red) && ( tmp <3))
-			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-	}
-	widget = lookup_widget("runtime_pf_queue_entry");
-	if (GTK_IS_ENTRY(widget))
-	{
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-		if ((!pf_red) && (tmp > 10))
-			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&red);
-		if ((pf_red) && ( tmp <3))
-			gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
-	}
-	if (tmp > 10)
-		pf_red = TRUE;
-	if (tmp < 3)
-		pf_red = FALSE;
-	g_free(tmpbuf);
-	tmp = g_async_queue_length(gui_dispatch_queue);
-	tmpbuf = g_strdup_printf("%i",tmp);
-	widget = lookup_widget("comms_gui_queue_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	widget = lookup_widget("runtime_gui_queue_entry");
-	if (GTK_IS_ENTRY(widget))
-		gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
-	g_free(tmpbuf);
-	gdk_threads_leave();
+		gdk_threads_enter();
+		tmpbuf = g_strdup_printf("%i",ms_ve_goodread_count);
+		widget = lookup_widget("runtime_good_ve_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		widget = lookup_widget("comms_vecount_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		g_free(tmpbuf);
 
-	return TRUE;
+		tmpbuf = g_strdup_printf("%i",ms_goodread_count);
+		widget = lookup_widget("comms_rtcount_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		widget = lookup_widget("runtime_good_rt_read_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		g_free(tmpbuf);
+
+		tmpbuf = g_strdup_printf("%i",ms_reset_count);
+		widget = lookup_widget("comms_reset_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		widget = lookup_widget("runtime_hardreset_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		g_free(tmpbuf);
+
+		tmpbuf = g_strdup_printf("%i",serial_params->errcount);
+		widget = lookup_widget("comms_sioerr_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		widget = lookup_widget("runtime_sioerr_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		g_free(tmpbuf);
+		tmp = g_async_queue_length(pf_dispatch_queue);
+		tmpbuf = g_strdup_printf("%i",tmp);
+		widget = lookup_widget("comms_pf_queue_entry");
+		if (GTK_IS_ENTRY(widget))
+		{
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+			if ((!pf_red) && (tmp > 10))
+				gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&red);
+			if ((pf_red) && ( tmp <3))
+				gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
+		}
+		widget = lookup_widget("runtime_pf_queue_entry");
+		if (GTK_IS_ENTRY(widget))
+		{
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+			if ((!pf_red) && (tmp > 10))
+				gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&red);
+			if ((pf_red) && ( tmp <3))
+				gtk_widget_modify_text(widget,GTK_STATE_NORMAL,&black);
+		}
+		if (tmp > 10)
+			pf_red = TRUE;
+		if (tmp < 3)
+			pf_red = FALSE;
+		g_free(tmpbuf);
+		tmp = g_async_queue_length(gui_dispatch_queue);
+		tmpbuf = g_strdup_printf("%i",tmp);
+		widget = lookup_widget("comms_gui_queue_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		widget = lookup_widget("runtime_gui_queue_entry");
+		if (GTK_IS_ENTRY(widget))
+			gtk_entry_set_text(GTK_ENTRY(widget),tmpbuf);
+		g_free(tmpbuf);
+		gdk_threads_leave();
+
+		time = g_get_current_time(&time);
+		g_time_val_add(&time,100000);
+		if(g_cond_timed_wait(statuscounts_cond,mutex,&time))
+		{
+			g_mutex_unlock(mutex);
+			g_mutex_destroy(mutex);
+			g_thread_exit(0);
+			printf("statuscounts thread exiting\n");
+		}
+	}
 }
